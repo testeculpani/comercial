@@ -367,9 +367,9 @@
     <section class="card">
       <h2>
         Visão geral do mês
-        <span class="badge" id="badgeMes">Sem dados</span>
+        <span class="badge" id="badgeMes">Mês atual</span>
       </h2>
-      <p class="caption">Resumo geral calculado automaticamente a partir do arquivo importado (Meta Mensal x Atingido).</p>
+      <p class="caption">Resumo geral calculado automaticamente a partir da planilha (Meta Mensal x Atingido).</p>
 
       <div class="resumo-grid">
         <div class="mini-card">
@@ -380,7 +380,7 @@
         <div class="mini-card">
           <span class="mini-label">Meta total mensal</span>
           <span class="mini-value" id="metaTotal">R$ 0,00</span>
-          <span class="mini-extra">Somatório da coluna "Meta Mensal"</span>
+          <span class="mini-extra">Somatório da coluna "Meta Mensal (Q)"</span>
         </div>
         <div class="mini-card">
           <span class="mini-label">Atingido total no mês</span>
@@ -455,7 +455,7 @@
     <section class="card">
       <h2>Detalhamento por Estado, Representante e Semana</h2>
       <p class="caption">
-        Dados lidos diretamente da planilha: Estado, Representante, Meta e Atingido em cada semana, mais totals do mês.
+        Estado, Representante, Meta e Atingido em cada semana (F–O) e totais do mês (Q/R/S).
       </p>
 
       <div id="tabelaContainer">
@@ -468,19 +468,19 @@
             <tr>
               <th>Estado</th>
               <th>Representante</th>
-              <th class="align-right">Meta Mês</th>
-              <th class="align-right">Atingido Mês</th>
-              <th class="align-right">% Mês</th>
-              <th class="align-right">Sem 1 Meta</th>
-              <th class="align-right">Sem 1 Ating.</th>
-              <th class="align-right">Sem 2 Meta</th>
-              <th class="align-right">Sem 2 Ating.</th>
-              <th class="align-right">Sem 3 Meta</th>
-              <th class="align-right">Sem 3 Ating.</th>
-              <th class="align-right">Sem 4 Meta</th>
-              <th class="align-right">Sem 4 Ating.</th>
-              <th class="align-right">Sem 5 Meta</th>
-              <th class="align-right">Sem 5 Ating.</th>
+              <th class="align-right">Meta Mês (Q)</th>
+              <th class="align-right">Atingido Mês (R)</th>
+              <th class="align-right">% Mês (S)</th>
+              <th class="align-right">Sem 1 Meta (F)</th>
+              <th class="align-right">Sem 1 Ating. (G)</th>
+              <th class="align-right">Sem 2 Meta (H)</th>
+              <th class="align-right">Sem 2 Ating. (I)</th>
+              <th class="align-right">Sem 3 Meta (J)</th>
+              <th class="align-right">Sem 3 Ating. (K)</th>
+              <th class="align-right">Sem 4 Meta (L)</th>
+              <th class="align-right">Sem 4 Ating. (M)</th>
+              <th class="align-right">Sem 5 Meta (N)</th>
+              <th class="align-right">Sem 5 Ating. (O)</th>
             </tr>
           </thead>
           <tbody id="tbodyDados"></tbody>
@@ -513,7 +513,7 @@
         const firstSheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[firstSheetName];
 
-        // header:1 -> array de arrays, preservando toda estrutura
+        // header:1 -> array de arrays, preservando estrutura
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
         processarPlanilha(rows);
       };
@@ -544,48 +544,60 @@
 
     function processarPlanilha(rows) {
       registros = [];
-      let lastEstado = "";
-
       let totalMeta = 0;
       let totalAtingido = 0;
 
-      // pega nome do mês na linha 3, col 3 (onde aparece "Outubro" / "Novembro" etc)
-      let nomeMes = "";
-      if (rows[2] && rows[2][3]) {
-        nomeMes = safeStr(rows[2][3]);
+      // Procura a linha do cabeçalho (onde está "ESTADO" na coluna A e "REPRESENTANTE" na B)
+      let headerIndex = -1;
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i] || [];
+        const c0 = safeStr(row[0]).toUpperCase();
+        const c1 = safeStr(row[1]).toUpperCase();
+        if (c0 === "ESTADO" && c1 === "REPRESENTANTE") {
+          headerIndex = i;
+          break;
+        }
       }
-      document.getElementById("badgeMes").textContent = nomeMes || "Mês não informado";
+      if (headerIndex === -1) {
+        alert("Não encontrei o cabeçalho (ESTADO / REPRESENTANTE) na planilha.");
+        return;
+      }
 
-      // LINHA 3 (índice 3) é o cabeçalho com os títulos
-      // dados começam na linha 5 da planilha (índice 4)
-      for (let i = 4; i < rows.length; i++) {
+      const dataStart = headerIndex + 1;
+
+      for (let i = dataStart; i < rows.length; i++) {
         const row = rows[i] || [];
 
-        const repNome = safeStr(row[2]);
+        const estado = safeStr(row[0]);        // A
+        const repNome = safeStr(row[1]);       // B
+
         if (!repNome) continue;
-        if (repNome.toUpperCase().startsWith("TOTAL")) continue; // pula totalizadores
+        if (repNome.toUpperCase().startsWith("TOTAL")) continue;
 
-        let estadoCell = safeStr(row[1]);
-        if (estadoCell) {
-          lastEstado = estadoCell;
+        // colunas conforme você descreveu
+        const metaMensal = toNumber(row[16]);  // Q
+        const atingMensal = toNumber(row[17]); // R
+
+        let percMes;
+        if (row[18] !== undefined && row[18] !== null && row[18] !== "") {
+          percMes = toNumber(row[18]); // se S já tiver % em número tipo 1.05, ok; se tiver em %, também converte
+          // se for % (ex: 105) e você quiser tratar, dá pra adequar depois
+          if (percMes > 1.5) percMes = percMes / 100; // gambizinha pra não estourar, se vier 105 em vez de 1,05
+        } else {
+          percMes = metaMensal > 0 ? (atingMensal / metaMensal) : 0;
         }
-        const estado = lastEstado || "N/I";
 
-        // colunas conforme estrutura do ALEXANDRE.xlsx
-        const metaMensal = toNumber(row[17]);   // "Meta Mensal"
-        const atingMensal = toNumber(row[18]); // "Atingido"
-        const percMes = metaMensal > 0 ? atingMensal / metaMensal : 0;
-
-        const sem1Meta = toNumber(row[6]);
-        const sem1Ating = toNumber(row[7]);
-        const sem2Meta = toNumber(row[8]);
-        const sem2Ating = toNumber(row[9]);
-        const sem3Meta = toNumber(row[10]);
-        const sem3Ating = toNumber(row[11]);
-        const sem4Meta = toNumber(row[12]);
-        const sem4Ating = toNumber(row[13]);
-        const sem5Meta = toNumber(row[14]);
-        const sem5Ating = toNumber(row[15]);
+        // semanas
+        const sem1Meta = toNumber(row[5]);  // F
+        const sem1Ating = toNumber(row[6]); // G
+        const sem2Meta = toNumber(row[7]);  // H
+        const sem2Ating = toNumber(row[8]); // I
+        const sem3Meta = toNumber(row[9]);  // J
+        const sem3Ating = toNumber(row[10]); // K
+        const sem4Meta = toNumber(row[11]); // L
+        const sem4Ating = toNumber(row[12]); // M
+        const sem5Meta = toNumber(row[13]); // N
+        const sem5Ating = toNumber(row[14]); // O
 
         const semanasMeta = [sem1Meta, sem2Meta, sem3Meta, sem4Meta, sem5Meta];
         const semanasAting = [sem1Ating, sem2Ating, sem3Ating, sem4Ating, sem5Ating];
@@ -607,7 +619,7 @@
       atualizarResumo(totalMeta, totalAtingido);
       popularFiltroEstados();
       montarTabela();
-      atualizarTudo(); // atualiza gráficos e resumo de filtro
+      atualizarTudo();
     }
 
     function atualizarResumo(totalMeta, totalAtingido) {
@@ -757,12 +769,11 @@
       const semanaIndex = currentWeekIndex;
       const regsFiltrados = getRegistrosFiltrados();
 
-      // destrói gráficos antigos
       if (chartRepsSemana) chartRepsSemana.destroy();
       if (chartEstadosSemana) chartEstadosSemana.destroy();
       if (chartRankingMes) chartRankingMes.destroy();
 
-      // --- Gráfico por representante na semana selecionada (estado filtrado) ---
+      // --- Gráfico por representante na semana selecionada ---
       const ctxReps = document.getElementById("chartRepsSemana").getContext("2d");
       const labelsReps = regsFiltrados.map(r => r.representante);
       const metaReps = regsFiltrados.map(r => r.semanasMeta[semanaIndex] || 0);
@@ -773,14 +784,8 @@
         data: {
           labels: labelsReps,
           datasets: [
-            {
-              label: "Meta",
-              data: metaReps
-            },
-            {
-              label: "Atingido",
-              data: atingReps
-            }
+            { label: "Meta", data: metaReps },
+            { label: "Atingido", data: atingReps }
           ]
         },
         options: {
@@ -871,10 +876,7 @@
         data: {
           labels: labelsRank,
           datasets: [
-            {
-              label: "Atingido mês",
-              data: dadosRank
-            }
+            { label: "Atingido mês", data: dadosRank }
           ]
         },
         options: {
