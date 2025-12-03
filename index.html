@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gerador Final – Representantes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- SheetJS para ler Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Chart.js para gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #020617;
+      --bg2: #020617;
+      --card: #020617;
+      --accent: #0ea5e9;
+      --accent-soft: rgba(14,165,233,0.15);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top left, #1f2933 0, #020617 45%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: linear-gradient(90deg, #020617, #020617e0, #020617);
+      border-bottom: 1px solid #1e293b;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    header span.subtitle {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .upload-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .file-label {
+      cursor: pointer;
+      border-radius: 999px;
+      border: 1px dashed #1e293b;
+      padding: 7px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #020617;
+    }
+
+    .file-name {
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text);
+    }
+
+    main {
+      padding: 18px 20px 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: radial-gradient(circle at top, rgba(15,23,42,0.9), #020617);
+      border-radius: 18px;
+      border: 1px solid rgba(148,163,184,0.18);
+      padding: 16px 16px 14px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: radial-gradient(circle at top, rgba(56,189,248,0.12), transparent 50%);
+      opacity: 0.6;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .card h2 {
+      font-size: 15px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      color: var(--muted);
+    }
+
+    .caption {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .resumo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .mini-card {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #020617dd;
+      border: 1px solid rgba(148,163,184,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .mini-label {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .mini-value {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .mini-extra {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .mini-extra.ok {
+      color: var(--success);
+    }
+
+    .mini-extra.bad {
+      color: var(--danger);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .chart-wrapper {
+      margin-top: 6px;
+      height: 260px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-spacing: 0;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    thead {
+      background: rgba(15,23,42,0.9);
+    }
+
+    th, td {
+      padding: 6px 8px;
+      text-align: left;
+      border-bottom: 1px solid rgba(30,41,59,0.9);
+      white-space: nowrap;
+    }
+
+    th {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15,23,42,0.4);
+    }
+
+    tbody tr:hover {
+      background: rgba(56,189,248,0.08);
+    }
+
+    .align-right {
+      text-align: right;
+    }
+
+    .status-ok {
+      color: var(--success);
+    }
+
+    .status-bad {
+      color: var(--danger);
+    }
+
+    .empty {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    @media (max-width: 1120px) {
+      .charts-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 800px) {
+      .charts-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .resumo-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 600px) {
+      main {
+        padding-inline: 12px;
+      }
+      .resumo-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-block">
+      <h1>Gerador Final – Representantes</h1>
+      <span class="subtitle">Metas e vendas semanais por Estado e Representante</span>
+    </div>
+
+    <div class="upload-area">
+      <label class="file-label">
+        <span>📄 Selecionar planilha (.xlsx)</span>
+        <span class="file-name" id="fileName">Nenhum arquivo</span>
+        <input type="file" id="fileInput" accept=".xlsx,.xls" />
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <!-- RESUMO GERAL -->
+    <section class="card">
+      <h2>
+        Visão geral
+        <span class="badge" id="badgeMes">Sem dados</span>
+      </h2>
+      <p class="caption">Resumo calculado automaticamente a partir do arquivo importado.</p>
+
+      <div class="resumo-grid">
+        <div class="mini-card">
+          <span class="mini-label">Total de representantes</span>
+          <span class="mini-value" id="totalReps">–</span>
+          <span class="mini-extra">Linhas válidas na planilha</span>
+        </div>
+        <div class="mini-card">
+          <span class="mini-label">Meta total mensal</span>
+          <span class="mini-value" id="metaTotal">R$ 0,00</span>
+          <span class="mini-extra">Somatório da coluna "META MENSAL"</span>
+        </div>
+        <div class="mini-card">
+          <span class="mini-label">Vendas totais (atingido)</span>
+          <span class="mini-value" id="vendasTotais">R$ 0,00</span>
+          <span class="mini-extra" id="percGeral">Meta geral: –</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRÁFICOS -->
+    <div class="charts-grid">
+      <section class="card">
+        <h2>Metas x Vendas por Estado</h2>
+        <p class="caption">Somatório da meta mensal e vendas por UF.</p>
+        <div class="chart-wrapper">
+          <canvas id="chartEstados"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Top Representantes por Vendas</h2>
+        <p class="caption">Os representantes com maior valor de vendas no mês.</p>
+        <div class="chart-wrapper">
+          <canvas id="chartReps"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Vendas por Semana (Geral)</h2>
+        <p class="caption">Total de vendas (atingido) da base por semana.</p>
+        <div class="chart-wrapper">
+          <canvas id="chartSemanas"></canvas>
+        </div>
+      </section>
+    </div>
+
+    <!-- TABELA DETALHADA -->
+    <section class="card">
+      <h2>Detalhamento por Estado e Representante</h2>
+      <p class="caption">
+        Dados lidos diretamente da planilha: Estado, Representante, Meta Mensal, Vendas e Semanas (atingido).
+      </p>
+
+      <div id="tabelaContainer">
+        <p class="empty" id="msgVazio">
+          Importe a planilha para visualizar a tabela.
+        </p>
+
+        <table id="tabelaDados" style="display:none;">
+          <thead>
+            <tr>
+              <th>Estado</th>
+              <th>Representante</th>
+              <th class="align-right">Meta Mensal</th>
+              <th class="align-right">Vendas (Atingido)</th>
+              <th class="align-right">% Meta</th>
+              <th class="align-right">Sem 1</th>
+              <th class="align-right">Sem 2</th>
+              <th class="align-right">Sem 3</th>
+              <th class="align-right">Sem 4</th>
+              <th class="align-right">Sem 5</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyDados"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const fileNameSpan = document.getElementById('fileName');
+
+    let registros = [];
+    let chartEstados = null;
+    let chartReps = null;
+    let chartSemanas = null;
+
+    fileInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      fileNameSpan.textContent = file.name;
+
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        // Pega primeira planilha (igual está no arquivo ALEXANDRE.xlsx)
+        const firstSheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[firstSheetName];
+
+        // header:1 -> array de arrays, preservando linhas e colunas
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        processarPlanilha(rows);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function safeStr(v) {
+      if (v === null || v === undefined) return "";
+      return String(v).trim();
+    }
+
+    function toNumber(v) {
+      if (v === null || v === undefined || v === "") return 0;
+      if (typeof v === "number") return v;
+      const limpo = String(v).replace(/\./g, "").replace(",", ".");
+      const num = parseFloat(limpo);
+      return isNaN(num) ? 0 : num;
+    }
+
+    function formatCurrency(v) {
+      return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function formatPercent(v) {
+      if (!isFinite(v)) return "–";
+      return (v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " %";
+    }
+
+    function processarPlanilha(rows) {
+      registros = [];
+      let lastEstado = "";
+
+      let totalMeta = 0;
+      let totalVendas = 0;
+      const estadosAgg = new Map(); // estado -> { meta, vendas }
+      const semanasAgg = [0, 0, 0, 0, 0];
+      const repsMap = new Map(); // rep -> { meta, vendas }
+
+      // Pega nome do mês (linha 3, coluna META 2025/Outubro)
+      let nomeMes = "";
+      if (rows[2] && rows[2][3]) {
+        nomeMes = safeStr(rows[2][3]);
+      }
+      document.getElementById("badgeMes").textContent = nomeMes || "Mês não informado";
+
+      // Dados começam na linha 5 da planilha (índice 4)
+      for (let i = 4; i < rows.length; i++) {
+        const row = rows[i] || [];
+        const repNome = safeStr(row[2]);
+        if (!repNome) continue; // pula linhas vazias / totais gerais
+
+        let estadoCell = safeStr(row[1]);
+        if (estadoCell) {
+          lastEstado = estadoCell;
+        }
+        const estado = lastEstado || "N/I";
+
+        const metaMensal = toNumber(row[17]);   // META MENSAL
+        const vendasMensal = toNumber(row[18]); // Atingido total mês
+        // Se quiser usar a coluna de %, está em row[19] (mas calculamos também)
+        const percCalc = metaMensal > 0 ? vendasMensal / metaMensal : 0;
+
+        // Semanas - colunas "Atingido": 7, 9, 11, 13, 15
+        const sem1 = toNumber(row[7]);
+        const sem2 = toNumber(row[9]);
+        const sem3 = toNumber(row[11]);
+        const sem4 = toNumber(row[13]);
+        const sem5 = toNumber(row[15]);
+        const semanas = [sem1, sem2, sem3, sem4, sem5];
+
+        registros.push({
+          estado,
+          representante: repNome,
+          metaMensal,
+          vendasMensal,
+          perc: percCalc,
+          semanas
+        });
+
+        // Acumula totais gerais
+        totalMeta += metaMensal;
+        totalVendas += vendasMensal;
+
+        // Agregado por estado
+        if (!estadosAgg.has(estado)) {
+          estadosAgg.set(estado, { meta: 0, vendas: 0 });
+        }
+        estadosAgg.get(estado).meta += metaMensal;
+        estadosAgg.get(estado).vendas += vendasMensal;
+
+        // Agregado por representante
+        if (!repsMap.has(repNome)) {
+          repsMap.set(repNome, { meta: 0, vendas: 0 });
+        }
+        repsMap.get(repNome).meta += metaMensal;
+        repsMap.get(repNome).vendas += vendasMensal;
+
+        // Vendas semanais totais
+        semanasAgg[0] += sem1;
+        semanasAgg[1] += sem2;
+        semanasAgg[2] += sem3;
+        semanasAgg[3] += sem4;
+        semanasAgg[4] += sem5;
+      }
+
+      atualizarResumo(totalMeta, totalVendas);
+      montarTabela(registros);
+      montarGraficos(estadosAgg, repsMap, semanasAgg);
+    }
+
+    function atualizarResumo(totalMeta, totalVendas) {
+      const totalReps = registros.length;
+
+      document.getElementById("totalReps").textContent = totalReps;
+      document.getElementById("metaTotal").textContent = formatCurrency(totalMeta);
+      document.getElementById("vendasTotais").textContent = formatCurrency(totalVendas);
+
+      let info = "Meta geral: –";
+      if (totalMeta > 0) {
+        const percGeral = totalVendas / totalMeta;
+        info = "Meta geral: " + formatPercent(percGeral);
+      }
+      document.getElementById("percGeral").textContent = info;
+    }
+
+    function montarTabela(registros) {
+      const tbody = document.getElementById("tbodyDados");
+      const tabela = document.getElementById("tabelaDados");
+      const msgVazio = document.getElementById("msgVazio");
+
+      tbody.innerHTML = "";
+
+      if (!registros.length) {
+        tabela.style.display = "none";
+        msgVazio.style.display = "block";
+        return;
+      }
+
+      msgVazio.style.display = "none";
+      tabela.style.display = "table";
+
+      registros.forEach(reg => {
+        const tr = document.createElement("tr");
+
+        const tdEstado = document.createElement("td");
+        tdEstado.textContent = reg.estado;
+
+        const tdRep = document.createElement("td");
+        tdRep.textContent = reg.representante;
+
+        const tdMeta = document.createElement("td");
+        tdMeta.className = "align-right";
+        tdMeta.textContent = formatCurrency(reg.metaMensal);
+
+        const tdVendas = document.createElement("td");
+        tdVendas.className = "align-right";
+        tdVendas.textContent = formatCurrency(reg.vendasMensal);
+
+        const tdPerc = document.createElement("td");
+        tdPerc.className = "align-right";
+        tdPerc.textContent = formatPercent(reg.perc);
+        if (reg.perc >= 1) {
+          tdPerc.classList.add("status-ok");
+        } else {
+          tdPerc.classList.add("status-bad");
+        }
+
+        const [s1, s2, s3, s4, s5] = reg.semanas;
+
+        const tdS1 = document.createElement("td");
+        tdS1.className = "align-right";
+        tdS1.textContent = s1 ? formatCurrency(s1) : "–";
+
+        const tdS2 = document.createElement("td");
+        tdS2.className = "align-right";
+        tdS2.textContent = s2 ? formatCurrency(s2) : "–";
+
+        const tdS3 = document.createElement("td");
+        tdS3.className = "align-right";
+        tdS3.textContent = s3 ? formatCurrency(s3) : "–";
+
+        const tdS4 = document.createElement("td");
+        tdS4.className = "align-right";
+        tdS4.textContent = s4 ? formatCurrency(s4) : "–";
+
+        const tdS5 = document.createElement("td");
+        tdS5.className = "align-right";
+        tdS5.textContent = s5 ? formatCurrency(s5) : "–";
+
+        tr.appendChild(tdEstado);
+        tr.appendChild(tdRep);
+        tr.appendChild(tdMeta);
+        tr.appendChild(tdVendas);
+        tr.appendChild(tdPerc);
+        tr.appendChild(tdS1);
+        tr.appendChild(tdS2);
+        tr.appendChild(tdS3);
+        tr.appendChild(tdS4);
+        tr.appendChild(tdS5);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function montarGraficos(estadosAgg, repsMap, semanasAgg) {
+      const ctxEstados = document.getElementById("chartEstados").getContext("2d");
+      const ctxReps = document.getElementById("chartReps").getContext("2d");
+      const ctxSemanas = document.getElementById("chartSemanas").getContext("2d");
+
+      // Destrói gráficos antigos se existirem
+      if (chartEstados) chartEstados.destroy();
+      if (chartReps) chartReps.destroy();
+      if (chartSemanas) chartSemanas.destroy();
+
+      // ----- Gráfico Estados -----
+      const labelsEstados = Array.from(estadosAgg.keys());
+      const metaEstados = labelsEstados.map(uf => estadosAgg.get(uf).meta);
+      const vendasEstados = labelsEstados.map(uf => estadosAgg.get(uf).vendas);
+
+      chartEstados = new Chart(ctxEstados, {
+        type: "bar",
+        data: {
+          labels: labelsEstados,
+          datasets: [
+            {
+              label: "Meta Mensal",
+              data: metaEstados
+            },
+            {
+              label: "Vendas (Atingido)",
+              data: vendasEstados
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const v = ctx.parsed.y || 0;
+                  return ctx.dataset.label + ": " + formatCurrency(v);
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              ticks: {
+                callback: value => formatCurrency(value)
+              }
+            }
+          }
+        }
+      });
+
+      // ----- Gráfico Representantes (Top N) -----
+      const repsArray = Array.from(repsMap.entries()).map(([nome, obj]) => ({
+        nome,
+        meta: obj.meta,
+        vendas: obj.vendas
+      }));
+
+      repsArray.sort((a, b) => b.vendas - a.vendas);
+      const topN = repsArray.slice(0, 15); // pega os 15 com mais vendas
+
+      const labelsReps = topN.map(r => r.nome);
+      const vendasReps = topN.map(r => r.vendas);
+
+      chartReps = new Chart(ctxReps, {
+        type: "bar",
+        data: {
+          labels: labelsReps,
+          datasets: [
+            {
+              label: "Vendas (Atingido)",
+              data: vendasReps
+            }
+          ]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const v = ctx.parsed.x || 0;
+                  return "Vendas: " + formatCurrency(v);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                callback: value => formatCurrency(value)
+              }
+            }
+          }
+        }
+      });
+
+      // ----- Gráfico Semanas -----
+      const labelsSemanas = ["Semana 1", "Semana 2", "Semana 3", "Semana 4", "Semana 5"];
+
+      chartSemanas = new Chart(ctxSemanas, {
+        type: "bar",
+        data: {
+          labels: labelsSemanas,
+          datasets: [
+            {
+              label: "Vendas (Atingido)",
+              data: semanasAgg
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const v = ctx.parsed.y || 0;
+                  return "Vendas: " + formatCurrency(v);
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              ticks: {
+                callback: value => formatCurrency(value)
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
