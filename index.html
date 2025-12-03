@@ -187,66 +187,28 @@
       color: var(--danger);
     }
 
-    .layout-top {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 2fr);
-      gap: 16px;
-      margin-top: 4px;
-      margin-bottom: 16px;
-    }
-
-    .filters-block {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .filters-row {
+    .filters-card .filters-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
+      margin-top: 6px;
     }
 
-    .filters-row label {
+    .filters-card label {
       font-size: 11px;
       color: var(--muted);
     }
 
-    .filters-row select {
+    .filters-card select {
       background: #020617;
       border-radius: 999px;
       border: 1px solid #1e293b;
       padding: 5px 9px;
       font-size: 12px;
       color: var(--text);
-      min-width: 110px;
+      min-width: 180px;
       outline: none;
-    }
-
-    .week-selector {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-
-    .week-btn {
-      border-radius: 999px;
-      border: 1px solid #1e293b;
-      background: #020617;
-      color: var(--muted);
-      font-size: 11px;
-      padding: 4px 10px;
-      cursor: pointer;
-      transition: 0.12s ease;
-    }
-
-    .week-btn.active {
-      background: var(--accent-soft);
-      border-color: var(--accent);
-      color: var(--text);
-      box-shadow: 0 0 0 1px rgba(56,189,248,0.4);
     }
 
     .charts-grid {
@@ -321,9 +283,6 @@
     }
 
     @media (max-width: 950px) {
-      .layout-top {
-        grid-template-columns: minmax(0, 1fr);
-      }
       header {
         flex-direction: column;
         align-items: flex-start;
@@ -350,7 +309,7 @@
   <header>
     <div class="title-block">
       <h1>Gerador Final – Representantes</h1>
-      <span class="subtitle">Dashboard semanal (Semana 1 a 5) por Estado e Representante</span>
+      <span class="subtitle">Semana 1 a 5 · Metas x Atingido por Estado e Representante</span>
     </div>
 
     <div class="upload-area">
@@ -378,75 +337,53 @@
           <span class="mini-extra">Apenas linhas com representante preenchido</span>
         </div>
         <div class="mini-card">
-          <span class="mini-label">Meta total mensal</span>
+          <span class="mini-label">Meta total mensal (Q)</span>
           <span class="mini-value" id="metaTotal">R$ 0,00</span>
-          <span class="mini-extra">Somatório da coluna "Meta Mensal (Q)"</span>
+          <span class="mini-extra">Somatório da coluna Q</span>
         </div>
         <div class="mini-card">
-          <span class="mini-label">Atingido total no mês</span>
+          <span class="mini-label">Atingido total no mês (R)</span>
           <span class="mini-value" id="vendasTotais">R$ 0,00</span>
           <span class="mini-extra" id="percGeral">Meta geral: –</span>
         </div>
       </div>
     </section>
 
-    <!-- FILTROS + GRÁFICO REPRESENTANTES -->
-    <div class="layout-top">
-      <section class="card">
-        <h2>Filtros de análise</h2>
-        <p class="caption">Selecione o Estado e a Semana para ver o desempenho dos representantes.</p>
+    <!-- FILTROS -->
+    <section class="card filters-card">
+      <h2>Filtros</h2>
+      <p class="caption">Escolha o Estado e o Representante para ver os gráficos semanais.</p>
 
-        <div class="filters-block">
-          <div class="filters-row">
-            <label for="estadoFiltro">Estado:</label>
-            <select id="estadoFiltro">
-              <option value="__ALL__">Todos</option>
-            </select>
-          </div>
+      <div class="filters-row">
+        <label for="estadoFiltro">Estado (gráfico à esquerda):</label>
+        <select id="estadoFiltro">
+          <option value="__ALL__">Todos</option>
+        </select>
+      </div>
 
-          <div>
-            <span class="mini-label">Semana:</span>
-            <div class="week-selector">
-              <button class="week-btn active" data-week="0">Semana 1</button>
-              <button class="week-btn" data-week="1">Semana 2</button>
-              <button class="week-btn" data-week="2">Semana 3</button>
-              <button class="week-btn" data-week="3">Semana 4</button>
-              <button class="week-btn" data-week="4">Semana 5</button>
-            </div>
-          </div>
+      <div class="filters-row">
+        <label for="repFiltro">Representante (gráfico à direita):</label>
+        <select id="repFiltro">
+          <option value="__ALL__">Todos</option>
+        </select>
+      </div>
+    </section>
 
-          <div class="mini-card">
-            <span class="mini-label" id="resumoFiltroTitulo">Resumo do filtro</span>
-            <span class="mini-value" id="resumoFiltroValores">Meta R$ 0,00 · Atingido R$ 0,00</span>
-            <span class="mini-extra" id="resumoFiltroPerc">Atingimento: –</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>Meta x Atingido por Representante</h2>
-        <p class="caption">Representantes do estado selecionado, focado na semana escolhida.</p>
-        <div class="chart-wrapper">
-          <canvas id="chartRepsSemana"></canvas>
-        </div>
-      </section>
-    </div>
-
-    <!-- GRÁFICOS ESTADO + RANKING -->
+    <!-- GRÁFICOS: ESTADO E REPRESENTANTE -->
     <div class="charts-grid">
       <section class="card">
-        <h2>Meta x Atingido por Estado (Semana selecionada)</h2>
-        <p class="caption">Somatório das metas e atingidos da semana, agrupado por UF.</p>
+        <h2>Meta x Atingido por Semana – Estado</h2>
+        <p class="caption">Soma das metas e atingidos das semanas 1 a 5 para o Estado selecionado.</p>
         <div class="chart-wrapper">
-          <canvas id="chartEstadosSemana"></canvas>
+          <canvas id="chartEstadoSemanas"></canvas>
         </div>
       </section>
 
       <section class="card">
-        <h2>Ranking de Representantes (Atingido no mês)</h2>
-        <p class="caption">Top representantes pelo valor atingido no mês, respeitando o filtro de Estado.</p>
+        <h2>Meta x Atingido por Semana – Representante</h2>
+        <p class="caption">Metas e atingido do representante selecionado (ou todos) nas semanas 1 a 5.</p>
         <div class="chart-wrapper">
-          <canvas id="chartRankingMes"></canvas>
+          <canvas id="chartRepSemanas"></canvas>
         </div>
       </section>
     </div>
@@ -466,8 +403,8 @@
         <table id="tabelaDados" style="display:none;">
           <thead>
             <tr>
-              <th>Estado</th>
-              <th>Representante</th>
+              <th>Estado (A)</th>
+              <th>Representante (B)</th>
               <th class="align-right">Meta Mês (Q)</th>
               <th class="align-right">Atingido Mês (R)</th>
               <th class="align-right">% Mês (S)</th>
@@ -493,12 +430,9 @@
     const fileInput = document.getElementById('fileInput');
     const fileNameSpan = document.getElementById('fileName');
 
-    let registros = []; // base completa
-    let currentWeekIndex = 0; // 0 a 4
-
-    let chartRepsSemana = null;
-    let chartEstadosSemana = null;
-    let chartRankingMes = null;
+    let registros = [];
+    let chartEstadoSemanas = null;
+    let chartRepSemanas = null;
 
     fileInput.addEventListener('change', function (e) {
       const file = e.target.files[0];
@@ -513,7 +447,6 @@
         const firstSheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[firstSheetName];
 
-        // header:1 -> array de arrays, preservando estrutura
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
         processarPlanilha(rows);
       };
@@ -547,7 +480,7 @@
       let totalMeta = 0;
       let totalAtingido = 0;
 
-      // Procura a linha do cabeçalho (onde está "ESTADO" na coluna A e "REPRESENTANTE" na B)
+      // acha cabeçalho (ESTADO / REPRESENTANTE)
       let headerIndex = -1;
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i] || [];
@@ -568,35 +501,31 @@
       for (let i = dataStart; i < rows.length; i++) {
         const row = rows[i] || [];
 
-        const estado = safeStr(row[0]);        // A
-        const repNome = safeStr(row[1]);       // B
-
+        const estado = safeStr(row[0]);  // A
+        const repNome = safeStr(row[1]); // B
         if (!repNome) continue;
         if (repNome.toUpperCase().startsWith("TOTAL")) continue;
 
-        // colunas conforme você descreveu
         const metaMensal = toNumber(row[16]);  // Q
         const atingMensal = toNumber(row[17]); // R
 
         let percMes;
         if (row[18] !== undefined && row[18] !== null && row[18] !== "") {
-          percMes = toNumber(row[18]); // se S já tiver % em número tipo 1.05, ok; se tiver em %, também converte
-          // se for % (ex: 105) e você quiser tratar, dá pra adequar depois
-          if (percMes > 1.5) percMes = percMes / 100; // gambizinha pra não estourar, se vier 105 em vez de 1,05
+          percMes = toNumber(row[18]);
+          if (percMes > 1.5) percMes = percMes / 100;
         } else {
           percMes = metaMensal > 0 ? (atingMensal / metaMensal) : 0;
         }
 
-        // semanas
-        const sem1Meta = toNumber(row[5]);  // F
-        const sem1Ating = toNumber(row[6]); // G
-        const sem2Meta = toNumber(row[7]);  // H
-        const sem2Ating = toNumber(row[8]); // I
-        const sem3Meta = toNumber(row[9]);  // J
+        const sem1Meta = toNumber(row[5]);   // F
+        const sem1Ating = toNumber(row[6]);  // G
+        const sem2Meta = toNumber(row[7]);   // H
+        const sem2Ating = toNumber(row[8]);  // I
+        const sem3Meta = toNumber(row[9]);   // J
         const sem3Ating = toNumber(row[10]); // K
-        const sem4Meta = toNumber(row[11]); // L
+        const sem4Meta = toNumber(row[11]);  // L
         const sem4Ating = toNumber(row[12]); // M
-        const sem5Meta = toNumber(row[13]); // N
+        const sem5Meta = toNumber(row[13]);  // N
         const sem5Ating = toNumber(row[14]); // O
 
         const semanasMeta = [sem1Meta, sem2Meta, sem3Meta, sem4Meta, sem5Meta];
@@ -618,8 +547,9 @@
 
       atualizarResumo(totalMeta, totalAtingido);
       popularFiltroEstados();
+      popularFiltroRepresentantes();
       montarTabela();
-      atualizarTudo();
+      atualizarGraficos();
     }
 
     function atualizarResumo(totalMeta, totalAtingido) {
@@ -655,46 +585,27 @@
       });
 
       select.value = "__ALL__";
-      select.onchange = atualizarTudo;
+      select.onchange = atualizarGraficos;
     }
 
-    function getRegistrosFiltrados() {
-      const ufSel = document.getElementById("estadoFiltro").value;
-      if (ufSel === "__ALL__") return registros;
-      return registros.filter(r => r.estado === ufSel);
-    }
+    function popularFiltroRepresentantes() {
+      const select = document.getElementById("repFiltro");
+      select.innerHTML = "";
+      const optTodos = document.createElement("option");
+      optTodos.value = "__ALL__";
+      optTodos.textContent = "Todos";
+      select.appendChild(optTodos);
 
-    function atualizarResumoFiltro() {
-      const ufSel = document.getElementById("estadoFiltro").value;
-      const semanaIndex = currentWeekIndex;
-      const regs = getRegistrosFiltrados();
-
-      let metaSemana = 0;
-      let atingSemana = 0;
-
-      regs.forEach(r => {
-        metaSemana += r.semanasMeta[semanaIndex] || 0;
-        atingSemana += r.semanasAting[semanaIndex] || 0;
+      const repsSet = new Set(registros.map(r => r.representante));
+      Array.from(repsSet).sort().forEach(nome => {
+        const opt = document.createElement("option");
+        opt.value = nome;
+        opt.textContent = nome;
+        select.appendChild(opt);
       });
 
-      const perc = metaSemana > 0 ? (atingSemana / metaSemana) : NaN;
-      const nomeSemana = "Semana " + (semanaIndex + 1);
-      const ufTexto = (ufSel === "__ALL__") ? "Todos os estados" : ("Estado " + ufSel);
-
-      document.getElementById("resumoFiltroTitulo").textContent =
-        `${ufTexto} · ${nomeSemana}`;
-
-      document.getElementById("resumoFiltroValores").textContent =
-        `Meta ${formatCurrency(metaSemana)} · Atingido ${formatCurrency(atingSemana)}`;
-
-      const elemPerc = document.getElementById("resumoFiltroPerc");
-      if (metaSemana > 0) {
-        elemPerc.textContent = "Atingimento: " + formatPercent(perc);
-        elemPerc.className = "mini-extra " + (perc >= 1 ? "ok" : "bad");
-      } else {
-        elemPerc.textContent = "Atingimento: –";
-        elemPerc.className = "mini-extra";
-      }
+      select.value = "__ALL__";
+      select.onchange = atualizarGraficos;
     }
 
     function montarTabela() {
@@ -766,160 +677,111 @@
     }
 
     function atualizarGraficos() {
-      const semanaIndex = currentWeekIndex;
-      const regsFiltrados = getRegistrosFiltrados();
-
-      if (chartRepsSemana) chartRepsSemana.destroy();
-      if (chartEstadosSemana) chartEstadosSemana.destroy();
-      if (chartRankingMes) chartRankingMes.destroy();
-
-      // --- Gráfico por representante na semana selecionada ---
-      const ctxReps = document.getElementById("chartRepsSemana").getContext("2d");
-      const labelsReps = regsFiltrados.map(r => r.representante);
-      const metaReps = regsFiltrados.map(r => r.semanasMeta[semanaIndex] || 0);
-      const atingReps = regsFiltrados.map(r => r.semanasAting[semanaIndex] || 0);
-
-      chartRepsSemana = new Chart(ctxReps, {
-        type: "bar",
-        data: {
-          labels: labelsReps,
-          datasets: [
-            { label: "Meta", data: metaReps },
-            { label: "Atingido", data: atingReps }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  const v = ctx.parsed.y || 0;
-                  return ctx.dataset.label + ": " + formatCurrency(v);
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              ticks: {
-                callback: value => formatCurrency(value)
-              }
-            }
-          }
-        }
-      });
-
-      // --- Gráfico por estado (Semana selecionada) ---
-      const ctxEstados = document.getElementById("chartEstadosSemana").getContext("2d");
-      const estadosAgg = new Map(); // uf -> { meta, ating }
-
-      regsFiltrados.forEach(r => {
-        if (!estadosAgg.has(r.estado)) {
-          estadosAgg.set(r.estado, { meta: 0, ating: 0 });
-        }
-        const obj = estadosAgg.get(r.estado);
-        obj.meta += r.semanasMeta[semanaIndex] || 0;
-        obj.ating += r.semanasAting[semanaIndex] || 0;
-      });
-
-      const labelsEstados = Array.from(estadosAgg.keys());
-      const metaEstados = labelsEstados.map(uf => estadosAgg.get(uf).meta);
-      const atingEstados = labelsEstados.map(uf => estadosAgg.get(uf).ating);
-
-      chartEstadosSemana = new Chart(ctxEstados, {
-        type: "bar",
-        data: {
-          labels: labelsEstados,
-          datasets: [
-            { label: "Meta", data: metaEstados },
-            { label: "Atingido", data: atingEstados }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  const v = ctx.parsed.y || 0;
-                  return ctx.dataset.label + ": " + formatCurrency(v);
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              ticks: {
-                callback: value => formatCurrency(value)
-              }
-            }
-          }
-        }
-      });
-
-      // --- Ranking representantes (atingido no mês) respeitando filtro de estado ---
-      const ctxRanking = document.getElementById("chartRankingMes").getContext("2d");
-
-      const arrayRanking = regsFiltrados
-        .map(r => ({ nome: r.representante, valor: r.atingMensal }))
-        .sort((a, b) => b.valor - a.valor)
-        .slice(0, 15);
-
-      const labelsRank = arrayRanking.map(x => x.nome);
-      const dadosRank = arrayRanking.map(x => x.valor);
-
-      chartRankingMes = new Chart(ctxRanking, {
-        type: "bar",
-        data: {
-          labels: labelsRank,
-          datasets: [
-            { label: "Atingido mês", data: dadosRank }
-          ]
-        },
-        options: {
-          responsive: true,
-          indexAxis: "y",
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  const v = ctx.parsed.x || 0;
-                  return "Atingido: " + formatCurrency(v);
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              ticks: {
-                callback: value => formatCurrency(value)
-              }
-            }
-          }
-        }
-      });
-    }
-
-    function atualizarTudo() {
       if (!registros.length) return;
-      atualizarResumoFiltro();
-      atualizarGraficos();
-    }
 
-    // Botões de semana
-    document.querySelectorAll(".week-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const week = parseInt(btn.dataset.week, 10);
-        currentWeekIndex = week;
-        document.querySelectorAll(".week-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        atualizarTudo();
+      const ufSel = document.getElementById("estadoFiltro").value;
+      const repSel = document.getElementById("repFiltro").value;
+
+      const labelsSemanas = ["Semana 1", "Semana 2", "Semana 3", "Semana 4", "Semana 5"];
+
+      // ----- Gráfico por ESTADO -----
+      const ctxEstado = document.getElementById("chartEstadoSemanas").getContext("2d");
+      if (chartEstadoSemanas) chartEstadoSemanas.destroy();
+
+      let metaSemanasEstado = [0, 0, 0, 0, 0];
+      let atingSemanasEstado = [0, 0, 0, 0, 0];
+
+      registros.forEach(r => {
+        if (ufSel === "__ALL__" || r.estado === ufSel) {
+          for (let i = 0; i < 5; i++) {
+            metaSemanasEstado[i] += r.semanasMeta[i] || 0;
+            atingSemanasEstado[i] += r.semanasAting[i] || 0;
+          }
+        }
       });
-    });
+
+      chartEstadoSemanas = new Chart(ctxEstado, {
+        type: "bar",
+        data: {
+          labels: labelsSemanas,
+          datasets: [
+            { label: "Meta", data: metaSemanasEstado },
+            { label: "Atingido", data: atingSemanasEstado }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const v = ctx.parsed.y || 0;
+                  return ctx.dataset.label + ": " + formatCurrency(v);
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              ticks: {
+                callback: value => formatCurrency(value)
+              }
+            }
+          }
+        }
+      });
+
+      // ----- Gráfico por REPRESENTANTE -----
+      const ctxRep = document.getElementById("chartRepSemanas").getContext("2d");
+      if (chartRepSemanas) chartRepSemanas.destroy();
+
+      let metaSemanasRep = [0, 0, 0, 0, 0];
+      let atingSemanasRep = [0, 0, 0, 0, 0];
+
+      registros.forEach(r => {
+        const estadoOk = (ufSel === "__ALL__" || r.estado === ufSel);
+        const repOk = (repSel === "__ALL__" || r.representante === repSel);
+        if (estadoOk && repOk) {
+          for (let i = 0; i < 5; i++) {
+            metaSemanasRep[i] += r.semanasMeta[i] || 0;
+            atingSemanasRep[i] += r.semanasAting[i] || 0;
+          }
+        }
+      });
+
+      chartRepSemanas = new Chart(ctxRep, {
+        type: "bar",
+        data: {
+          labels: labelsSemanas,
+          datasets: [
+            { label: "Meta", data: metaSemanasRep },
+            { label: "Atingido", data: atingSemanasRep }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const v = ctx.parsed.y || 0;
+                  return ctx.dataset.label + ": " + formatCurrency(v);
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              ticks: {
+                callback: value => formatCurrency(value)
+              }
+            }
+          }
+        }
+      });
+    }
   </script>
 </body>
 </html>
