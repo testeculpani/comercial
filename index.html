@@ -9,6 +9,8 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- Chart.js para gráficos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Plugin para mostrar valores dentro das colunas -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 
   <style>
     :root {
@@ -349,21 +351,21 @@
       </div>
     </section>
 
-    <!-- FILTROS -->
+    <!-- FILTROS (independentes) -->
     <section class="card filters-card">
       <h2>Filtros</h2>
-      <p class="caption">Escolha o Estado e o Representante para ver os gráficos semanais.</p>
+      <p class="caption">Cada gráfico usa seu próprio filtro, independentes um do outro.</p>
 
       <div class="filters-row">
-        <label for="estadoFiltro">Estado (gráfico à esquerda):</label>
-        <select id="estadoFiltro">
+        <label for="estadoFiltroEstado">Estado – gráfico ESTADO:</label>
+        <select id="estadoFiltroEstado">
           <option value="__ALL__">Todos</option>
         </select>
       </div>
 
       <div class="filters-row">
-        <label for="repFiltro">Representante (gráfico à direita):</label>
-        <select id="repFiltro">
+        <label for="repFiltroRep">Representante – gráfico REPRESENTANTE:</label>
+        <select id="repFiltroRep">
           <option value="__ALL__">Todos</option>
         </select>
       </div>
@@ -381,7 +383,7 @@
 
       <section class="card">
         <h2>Meta x Atingido por Semana – Representante</h2>
-        <p class="caption">Metas e atingido do representante selecionado (ou todos) nas semanas 1 a 5.</p>
+        <p class="caption">Metas e atingido do representante selecionado nas semanas 1 a 5.</p>
         <div class="chart-wrapper">
           <canvas id="chartRepSemanas"></canvas>
         </div>
@@ -427,6 +429,9 @@
   </main>
 
   <script>
+    // registra plugin de datalabels no Chart.js
+    Chart.register(ChartDataLabels);
+
     const fileInput = document.getElementById('fileInput');
     const fileNameSpan = document.getElementById('fileName');
 
@@ -546,10 +551,11 @@
       }
 
       atualizarResumo(totalMeta, totalAtingido);
-      popularFiltroEstados();
-      popularFiltroRepresentantes();
+      popularFiltroEstadosEstado();
+      popularFiltroRepresentantesRep();
       montarTabela();
-      atualizarGraficos();
+      atualizarGraficosEstado();
+      atualizarGraficosRep();
     }
 
     function atualizarResumo(totalMeta, totalAtingido) {
@@ -568,8 +574,9 @@
       document.getElementById("percGeral").textContent = texto;
     }
 
-    function popularFiltroEstados() {
-      const select = document.getElementById("estadoFiltro");
+    // filtros independentes
+    function popularFiltroEstadosEstado() {
+      const select = document.getElementById("estadoFiltroEstado");
       select.innerHTML = "";
       const optTodos = document.createElement("option");
       optTodos.value = "__ALL__";
@@ -585,11 +592,11 @@
       });
 
       select.value = "__ALL__";
-      select.onchange = atualizarGraficos;
+      select.onchange = atualizarGraficosEstado;
     }
 
-    function popularFiltroRepresentantes() {
-      const select = document.getElementById("repFiltro");
+    function popularFiltroRepresentantesRep() {
+      const select = document.getElementById("repFiltroRep");
       select.innerHTML = "";
       const optTodos = document.createElement("option");
       optTodos.value = "__ALL__";
@@ -605,7 +612,7 @@
       });
 
       select.value = "__ALL__";
-      select.onchange = atualizarGraficos;
+      select.onchange = atualizarGraficosRep;
     }
 
     function montarTabela() {
@@ -676,17 +683,74 @@
       });
     }
 
-    function atualizarGraficos() {
+    function criarConfigBar(labels, metaData, atingData, tituloTooltipMeta, tituloTooltipAting) {
+      return {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Meta",
+              data: metaData,
+              backgroundColor: "#60a5fa",
+              borderColor: "#3b82f6",
+              borderWidth: 1
+            },
+            {
+              label: "Atingido",
+              data: atingData,
+              backgroundColor: "#22c55e",
+              borderColor: "#16a34a",
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const v = ctx.parsed.y || 0;
+                  return ctx.dataset.label + ": " + formatCurrency(v);
+                }
+              }
+            },
+            datalabels: {
+              anchor: "end",
+              align: "end",
+              offset: -2,
+              clamp: true,
+              formatter: (value) => {
+                if (!value) return "";
+                return value.toLocaleString("pt-BR", {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                });
+              },
+              font: {
+                size: 10,
+                weight: "600"
+              }
+            }
+          },
+          scales: {
+            y: {
+              ticks: {
+                callback: value => formatCurrency(value)
+              }
+            }
+          }
+        }
+      };
+    }
+
+    function atualizarGraficosEstado() {
       if (!registros.length) return;
 
-      const ufSel = document.getElementById("estadoFiltro").value;
-      const repSel = document.getElementById("repFiltro").value;
-
+      const ufSel = document.getElementById("estadoFiltroEstado").value;
       const labelsSemanas = ["Semana 1", "Semana 2", "Semana 3", "Semana 4", "Semana 5"];
-
-      // ----- Gráfico por ESTADO -----
-      const ctxEstado = document.getElementById("chartEstadoSemanas").getContext("2d");
-      if (chartEstadoSemanas) chartEstadoSemanas.destroy();
 
       let metaSemanasEstado = [0, 0, 0, 0, 0];
       let atingSemanasEstado = [0, 0, 0, 0, 0];
@@ -700,49 +764,22 @@
         }
       });
 
-      chartEstadoSemanas = new Chart(ctxEstado, {
-        type: "bar",
-        data: {
-          labels: labelsSemanas,
-          datasets: [
-            { label: "Meta", data: metaSemanasEstado },
-            { label: "Atingido", data: atingSemanasEstado }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  const v = ctx.parsed.y || 0;
-                  return ctx.dataset.label + ": " + formatCurrency(v);
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              ticks: {
-                callback: value => formatCurrency(value)
-              }
-            }
-          }
-        }
-      });
+      const ctxEstado = document.getElementById("chartEstadoSemanas").getContext("2d");
+      if (chartEstadoSemanas) chartEstadoSemanas.destroy();
+      chartEstadoSemanas = new Chart(ctxEstado, criarConfigBar(labelsSemanas, metaSemanasEstado, atingSemanasEstado));
+    }
 
-      // ----- Gráfico por REPRESENTANTE -----
-      const ctxRep = document.getElementById("chartRepSemanas").getContext("2d");
-      if (chartRepSemanas) chartRepSemanas.destroy();
+    function atualizarGraficosRep() {
+      if (!registros.length) return;
+
+      const repSel = document.getElementById("repFiltroRep").value;
+      const labelsSemanas = ["Semana 1", "Semana 2", "Semana 3", "Semana 4", "Semana 5"];
 
       let metaSemanasRep = [0, 0, 0, 0, 0];
       let atingSemanasRep = [0, 0, 0, 0, 0];
 
       registros.forEach(r => {
-        const estadoOk = (ufSel === "__ALL__" || r.estado === ufSel);
-        const repOk = (repSel === "__ALL__" || r.representante === repSel);
-        if (estadoOk && repOk) {
+        if (repSel === "__ALL__" || r.representante === repSel) {
           for (let i = 0; i < 5; i++) {
             metaSemanasRep[i] += r.semanasMeta[i] || 0;
             atingSemanasRep[i] += r.semanasAting[i] || 0;
@@ -750,37 +787,9 @@
         }
       });
 
-      chartRepSemanas = new Chart(ctxRep, {
-        type: "bar",
-        data: {
-          labels: labelsSemanas,
-          datasets: [
-            { label: "Meta", data: metaSemanasRep },
-            { label: "Atingido", data: atingSemanasRep }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  const v = ctx.parsed.y || 0;
-                  return ctx.dataset.label + ": " + formatCurrency(v);
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              ticks: {
-                callback: value => formatCurrency(value)
-              }
-            }
-          }
-        }
-      });
+      const ctxRep = document.getElementById("chartRepSemanas").getContext("2d");
+      if (chartRepSemanas) chartRepSemanas.destroy();
+      chartRepSemanas = new Chart(ctxRep, criarConfigBar(labelsSemanas, metaSemanasRep, atingSemanasRep));
     }
   </script>
 </body>
