@@ -300,16 +300,13 @@
       flex-wrap: wrap;
     }
 
-    /* Blocos extras */
     #semVendasWrapper,
-    #resumoMesVendWrapper,
-    #resumoSemanaVendWrapper {
+    #detalhesVendedorWrapper {
       margin-top: 16px;
       display: none;
     }
     #semVendasWrapper h3,
-    #resumoMesWrapper h3,
-    #resumoSemanaWrapper h3 {
+    #detalhesVendedorWrapper h3 {
       font-size: 15px;
       margin: 0 0 6px 0;
       color: #0f172a;
@@ -318,8 +315,7 @@
       gap: 6px;
     }
     #semVendasWrapper h3 span,
-    #resumoMesWrapper h3 span,
-    #resumoSemanaWrapper h3 span {
+    #detalhesVendedorWrapper h3 span {
       font-size: 18px;
     }
     .subtitle-small {
@@ -327,18 +323,19 @@
       color: #64748b;
       margin-bottom: 8px;
     }
-
-    #resumoMesWrapper,
-    #resumoSemanaWrapper {
-      margin-top: 16px;
-    }
-
     .section-header-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 8px;
       margin-bottom: 4px;
+    }
+    .row-clickable {
+      cursor: pointer;
+    }
+    .row-clickable.selected {
+      outline: 2px solid #22c55e;
+      background: #ecfdf5 !important;
     }
 
     @media (max-width: 920px) {
@@ -375,7 +372,7 @@
           apenas se:
           <strong>R</strong> começar com "venda" e
           <strong>B</strong> for Pendente / Aprovado / Atendido / Em Alteração / Validado. <br>
-          Datas em <strong>D</strong> usadas para resumos por mês e por semana (sábado a sexta).
+          Datas em <strong>D</strong> usadas para semanas (sábado a sexta) e meses.
         </small>
       </div>
     </div>
@@ -419,7 +416,8 @@
 
   <div class="actions-row">
     <span class="hint">
-      Clique em <strong>Responsável</strong> para ordenar por supervisor (ALEXANDRE / JUMAHIL).
+      Clique em <strong>Responsável</strong> para ordenar por supervisor (ALEXANDRE / JUMAHIL).<br>
+      Clique em um <strong>vendedor</strong> na tabela para ver o dashboard individual.
     </span>
     <button class="btn secondary" id="btnSemVendas">
       <span class="icon">🔍</span>
@@ -464,15 +462,41 @@
     </div>
   </div>
 
-  <div id="resumoMesWrapper">
+  <div id="detalhesVendedorWrapper">
     <div class="section-header-row">
-      <h3><span>📆</span> Resumo por mês (geral)</h3>
-      <button class="btn small secondary" id="btnToggleMesVend">
-        Mostrar resumo por mês por vendedor
+      <h3>
+        <span>📊</span>
+        Detalhes do vendedor:
+        <span id="detVendedorNome">–</span>
+      </h3>
+      <button class="btn small secondary" id="btnFecharDetalhes">
+        Minimizar
       </button>
     </div>
-    <div class="subtitle-small">
-      Agrupado por mês de competência, usando a data da coluna D. Formato MM/AAAA.
+    <div class="subtitle-small" id="detVendedorRespLinha">
+      Selecione um vendedor na tabela acima para ver o dashboard semanal e mensal.
+    </div>
+
+    <div class="summary-grid" style="margin-top:8px;">
+      <div class="summary-card">
+        <div class="summary-label">Total vendido (vendedor)</div>
+        <div id="detTotalVendedor" class="summary-value">R$ 0,00</div>
+        <div class="summary-chip" id="detResumoInfo">–</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Meses com venda</div>
+        <div id="detMesesCount" class="summary-value">0</div>
+        <div class="summary-chip">Competências com valor &gt; 0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Semanas com venda</div>
+        <div id="detSemanasCount" class="summary-value">0</div>
+        <div class="summary-chip">Períodos sáb–sex com venda</div>
+      </div>
+    </div>
+
+    <div style="margin-top:10px;" class="subtitle-small">
+      <strong>Resumo mensal</strong> – baseado na data da coluna D (competência MM/AAAA).
     </div>
     <div class="table-wrapper">
       <table>
@@ -480,46 +504,16 @@
           <tr>
             <th>Mês</th>
             <th style="text-align:right;">Total vendido</th>
-            <th style="text-align:right;">% do total</th>
           </tr>
         </thead>
-        <tbody id="tbodyResumoMes">
-          <tr><td colspan="3" class="empty-state">Nenhuma venda com data válida encontrada.</td></tr>
+        <tbody id="tbodyDetMes">
+          <tr><td colspan="2" class="empty-state">Nenhuma venda com data válida para este vendedor.</td></tr>
         </tbody>
       </table>
     </div>
 
-    <div id="resumoMesVendWrapper">
-      <div class="subtitle-small" style="margin-top:8px;">
-        Detalhamento por vendedor e mês. Apenas vendas que passaram pelos filtros.
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Vendedor</th>
-              <th>Responsável</th>
-              <th>Mês</th>
-              <th style="text-align:right;">Total vendido</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyResumoMesVend">
-            <tr><td colspan="4" class="empty-state">Nenhuma venda com data válida encontrada.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div id="resumoSemanaWrapper">
-    <div class="section-header-row" style="margin-top:16px;">
-      <h3><span>📊</span> Resumo por semana (geral – sábado a sexta)</h3>
-      <button class="btn small secondary" id="btnToggleSemanaVend">
-        Mostrar resumo por semana por vendedor
-      </button>
-    </div>
-    <div class="subtitle-small">
-      Semana definida de <strong>sábado</strong> até <strong>sexta</strong>. Período calculado pela data em D.
+    <div style="margin-top:10px;" class="subtitle-small">
+      <strong>Resumo semanal</strong> – semanas de <strong>sábado a sexta</strong>.
     </div>
     <div class="table-wrapper">
       <table>
@@ -529,31 +523,10 @@
             <th style="text-align:right;">Total vendido</th>
           </tr>
         </thead>
-        <tbody id="tbodyResumoSemana">
-          <tr><td colspan="2" class="empty-state">Nenhuma venda com data válida encontrada.</td></tr>
+        <tbody id="tbodyDetSemana">
+          <tr><td colspan="2" class="empty-state">Nenhuma venda com data válida para este vendedor.</td></tr>
         </tbody>
       </table>
-    </div>
-
-    <div id="resumoSemanaVendWrapper">
-      <div class="subtitle-small" style="margin-top:8px;">
-        Detalhamento por vendedor e semana (sábado a sexta).
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Vendedor</th>
-              <th>Responsável</th>
-              <th>Período (sáb–sex)</th>
-              <th style="text-align:right;">Total vendido</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyResumoSemanaVend">
-            <tr><td colspan="4" class="empty-state">Nenhuma venda com data válida encontrada.</td></tr>
-          </tbody>
-        </table>
-      </div>
     </div>
   </div>
 
@@ -567,10 +540,6 @@
   const inputExcel = document.getElementById('inputExcel');
   const tbodyVendedores = document.getElementById('tbodyVendedores');
   const tbodySemVendas = document.getElementById('tbodySemVendas');
-  const tbodyResumoMes = document.getElementById('tbodyResumoMes');
-  const tbodyResumoSemana = document.getElementById('tbodyResumoSemana');
-  const tbodyResumoMesVend = document.getElementById('tbodyResumoMesVend');
-  const tbodyResumoSemanaVend = document.getElementById('tbodyResumoSemanaVend');
 
   const totalGeralEl = document.getElementById('totalGeral');
   const totalRegistrosEl = document.getElementById('totalRegistros');
@@ -580,15 +549,21 @@
   const btnSemVendas = document.getElementById('btnSemVendas');
   const semVendasWrapper = document.getElementById('semVendasWrapper');
 
-  const btnToggleMesVend = document.getElementById('btnToggleMesVend');
-  const resumoMesVendWrapper = document.getElementById('resumoMesVendWrapper');
-  const btnToggleSemanaVend = document.getElementById('btnToggleSemanaVend');
-  const resumoSemanaVendWrapper = document.getElementById('resumoSemanaVendWrapper');
-
   const thResponsavel = document.getElementById('thResponsavel');
   const thVendedor = document.getElementById('thVendedor');
   const sortIndicadorV = document.getElementById('sortIndicadorV');
   const sortIndicadorR = document.getElementById('sortIndicadorR');
+
+  const detalhesWrapper = document.getElementById('detalhesVendedorWrapper');
+  const btnFecharDetalhes = document.getElementById('btnFecharDetalhes');
+  const detVendedorNomeEl = document.getElementById('detVendedorNome');
+  const detVendedorRespLinhaEl = document.getElementById('detVendedorRespLinha');
+  const detTotalVendedorEl = document.getElementById('detTotalVendedor');
+  const detResumoInfoEl = document.getElementById('detResumoInfo');
+  const detMesesCountEl = document.getElementById('detMesesCount');
+  const detSemanasCountEl = document.getElementById('detSemanasCount');
+  const tbodyDetMes = document.getElementById('tbodyDetMes');
+  const tbodyDetSemana = document.getElementById('tbodyDetSemana');
 
   const STATUS_VALIDOS = [
     'pendente',
@@ -621,7 +596,7 @@
     "JOSE WANDERLEY PEREIRA DOS SANTOS REPRES",
     "R C SANTOS REPRESENTACOES LTDA",
     "MARFIGRAN SP DISTRIBUIDORA LTDA",
-    "REMA REPRESENTACAO COMERCIAL E APOIO ADMINISTRATIVO LTD",
+    "REMA REPRESENTACAO E APOIO ADMINISTRATIVO LTD",
     "MARCIO CORAINE",
     "AATR - REPRESENTACOES COMERCIAIS LTDA",
     "FEROLETO REPRESENTACAO E COMERCIO DE UTILIDAD",
@@ -720,14 +695,13 @@
     return null;
   }
 
-  let ultimaListaVendedores = [];      
-  let listaSemVendas = [];             
-  let resumoMes = [];                  
-  let resumoSemana = [];               
-  let resumoMesVendedor = [];          
-  let resumoSemanaVendedor = [];       
+  let ultimaListaVendedores = [];      // [{vendedor, total, resp}]
+  let listaSemVendas = [];             // [{vendedor, resp}]
+  let resumoMesVendedor = [];          // [{vendedor, mesKey, total, resp}]
+  let resumoSemanaVendedor = [];       // [{vendedor, start, end, total, resp}]
   let totalGeralGlobal = 0;
-  let sortMode = 'valor';              
+  let sortMode = 'valor';              // 'valor' ou 'responsavel'
+  let vendedorSelecionado = null;
 
   function atualizarIndicadoresOrdenacao() {
     if (sortMode === 'valor') {
@@ -737,6 +711,11 @@
       sortIndicadorV.textContent = '-';
       sortIndicadorR.textContent = '▼';
     }
+  }
+
+  function limparSelecaoLinhas() {
+    const linhas = tbodyVendedores.querySelectorAll('tr.row-clickable');
+    linhas.forEach(l => l.classList.remove('selected'));
   }
 
   function renderTabelaPrincipal() {
@@ -769,6 +748,7 @@
 
     dadosOrdenados.forEach(item => {
       const tr = document.createElement('tr');
+      tr.classList.add('row-clickable');
 
       const tdVendedor = document.createElement('td');
       tdVendedor.textContent = item.vendedor;
@@ -792,6 +772,13 @@
       tr.appendChild(tdVendedor);
       tr.appendChild(tdTotal);
       tr.appendChild(tdResp);
+
+      tr.addEventListener('click', () => {
+        limparSelecaoLinhas();
+        tr.classList.add('selected');
+        selecionarVendedor(item.vendedor);
+      });
+
       tbodyVendedores.appendChild(tr);
     });
   }
@@ -845,180 +832,97 @@
     });
   }
 
-  function renderResumoMes() {
-    tbodyResumoMes.innerHTML = '';
+  function renderDetalhesVendedor(nome) {
+    vendedorSelecionado = nome;
 
-    if (resumoMes.length === 0 || totalGeralGlobal === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 3;
-      td.className = 'empty-state';
-      td.textContent = 'Nenhuma venda com data válida encontrada.';
-      tr.appendChild(td);
-      tbodyResumoMes.appendChild(tr);
+    const infoVendedor = ultimaListaVendedores.find(v => v.vendedor === nome);
+    if (!infoVendedor) {
+      detalhesWrapper.style.display = 'none';
       return;
     }
 
-    resumoMes.forEach(item => {
-      const tr = document.createElement('tr');
-      const [ano, mes] = item.key.split('-');
-      const label = `${mes}/${ano}`;
+    const resp = infoVendedor.resp;
+    detVendedorNomeEl.textContent = nome;
+    detTotalVendedorEl.textContent = formatCurrency(infoVendedor.total);
 
-      const tdMes = document.createElement('td');
-      tdMes.textContent = label;
-
-      const tdTotal = document.createElement('td');
-      tdTotal.style.textAlign = 'right';
-      tdTotal.textContent = formatCurrency(item.total);
-
-      const tdPerc = document.createElement('td');
-      tdPerc.style.textAlign = 'right';
-      const perc = (item.total / totalGeralGlobal) * 100;
-      tdPerc.textContent = perc.toFixed(1).replace('.', ',') + ' %';
-
-      tr.appendChild(tdMes);
-      tr.appendChild(tdTotal);
-      tr.appendChild(tdPerc);
-      tbodyResumoMes.appendChild(tr);
-    });
-  }
-
-  function renderResumoMesVendedor() {
-    tbodyResumoMesVend.innerHTML = '';
-
-    if (resumoMesVendedor.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 4;
-      td.className = 'empty-state';
-      td.textContent = 'Nenhuma venda com data válida encontrada.';
-      tr.appendChild(td);
-      tbodyResumoMesVend.appendChild(tr);
-      return;
+    if (resp === 'ALEXANDRE') {
+      detVendedorRespLinhaEl.innerHTML =
+        'Responsável: <span class="tag-alexandre">ALEXANDRE</span> • Clique em outro vendedor para trocar o dashboard.';
+    } else if (resp === 'JUMAHIL') {
+      detVendedorRespLinhaEl.innerHTML =
+        'Responsável: <span class="tag-jumahil">JUMAHIL</span> • Clique em outro vendedor para trocar o dashboard.';
+    } else {
+      detVendedorRespLinhaEl.textContent =
+        'Responsável: não definido • Clique em outro vendedor para trocar o dashboard.';
     }
 
-    const dados = [...resumoMesVendedor];
-    dados.sort((a, b) => {
-      if (a.vendedor !== b.vendedor) {
-        return a.vendedor.localeCompare(b.vendedor);
-      }
-      return a.mesKey.localeCompare(b.mesKey);
-    });
+    const dadosMes = resumoMesVendedor
+      .filter(d => d.vendedor === nome)
+      .sort((a, b) => a.mesKey.localeCompare(b.mesKey));
 
-    dados.forEach(item => {
-      const tr = document.createElement('tr');
-      const [ano, mes] = item.mesKey.split('-');
-      const label = `${mes}/${ano}`;
+    const dadosSemana = resumoSemanaVendedor
+      .filter(d => d.vendedor === nome)
+      .sort((a, b) => a.start - b.start);
 
-      const tdVendedor = document.createElement('td');
-      tdVendedor.textContent = item.vendedor;
+    detMesesCountEl.textContent = dadosMes.length;
+    detSemanasCountEl.textContent = dadosSemana.length;
+    detResumoInfoEl.textContent = `${dadosMes.length} meses com venda • ${dadosSemana.length} semanas com venda`;
 
-      const tdResp = document.createElement('td');
-      tdResp.style.textAlign = 'center';
-      if (item.resp === 'ALEXANDRE') {
-        tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
-      } else if (item.resp === 'JUMAHIL') {
-        tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
-      } else {
-        tdResp.textContent = '';
-      }
-
-      const tdMes = document.createElement('td');
-      tdMes.textContent = label;
-
-      const tdTotal = document.createElement('td');
-      tdTotal.style.textAlign = 'right';
-      tdTotal.textContent = formatCurrency(item.total);
-
-      tr.appendChild(tdVendedor);
-      tr.appendChild(tdResp);
-      tr.appendChild(tdMes);
-      tr.appendChild(tdTotal);
-      tbodyResumoMesVend.appendChild(tr);
-    });
-  }
-
-  function renderResumoSemana() {
-    tbodyResumoSemana.innerHTML = '';
-
-    if (resumoSemana.length === 0) {
+    tbodyDetMes.innerHTML = '';
+    if (dadosMes.length === 0) {
       const tr = document.createElement('tr');
       const td = document.createElement('td');
       td.colSpan = 2;
       td.className = 'empty-state';
-      td.textContent = 'Nenhuma venda com data válida encontrada.';
+      td.textContent = 'Nenhuma venda com data válida para este vendedor.';
       tr.appendChild(td);
-      tbodyResumoSemana.appendChild(tr);
-      return;
+      tbodyDetMes.appendChild(tr);
+    } else {
+      dadosMes.forEach(item => {
+        const tr = document.createElement('tr');
+        const [ano, mes] = item.mesKey.split('-');
+        const label = `${mes}/${ano}`;
+
+        const tdMes = document.createElement('td');
+        tdMes.textContent = label;
+
+        const tdTotal = document.createElement('td');
+        tdTotal.style.textAlign = 'right';
+        tdTotal.textContent = formatCurrency(item.total);
+
+        tr.appendChild(tdMes);
+        tr.appendChild(tdTotal);
+        tbodyDetMes.appendChild(tr);
+      });
     }
 
-    resumoSemana.forEach(item => {
-      const tr = document.createElement('tr');
-
-      const tdPeriodo = document.createElement('td');
-      tdPeriodo.textContent = `${formatDateBR(item.start)} a ${formatDateBR(item.end)}`;
-
-      const tdTotal = document.createElement('td');
-      tdTotal.style.textAlign = 'right';
-      tdTotal.textContent = formatCurrency(item.total);
-
-      tr.appendChild(tdPeriodo);
-      tr.appendChild(tdTotal);
-      tbodyResumoSemana.appendChild(tr);
-    });
-  }
-
-  function renderResumoSemanaVendedor() {
-    tbodyResumoSemanaVend.innerHTML = '';
-
-    if (resumoSemanaVendedor.length === 0) {
+    tbodyDetSemana.innerHTML = '';
+    if (dadosSemana.length === 0) {
       const tr = document.createElement('tr');
       const td = document.createElement('td');
-      td.colSpan = 4;
+      td.colSpan = 2;
       td.className = 'empty-state';
-      td.textContent = 'Nenhuma venda com data válida encontrada.';
+      td.textContent = 'Nenhuma venda com data válida para este vendedor.';
       tr.appendChild(td);
-      tbodyResumoSemanaVend.appendChild(tr);
-      return;
+      tbodyDetSemana.appendChild(tr);
+    } else {
+      dadosSemana.forEach(item => {
+        const tr = document.createElement('tr');
+
+        const tdPeriodo = document.createElement('td');
+        tdPeriodo.textContent = `${formatDateBR(item.start)} a ${formatDateBR(item.end)}`;
+
+        const tdTotal = document.createElement('td');
+        tdTotal.style.textAlign = 'right';
+        tdTotal.textContent = formatCurrency(item.total);
+
+        tr.appendChild(tdPeriodo);
+        tr.appendChild(tdTotal);
+        tbodyDetSemana.appendChild(tr);
+      });
     }
 
-    const dados = [...resumoSemanaVendedor];
-    dados.sort((a, b) => {
-      if (a.vendedor !== b.vendedor) {
-        return a.vendedor.localeCompare(b.vendedor);
-      }
-      return a.start - b.start;
-    });
-
-    dados.forEach(item => {
-      const tr = document.createElement('tr');
-
-      const tdVendedor = document.createElement('td');
-      tdVendedor.textContent = item.vendedor;
-
-      const tdResp = document.createElement('td');
-      tdResp.style.textAlign = 'center';
-      if (item.resp === 'ALEXANDRE') {
-        tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
-      } else if (item.resp === 'JUMAHIL') {
-        tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
-      } else {
-        tdResp.textContent = '';
-      }
-
-      const tdPeriodo = document.createElement('td');
-      tdPeriodo.textContent = `${formatDateBR(item.start)} a ${formatDateBR(item.end)}`;
-
-      const tdTotal = document.createElement('td');
-      tdTotal.style.textAlign = 'right';
-      tdTotal.textContent = formatCurrency(item.total);
-
-      tr.appendChild(tdVendedor);
-      tr.appendChild(tdResp);
-      tr.appendChild(tdPeriodo);
-      tr.appendChild(tdTotal);
-      tbodyResumoSemanaVend.appendChild(tr);
-    });
+    detalhesWrapper.style.display = 'block';
   }
 
   inputExcel.addEventListener('change', function(e) {
@@ -1040,10 +944,8 @@
       const range = XLSX.utils.decode_range(sheet['!ref']);
 
       const totais = {};
-      const totaisMes = {};             
-      const totaisSemana = {};          
-      const totaisMesVend = {};        
-      const totaisSemanaVend = {};     
+      const totaisMesVend = {};        // vendedor||YYYY-MM
+      const totaisSemanaVend = {};     // vendedor||startISO
 
       let totalGeral = 0;
       let linhasValidas = 0;
@@ -1093,28 +995,19 @@
           const ano = dataVenda.getFullYear();
           const mes = String(dataVenda.getMonth() + 1).padStart(2, '0');
           const mesKey = `${ano}-${mes}`;
-
-          if (!totaisMes[mesKey]) totaisMes[mesKey] = 0;
-          totaisMes[mesKey] += valor;
-
           const keyMV = `${vendedor}||${mesKey}`;
           if (!totaisMesVend[keyMV]) totaisMesVend[keyMV] = 0;
           totaisMesVend[keyMV] += valor;
 
           const d = new Date(dataVenda.getTime());
           d.setHours(0, 0, 0, 0);
-          const day = d.getDay(); 
-          const diff = (day - 6 + 7) % 7; 
+          const day = d.getDay(); // 0=dom ... 6=sáb
+          const diff = (day - 6 + 7) % 7;
           const start = new Date(d.getTime());
           start.setDate(d.getDate() - diff);
           const end = new Date(start.getTime());
           end.setDate(start.getDate() + 6);
           const startKey = start.toISOString().slice(0, 10);
-
-          if (!totaisSemana[startKey]) {
-            totaisSemana[startKey] = { start, end, total: 0 };
-          }
-          totaisSemana[startKey].total += valor;
 
           const keySV = `${vendedor}||${startKey}`;
           if (!totaisSemanaVend[keySV]) {
@@ -1161,16 +1054,10 @@
         }
       });
 
-      resumoMes = Object.entries(totaisMes).map(([key, total]) => ({ key, total }));
-      resumoMes.sort((a, b) => a.key.localeCompare(b.key));
-
       resumoMesVendedor = Object.entries(totaisMesVend).map(([key, total]) => {
         const [vendedor, mesKey] = key.split('||');
         return { vendedor, mesKey, total, resp: getResponsavel(vendedor) || '' };
       });
-
-      resumoSemana = Object.values(totaisSemana);
-      resumoSemana.sort((a, b) => a.start - b.start);
 
       resumoSemanaVendedor = Object.entries(totaisSemanaVend).map(([key, obj]) => {
         const [vendedor] = key.split('||');
@@ -1187,10 +1074,11 @@
       atualizarIndicadoresOrdenacao();
       renderTabelaPrincipal();
       renderTabelaSemVendas();
-      renderResumoMes();
-      renderResumoMesVendedor();
-      renderResumoSemana();
-      renderResumoSemanaVendedor();
+
+      detalhesWrapper.style.display = 'none';
+      detVendedorNomeEl.textContent = '–';
+      detVendedorRespLinhaEl.textContent = 'Selecione um vendedor na tabela acima para ver o dashboard semanal e mensal.';
+      limparSelecaoLinhas();
     };
 
     reader.readAsArrayBuffer(file);
@@ -1207,20 +1095,10 @@
     }
   });
 
-  btnToggleMesVend.addEventListener('click', () => {
-    const visible = resumoMesVendWrapper.style.display === 'block';
-    resumoMesVendWrapper.style.display = visible ? 'none' : 'block';
-    btnToggleMesVend.textContent = visible
-      ? 'Mostrar resumo por mês por vendedor'
-      : 'Ocultar resumo por mês por vendedor';
-  });
-
-  btnToggleSemanaVend.addEventListener('click', () => {
-    const visible = resumoSemanaVendWrapper.style.display === 'block';
-    resumoSemanaVendWrapper.style.display = visible ? 'none' : 'block';
-    btnToggleSemanaVend.textContent = visible
-      ? 'Mostrar resumo por semana por vendedor'
-      : 'Ocultar resumo por semana por vendedor';
+  btnFecharDetalhes.addEventListener('click', () => {
+    detalhesWrapper.style.display = 'none';
+    vendedorSelecionado = null;
+    limparSelecaoLinhas();
   });
 
   thVendedor.addEventListener('click', () => {
@@ -1228,6 +1106,9 @@
     sortMode = 'valor';
     atualizarIndicadoresOrdenacao();
     renderTabelaPrincipal();
+    if (vendedorSelecionado) {
+      selecionarVendedor(vendedorSelecionado);
+    }
   });
 
   thResponsavel.addEventListener('click', () => {
@@ -1235,11 +1116,13 @@
     sortMode = 'responsavel';
     atualizarIndicadoresOrdenacao();
     renderTabelaPrincipal();
+    if (vendedorSelecionado) {
+      selecionarVendedor(vendedorSelecionado);
+    }
   });
 
   semVendasWrapper.style.display = 'none';
-  resumoMesVendWrapper.style.display = 'none';
-  resumoSemanaVendWrapper.style.display = 'none';
+  detalhesWrapper.style.display = 'none';
   atualizarIndicadoresOrdenacao();
 </script>
 
