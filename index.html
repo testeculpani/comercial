@@ -68,7 +68,7 @@
       justify-content: center;
       font-size: 16px;
       color: white;
-      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.45);
+      box-shadow: 0 6px 16px rgba(34, 189, 94, 0.45);
     }
     .subtitle {
       font-size: 13px;
@@ -300,13 +300,11 @@
       flex-wrap: wrap;
     }
 
-    #semVendasWrapper,
-    #detalhesVendedorWrapper {
+    #semVendasWrapper {
       margin-top: 16px;
       display: none;
     }
-    #semVendasWrapper h3,
-    #detalhesVendedorWrapper h3 {
+    #semVendasWrapper h3 {
       font-size: 15px;
       margin: 0 0 6px 0;
       color: #0f172a;
@@ -314,8 +312,7 @@
       align-items: center;
       gap: 6px;
     }
-    #semVendasWrapper h3 span,
-    #detalhesVendedorWrapper h3 span {
+    #semVendasWrapper h3 span {
       font-size: 18px;
     }
     .subtitle-small {
@@ -336,6 +333,34 @@
     .row-clickable.selected {
       outline: 2px solid #22c55e;
       background: #ecfdf5 !important;
+    }
+
+    /* MODAL (POPUP) */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+    .modal-card {
+      width: 100%;
+      max-width: 850px;
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.4);
+      padding: 16px 18px 18px 18px;
+      max-height: 80vh;
+      overflow: auto;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
     }
 
     @media (max-width: 920px) {
@@ -417,7 +442,7 @@
   <div class="actions-row">
     <span class="hint">
       Clique em <strong>Responsável</strong> para ordenar por supervisor (ALEXANDRE / JUMAHIL).<br>
-      Clique em um <strong>vendedor</strong> na tabela para ver o dashboard individual.
+      Clique em um <strong>vendedor</strong> na tabela para abrir o dashboard em popup.
     </span>
     <button class="btn secondary" id="btnSemVendas">
       <span class="icon">🔍</span>
@@ -425,72 +450,78 @@
     </button>
   </div>
 
-  <!-- AGORA O DASHBOARD DO VENDEDOR FICA ACIMA DA TABELA -->
-  <div id="detalhesVendedorWrapper">
-    <div class="section-header-row">
-      <h3>
-        <span>📊</span>
-        Detalhes do vendedor:
-        <span id="detVendedorNome">–</span>
-      </h3>
-      <button class="btn small secondary" id="btnFecharDetalhes">
-        Minimizar
-      </button>
-    </div>
-    <div class="subtitle-small" id="detVendedorRespLinha">
-      Selecione um vendedor na tabela abaixo para ver o dashboard semanal e mensal.
-    </div>
-
-    <div class="summary-grid" style="margin-top:8px;">
-      <div class="summary-card">
-        <div class="summary-label">Total vendido (vendedor)</div>
-        <div id="detTotalVendedor" class="summary-value">R$ 0,00</div>
-        <div class="summary-chip" id="detResumoInfo">–</div>
+  <!-- MODAL POPUP -->
+  <div id="detalhesOverlay" class="modal-overlay">
+    <div id="detalhesVendedorWrapper" class="modal-card">
+      <div class="modal-close">
+        <button class="btn small secondary" id="btnFecharDetalhes">
+          X Fechar
+        </button>
       </div>
-      <div class="summary-card">
-        <div class="summary-label">Meses com venda</div>
-        <div id="detMesesCount" class="summary-value">0</div>
-        <div class="summary-chip">Competências com valor &gt; 0</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-label">Semanas com venda</div>
-        <div id="detSemanasCount" class="summary-value">0</div>
-        <div class="summary-chip">Períodos sáb–sex com venda</div>
-      </div>
-    </div>
 
-    <div style="margin-top:10px;" class="subtitle-small">
-      <strong>Resumo mensal</strong> – baseado na data da coluna D (competência MM/AAAA).
-    </div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Mês</th>
-            <th style="text-align:right;">Total vendido</th>
-          </tr>
-        </thead>
-        <tbody id="tbodyDetMes">
-          <tr><td colspan="2" class="empty-state">Nenhuma venda com data válida para este vendedor.</td></tr>
-        </tbody>
-      </table>
-    </div>
+      <div class="section-header-row" style="margin-bottom: 8px; padding-right: 80px;">
+        <h3 style="margin-top: 0;">
+          <span>📊</span>
+          Detalhes do vendedor:
+          <span id="detVendedorNome">–</span>
+        </h3>
+      </div>
 
-    <div style="margin-top:10px;" class="subtitle-small">
-      <strong>Resumo semanal</strong> – semanas de <strong>sábado a sexta</strong>.
-    </div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Período (sáb–sex)</th>
-            <th style="text-align:right;">Total vendido</th>
-          </tr>
-        </thead>
-        <tbody id="tbodyDetSemana">
-          <tr><td colspan="2" class="empty-state">Nenhuma venda com data válida para este vendedor.</td></tr>
-        </tbody>
-      </table>
+      <div class="subtitle-small" id="detVendedorRespLinha">
+        Selecione um vendedor na tabela para ver o dashboard semanal e mensal.
+      </div>
+
+      <div class="summary-grid" style="margin-top:8px;">
+        <div class="summary-card">
+          <div class="summary-label">Total vendido (vendedor)</div>
+          <div id="detTotalVendedor" class="summary-value">R$ 0,00</div>
+          <div class="summary-chip" id="detResumoInfo">–</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Meses com venda</div>
+          <div id="detMesesCount" class="summary-value">0</div>
+          <div class="summary-chip">Competências com valor &gt; 0</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Semanas com venda</div>
+          <div id="detSemanasCount" class="summary-value">0</div>
+          <div class="summary-chip">Períodos sáb–sex com venda</div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;" class="subtitle-small">
+        <strong>Resumo mensal</strong> – baseado na data da coluna D (competência MM/AAAA).
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th style="text-align:right;">Total vendido</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyDetMes">
+            <tr><td colspan="2" class="empty-state">Nenhuma venda com data válida para este vendedor.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:10px;" class="subtitle-small">
+        <strong>Resumo semanal</strong> – semanas de <strong>sábado a sexta</strong>.
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Período (sáb–sex)</th>
+              <th style="text-align:right;">Total vendido</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyDetSemana">
+            <tr><td colspan="2" class="empty-state">Nenhuma venda com data válida para este vendedor.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -555,7 +586,7 @@
   const sortIndicadorV = document.getElementById('sortIndicadorV');
   const sortIndicadorR = document.getElementById('sortIndicadorR');
 
-  const detalhesWrapper = document.getElementById('detalhesVendedorWrapper');
+  const detalhesOverlay = document.getElementById('detalhesOverlay');
   const btnFecharDetalhes = document.getElementById('btnFecharDetalhes');
   const detVendedorNomeEl = document.getElementById('detVendedorNome');
   const detVendedorRespLinhaEl = document.getElementById('detVendedorRespLinha');
@@ -578,12 +609,12 @@
   const VENDEDORES_ALEXANDRE = [
     "ANDERSON MAICO FREDERICO REPRESENTACOES COMER",
     "J. G. VARGAS REPRESENTACOES COMERCIAIS MARING",
-    "FERREIRA E DELL'ISOLA REPRESENTACOES LTDA",
+    "60.132.034 MOHANDAS VINICIUS DA SILVA DELL IS",
     "HOPPE REPRESENTACOES LTDA",
     "FURLANETTO E GONCALVES LTDA",
     "ROGERIO ANTONELLO DA ROSA",
-    "TAVARES IMPORTACAO E COMERCIO LTDA",
-    "61.765.553 MICAEL MENEZES DE OLIVEIRA",
+    "TAVARES IMPORTAÇÃO E COMERCIO LTDA",
+    "MICAEL MENEZES DE OLIVEIRA",
     "ANGELA DE FATIMA ALVES SOUZA 48825433034",
     "P. F. VIEIRA FARIA & CIA LTDA",
     "ROCELU REPRESENTACAO COMERCIAL LTDA",
@@ -592,7 +623,7 @@
     "V9 REPRESENTACOES E EVENTOS LTDA",
     "AMARILDO DE LELIS OLIVEIRA RIOS",
     "STRONG REPRESENTACOES LTDA",
-    "J. R. QUARESMA REPRESENTACAO COMERCIAL DE U. ",
+    "J. R. QUARESMA REPRESENTACAO COMERCIAL DE U. D. LTDA",
     "CARLOS ALBERTO LEHRBACK BARBOSA ME",
     "JOSE WANDERLEY PEREIRA DOS SANTOS REPRES",
     "R C SANTOS REPRESENTACOES LTDA",
@@ -608,8 +639,8 @@
     "RICARDO BEZERRA REPRESENTACOES LTDA",
     "VALDEMIR ASTRESSE",
     "53.836.657 FRANCISCO CARDOSO DE SOUSA ROCHA",
-    "RRB REPRESENTACAO E COMERCIO DE ARTIGOS ESPOR",
-    "MAPRI REPRESENTACOES LTDA"
+    "RRB REPRESENTACAO E COMERCIO DE ARTIGOS ESPORTIVOS LTDA",
+    "MAPRI REPRESENTAÇÕES LTDA"
   ];
 
   const VENDEDORES_JUMAHIL = [
@@ -623,11 +654,11 @@
     "JOANE SILVA SANTOS",
     "FENIX REPRESENTACOES LTDA",
     "J P DA SILVA REPRESENTANTE COMERCIAL EIRELI",
-    "E O DUARTE REPRESENTACOES LTDA",
+    "E O DUARTE REPRESENTACOES LTDA.",
     "JK COMERCIO E REPRESENTACAO LTDA",
-    "HUNTERS REPRESENTACOES LTDA",
+    "HUNTERS REPRESENTAÇÕES LTDA",
     "LUIZ H. ZORDAN",
-    "MARCONI REPRESENTACOES",
+    "MARCONI REPRESENTAÇOES",
     "C N DE MELO REPRESENTACOES DE MATERIAL DE CON",
     "ELUILSON FELIPE DE SOUZA JUNIOR - ME",
     "CURITINTAS REPRESENTACOES EIRELI",
@@ -638,7 +669,7 @@
     "FREITAS REPRESENTACAO COMERCIAL LTDA",
     "GILSON CARLOS DALLA COSTA PEREIRA & CIA",
     "QUEIROZ & QUEIROZ REP COMERCIAIS LTDA",
-    "EXPOMARCAS COMERCIAL EXPORTADORA DE MANUFATUR",
+    "EXPOMARCAS COMERCIAL EXPORTADORA DE MANUFATURADOS LTDA",
     "S. SILVA REPRESENTACOES LTDA",
     "VIDAL REPRESENTACOES LTDA",
     "ANTONIO CARLOS RAVANELLO 38377870010",
@@ -842,7 +873,7 @@
 
     const infoVendedor = ultimaListaVendedores.find(v => v.vendedor === nome);
     if (!infoVendedor) {
-      detalhesWrapper.style.display = 'none';
+      detalhesOverlay.style.display = 'none';
       return;
     }
 
@@ -927,10 +958,9 @@
       });
     }
 
-    detalhesWrapper.style.display = 'block';
+    detalhesOverlay.style.display = 'flex';
   }
 
-  // Função chamada no clique da linha (corrige o erro anterior)
   function selecionarVendedor(nome) {
     renderDetalhesVendedor(nome);
   }
@@ -1011,7 +1041,7 @@
 
           const d = new Date(dataVenda.getTime());
           d.setHours(0, 0, 0, 0);
-          const day = d.getDay(); 
+          const day = d.getDay();
           const diff = (day - 6 + 7) % 7;
           const start = new Date(d.getTime());
           start.setDate(d.getDate() - diff);
@@ -1083,9 +1113,9 @@
       sortMode = 'valor';
       atualizarIndicadoresOrdenacao();
       vendedorSelecionado = null;
-      detalhesWrapper.style.display = 'none';
+      detalhesOverlay.style.display = 'none';
       detVendedorNomeEl.textContent = '–';
-      detVendedorRespLinhaEl.textContent = 'Selecione um vendedor na tabela abaixo para ver o dashboard semanal e mensal.';
+      detVendedorRespLinhaEl.textContent = 'Selecione um vendedor na tabela para ver o dashboard semanal e mensal.';
       renderTabelaPrincipal();
       renderTabelaSemVendas();
     };
@@ -1105,9 +1135,18 @@
   });
 
   btnFecharDetalhes.addEventListener('click', () => {
-    detalhesWrapper.style.display = 'none';
+    detalhesOverlay.style.display = 'none';
     vendedorSelecionado = null;
     limparSelecaoLinhas();
+  });
+
+  // Fecha clicando fora do card
+  detalhesOverlay.addEventListener('click', (e) => {
+    if (e.target === detalhesOverlay) {
+      detalhesOverlay.style.display = 'none';
+      vendedorSelecionado = null;
+      limparSelecaoLinhas();
+    }
   });
 
   thVendedor.addEventListener('click', () => {
@@ -1131,12 +1170,9 @@
   });
 
   semVendasWrapper.style.display = 'none';
-  detalhesWrapper.style.display = 'none';
+  detalhesOverlay.style.display = 'none';
   atualizarIndicadoresOrdenacao();
 </script>
 
 </body>
 </html>
-
-
-
