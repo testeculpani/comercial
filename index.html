@@ -425,43 +425,7 @@
     </button>
   </div>
 
-  <div class="table-wrapper" id="tabelaContainer">
-    <table>
-      <thead>
-        <tr>
-          <th id="thVendedor" class="sortable">Vendedor (I) <span class="sort-indicator" id="sortIndicadorV">▼</span></th>
-          <th style="text-align:right;">Total vendido (soma de J)</th>
-          <th id="thResponsavel" class="sortable" style="text-align:center;">
-            Responsável
-            <span class="sort-indicator" id="sortIndicadorR">-</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody id="tbodyVendedores">
-        <tr><td colspan="3" class="empty-state">Nenhuma planilha importada ainda.</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div id="semVendasWrapper">
-    <h3><span>📋</span> Vendedores ALEXANDRE / JUMAHIL sem nenhuma venda</h3>
-    <div class="subtitle-small">Considerando apenas a regra atual de filtro (R "venda...", status B permitido).</div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Vendedor</th>
-            <th style="text-align:center;">Responsável</th>
-            <th>Situação</th>
-          </tr>
-        </thead>
-        <tbody id="tbodySemVendas">
-          <tr><td colspan="3" class="empty-state">Importe uma planilha para ver os resultados.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
+  <!-- AGORA O DASHBOARD DO VENDEDOR FICA ACIMA DA TABELA -->
   <div id="detalhesVendedorWrapper">
     <div class="section-header-row">
       <h3>
@@ -474,7 +438,7 @@
       </button>
     </div>
     <div class="subtitle-small" id="detVendedorRespLinha">
-      Selecione um vendedor na tabela acima para ver o dashboard semanal e mensal.
+      Selecione um vendedor na tabela abaixo para ver o dashboard semanal e mensal.
     </div>
 
     <div class="summary-grid" style="margin-top:8px;">
@@ -525,6 +489,43 @@
         </thead>
         <tbody id="tbodyDetSemana">
           <tr><td colspan="2" class="empty-state">Nenhuma venda com data válida para este vendedor.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-wrapper" id="tabelaContainer">
+    <table>
+      <thead>
+        <tr>
+          <th id="thVendedor" class="sortable">Vendedor (I) <span class="sort-indicator" id="sortIndicadorV">▼</span></th>
+          <th style="text-align:right;">Total vendido (soma de J)</th>
+          <th id="thResponsavel" class="sortable" style="text-align:center;">
+            Responsável
+            <span class="sort-indicator" id="sortIndicadorR">-</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="tbodyVendedores">
+        <tr><td colspan="3" class="empty-state">Nenhuma planilha importada ainda.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="semVendasWrapper">
+    <h3><span>📋</span> Vendedores ALEXANDRE / JUMAHIL sem nenhuma venda</h3>
+    <div class="subtitle-small">Considerando apenas a regra atual de filtro (R "venda...", status B permitido).</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Vendedor</th>
+            <th style="text-align:center;">Responsável</th>
+            <th>Situação</th>
+          </tr>
+        </thead>
+        <tbody id="tbodySemVendas">
+          <tr><td colspan="3" class="empty-state">Importe uma planilha para ver os resultados.</td></tr>
         </tbody>
       </table>
     </div>
@@ -695,12 +696,12 @@
     return null;
   }
 
-  let ultimaListaVendedores = [];      // [{vendedor, total, resp}]
-  let listaSemVendas = [];             // [{vendedor, resp}]
-  let resumoMesVendedor = [];          // [{vendedor, mesKey, total, resp}]
-  let resumoSemanaVendedor = [];       // [{vendedor, start, end, total, resp}]
+  let ultimaListaVendedores = [];      
+  let listaSemVendas = [];             
+  let resumoMesVendedor = [];          
+  let resumoSemanaVendedor = [];       
   let totalGeralGlobal = 0;
-  let sortMode = 'valor';              // 'valor' ou 'responsavel'
+  let sortMode = 'valor';              
   let vendedorSelecionado = null;
 
   function atualizarIndicadoresOrdenacao() {
@@ -767,6 +768,10 @@
         tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
       } else {
         tdResp.textContent = '';
+      }
+
+      if (item.vendedor === vendedorSelecionado) {
+        tr.classList.add('selected');
       }
 
       tr.appendChild(tdVendedor);
@@ -925,6 +930,11 @@
     detalhesWrapper.style.display = 'block';
   }
 
+  // Função chamada no clique da linha (corrige o erro anterior)
+  function selecionarVendedor(nome) {
+    renderDetalhesVendedor(nome);
+  }
+
   inputExcel.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -944,8 +954,8 @@
       const range = XLSX.utils.decode_range(sheet['!ref']);
 
       const totais = {};
-      const totaisMesVend = {};        // vendedor||YYYY-MM
-      const totaisSemanaVend = {};     // vendedor||startISO
+      const totaisMesVend = {};        
+      const totaisSemanaVend = {};     
 
       let totalGeral = 0;
       let linhasValidas = 0;
@@ -1001,7 +1011,7 @@
 
           const d = new Date(dataVenda.getTime());
           d.setHours(0, 0, 0, 0);
-          const day = d.getDay(); // 0=dom ... 6=sáb
+          const day = d.getDay(); 
           const diff = (day - 6 + 7) % 7;
           const start = new Date(d.getTime());
           start.setDate(d.getDate() - diff);
@@ -1072,13 +1082,12 @@
 
       sortMode = 'valor';
       atualizarIndicadoresOrdenacao();
-      renderTabelaPrincipal();
-      renderTabelaSemVendas();
-
+      vendedorSelecionado = null;
       detalhesWrapper.style.display = 'none';
       detVendedorNomeEl.textContent = '–';
-      detVendedorRespLinhaEl.textContent = 'Selecione um vendedor na tabela acima para ver o dashboard semanal e mensal.';
-      limparSelecaoLinhas();
+      detVendedorRespLinhaEl.textContent = 'Selecione um vendedor na tabela abaixo para ver o dashboard semanal e mensal.';
+      renderTabelaPrincipal();
+      renderTabelaSemVendas();
     };
 
     reader.readAsArrayBuffer(file);
@@ -1107,7 +1116,7 @@
     atualizarIndicadoresOrdenacao();
     renderTabelaPrincipal();
     if (vendedorSelecionado) {
-      selecionarVendedor(vendedorSelecionado);
+      renderDetalhesVendedor(vendedorSelecionado);
     }
   });
 
@@ -1117,7 +1126,7 @@
     atualizarIndicadoresOrdenacao();
     renderTabelaPrincipal();
     if (vendedorSelecionado) {
-      selecionarVendedor(vendedorSelecionado);
+      renderDetalhesVendedor(vendedorSelecionado);
     }
   });
 
