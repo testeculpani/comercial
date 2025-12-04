@@ -289,24 +289,24 @@
       <div class="subtitle">
         Importe sua planilha e veja o total vendido por cada vendedor<br>
         <small>
-          Soma da coluna <strong>F</strong> por vendedor da <strong>Q</strong>,<br>
+          Soma da coluna <strong>J</strong> por vendedor da <strong>I</strong>,<br>
           apenas se:
-          <strong>AA</strong> começar com "venda" e
-          <strong>C</strong> for Pendente / Aprovado / Atendido / Em Alteração / Validado. <br>
+          <strong>R</strong> começar com "venda" e
+          <strong>B</strong> for Pendente / Aprovado / Atendido / Em Alteração / Validado. <br>
           Alguns vendedores são marcados como <strong>ALEXANDRE</strong> (verde) ou <strong>JUMAHIL</strong> (vermelho).
         </small>
       </div>
     </div>
     <div class="badge">
       <span class="badge-dot"></span>
-      F = valor · Q = vendedor · AA "venda..." · C status válido
+      J = valor · I = vendedor · R "venda..." · B status válido
     </div>
   </header>
 
   <div class="upload-area">
     <div class="upload-info">
       <div><strong>1)</strong> Clique no botão ao lado e selecione sua planilha (.xls ou .xlsx).</div>
-      <div><strong>2)</strong> Entram no cálculo só as linhas com AA iniciando em <strong>"venda"</strong> e status da coluna <strong>C</strong> permitido.</div>
+      <div><strong>2)</strong> Entram no cálculo só as linhas com R iniciando em <strong>"venda"</strong> e status da coluna <strong>B</strong> permitido.</div>
     </div>
     <div class="file-input-wrapper">
       <button class="btn">
@@ -339,8 +339,8 @@
     <table>
       <thead>
         <tr>
-          <th>Vendedor (Q)</th>
-          <th style="text-align:right;">Total vendido (soma de F)</th>
+          <th>Vendedor (I)</th>
+          <th style="text-align:right;">Total vendido (soma de J)</th>
           <th style="text-align:center;">Responsável</th>
         </tr>
       </thead>
@@ -351,8 +351,8 @@
   </div>
 
   <div class="footer-note">
-    <span>Lendo colunas <strong>Q</strong> (vendedor), <strong>F</strong> (valor), <strong>AA</strong> (descrição) e <strong>C</strong> (status).</span>
-    <span>Apenas linhas com AA iniciando em "venda" e status C dentro da lista entram no cálculo. Vendedores podem ser ALEXANDRE ou JUMAHIL.</span>
+    <span>Lendo colunas <strong>I</strong> (vendedor), <strong>J</strong> (valor), <strong>R</strong> (descrição) e <strong>B</strong> (status).</span>
+    <span>Apenas linhas com R iniciando em "venda" e status B dentro da lista entram no cálculo. Vendedores podem ser ALEXANDRE ou JUMAHIL.</span>
   </div>
 </div>
 
@@ -489,10 +489,10 @@
       for (let r = range.s.r + 1; r <= range.e.r; r++) {
         const rowNumber = r + 1; // linhas no Excel são 1-based
 
-        const cellVendedor = sheet['Q' + rowNumber];  // coluna Q = vendedor
-        const cellValor   = sheet['F' + rowNumber];   // coluna F = valor
-        const cellDesc    = sheet['AA' + rowNumber];  // coluna AA = descrição
-        const cellStatus  = sheet['C' + rowNumber];   // coluna C = status
+        const cellVendedor = sheet['I' + rowNumber];  // coluna I = vendedor
+        const cellValor   = sheet['J' + rowNumber];   // coluna J = valor
+        const cellDesc    = sheet['R' + rowNumber];   // coluna R = descrição
+        const cellStatus  = sheet['B' + rowNumber];   // coluna B = status
 
         // precisa ter descrição, vendedor, valor e status
         if (!cellDesc || cellDesc.v == null) continue;
@@ -503,12 +503,12 @@
         const descricao = String(cellDesc.v).trim().toLowerCase();
         const statusRaw = String(cellStatus.v).trim().toLowerCase();
 
-        // filtro 1: AA começa com "venda"
+        // filtro 1: R começa com "venda"
         if (!descricao.startsWith('venda')) {
           continue;
         }
 
-        // filtro 2: status C dentro da lista
+        // filtro 2: status B dentro da lista
         if (!STATUS_VALIDOS.includes(statusRaw)) {
           continue;
         }
@@ -539,7 +539,7 @@
 
       // Atualiza resumo
       totalGeralEl.textContent = formatCurrency(totalGeral);
-      totalRegistrosEl.textContent = `${linhasValidas} linhas válidas (AA "venda..." + status C permitido)`;
+      totalRegistrosEl.textContent = `${linhasValidas} linhas válidas (R "venda..." + status B permitido)`;
       const vendedores = Object.keys(totais);
       qtdVendedoresEl.textContent = vendedores.length;
 
@@ -564,7 +564,7 @@
         const td = document.createElement('td');
         td.colSpan = 3;
         td.className = 'empty-state';
-        td.textContent = 'Nenhuma linha válida encontrada. Confira AA iniciando em "venda", Q com vendedor, F com valor e C com status permitido.';
+        td.textContent = 'Nenhuma linha válida encontrada. Confira R iniciando em "venda", I com vendedor, J com valor e B com status permitido.';
         tr.appendChild(td);
         tbodyVendedores.appendChild(tr);
         return;
