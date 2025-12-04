@@ -21,7 +21,7 @@
     }
     .container {
       width: 100%;
-      max-width: 1000px;
+      max-width: 1100px;
       background: rgba(255, 255, 255, 0.97);
       border-radius: 18px;
       box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
@@ -188,7 +188,7 @@
 
     .actions-row {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       gap: 8px;
       margin-bottom: 8px;
       font-size: 11px;
@@ -300,7 +300,9 @@
       margin-top: 16px;
       display: none;
     }
-    #semVendasWrapper h3 {
+    #semVendasWrapper h3,
+    #resumoMesWrapper h3,
+    #resumoSemanaWrapper h3 {
       font-size: 15px;
       margin: 0 0 6px 0;
       color: #0f172a;
@@ -308,16 +310,23 @@
       align-items: center;
       gap: 6px;
     }
-    #semVendasWrapper h3 span {
+    #semVendasWrapper h3 span,
+    #resumoMesWrapper h3 span,
+    #resumoSemanaWrapper h3 span {
       font-size: 18px;
     }
-    #semVendasWrapper .subtitle-small {
+    .subtitle-small {
       font-size: 11px;
       color: #64748b;
       margin-bottom: 8px;
     }
 
-    @media (max-width: 820px) {
+    #resumoMesWrapper,
+    #resumoSemanaWrapper {
+      margin-top: 16px;
+    }
+
+    @media (max-width: 920px) {
       .container {
         padding: 18px 16px 22px 16px;
       }
@@ -332,7 +341,8 @@
         padding: 7px 8px;
       }
       .actions-row {
-        justify-content: flex-start;
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
   </style>
@@ -350,20 +360,20 @@
           apenas se:
           <strong>R</strong> começar com "venda" e
           <strong>B</strong> for Pendente / Aprovado / Atendido / Em Alteração / Validado. <br>
-          Alguns vendedores são marcados como <strong>ALEXANDRE</strong> (verde) ou <strong>JUMAHIL</strong> (vermelho).
+          Datas em <strong>D</strong> usadas para resumos por mês e por semana (sábado a sexta).
         </small>
       </div>
     </div>
     <div class="badge">
       <span class="badge-dot"></span>
-      J = valor · I = vendedor · R "venda..." · B status válido
+      J = valor · I = vendedor · R "venda..." · B status válido · D data
     </div>
   </header>
 
   <div class="upload-area">
     <div class="upload-info">
       <div><strong>1)</strong> Clique no botão ao lado e selecione sua planilha (.xls ou .xlsx).</div>
-      <div><strong>2)</strong> Entram no cálculo só as linhas com R iniciando em <strong>"venda"</strong> e status da coluna <strong>B</strong> permitido.</div>
+      <div><strong>2)</strong> Entram no cálculo só as linhas com R iniciando em <strong>"venda"</strong>, status B permitido e data em D.</div>
     </div>
     <div class="file-input-wrapper">
       <button class="btn">
@@ -393,7 +403,9 @@
   </div>
 
   <div class="actions-row">
-    <span class="hint">Clique em <strong>Responsável</strong> para ordenar por supervisor.</span>
+    <span class="hint">
+      Clique em <strong>Responsável</strong> para ordenar por supervisor (ALEXANDRE / JUMAHIL).
+    </span>
     <button class="btn secondary" id="btnSemVendas">
       <span class="icon">🔍</span>
       Ver vendedores ALEXANDRE/JUMAHIL sem vendas
@@ -420,7 +432,7 @@
 
   <div id="semVendasWrapper">
     <h3><span>📋</span> Vendedores ALEXANDRE / JUMAHIL sem nenhuma venda</h3>
-    <div class="subtitle-small">Considerando apenas a regra atual de filtro (R iniciando em "venda" e status B permitido).</div>
+    <div class="subtitle-small">Considerando apenas a regra atual de filtro (R "venda...", status B permitido).</div>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -437,9 +449,50 @@
     </div>
   </div>
 
+  <div id="resumoMesWrapper">
+    <h3><span>📆</span> Resumo por mês (todas as vendas válidas)</h3>
+    <div class="subtitle-small">
+      Agrupado por mês de competência, usando a data da coluna D. Formato MM/AAAA.
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th style="text-align:right;">Total vendido</th>
+            <th style="text-align:right;">% do total</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyResumoMes">
+          <tr><td colspan="3" class="empty-state">Nenhuma venda com data válida encontrada.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="resumoSemanaWrapper">
+    <h3><span>📊</span> Resumo por semana (sábado a sexta)</h3>
+    <div class="subtitle-small">
+      Semana definida de <strong>sábado</strong> até <strong>sexta</strong>. Período calculado pela data em D.
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Período (sáb–sex)</th>
+            <th style="text-align:right;">Total vendido</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyResumoSemana">
+          <tr><td colspan="2" class="empty-state">Nenhuma venda com data válida encontrada.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <div class="footer-note">
-    <span>Lendo colunas <strong>I</strong> (vendedor), <strong>J</strong> (valor), <strong>R</strong> (descrição) e <strong>B</strong> (status).</span>
-    <span>Apenas linhas com R iniciando em "venda" e status B dentro da lista entram no cálculo. Vendedores podem ser ALEXANDRE ou JUMAHIL.</span>
+    <span>Lendo colunas <strong>I</strong> (vendedor), <strong>J</strong> (valor), <strong>R</strong> (descrição), <strong>B</strong> (status) e <strong>D</strong> (data).</span>
+    <span>Semanas de sábado a sexta. Vendedores podem ser ALEXANDRE ou JUMAHIL.</span>
   </div>
 </div>
 
@@ -447,6 +500,8 @@
   const inputExcel = document.getElementById('inputExcel');
   const tbodyVendedores = document.getElementById('tbodyVendedores');
   const tbodySemVendas = document.getElementById('tbodySemVendas');
+  const tbodyResumoMes = document.getElementById('tbodyResumoMes');
+  const tbodyResumoSemana = document.getElementById('tbodyResumoSemana');
   const totalGeralEl = document.getElementById('totalGeral');
   const totalRegistrosEl = document.getElementById('totalRegistros');
   const qtdVendedoresEl = document.getElementById('qtdVendedores');
@@ -552,6 +607,42 @@
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
+  function formatDateBR(date) {
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}/${m}/${y}`;
+  }
+
+  function parseExcelDate(cell) {
+    if (!cell || cell.v == null) return null;
+    const v = cell.v;
+
+    if (v instanceof Date) {
+      return v;
+    }
+
+    if (typeof v === 'string') {
+      const s = v.trim();
+      const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m) {
+        const dia = parseInt(m[1], 10);
+        const mes = parseInt(m[2], 10) - 1;
+        const ano = parseInt(m[3], 10);
+        return new Date(ano, mes, dia);
+      }
+    }
+
+    if (typeof v === 'number' && XLSX.SSF && XLSX.SSF.parse_date_code) {
+      const o = XLSX.SSF.parse_date_code(v);
+      if (o) {
+        return new Date(o.y, o.m - 1, o.d);
+      }
+    }
+
+    return null;
+  }
+
   function getResponsavel(vendedor) {
     if (VENDEDORES_ALEXANDRE.includes(vendedor)) return 'ALEXANDRE';
     if (VENDEDORES_JUMAHIL.includes(vendedor)) return 'JUMAHIL';
@@ -559,8 +650,11 @@
   }
 
   let ultimaListaVendedores = []; // [{vendedor, total, resp}]
-  let listaSemVendas = [];       // [{vendedor, resp}]
-  let sortMode = 'valor';        // 'valor' ou 'responsavel'
+  let listaSemVendas = [];        // [{vendedor, resp}]
+  let resumoMes = [];             // [{key, total}] key = "YYYY-MM"
+  let resumoSemana = [];          // [{start, end, total}]
+  let totalGeralGlobal = 0;
+  let sortMode = 'valor';         // 'valor' ou 'responsavel'
 
   function atualizarIndicadoresOrdenacao() {
     if (sortMode === 'valor') {
@@ -580,13 +674,12 @@
       const td = document.createElement('td');
       td.colSpan = 3;
       td.className = 'empty-state';
-      td.textContent = 'Nenhuma linha válida encontrada. Confira R iniciando em "venda", I com vendedor, J com valor e B com status permitido.';
+      td.textContent = 'Nenhuma linha válida encontrada. Confira R "venda...", I vendedor, J valor, B status e D data.';
       tr.appendChild(td);
       tbodyVendedores.appendChild(tr);
       return;
     }
 
-    // Ordena conforme modo atual
     const dadosOrdenados = [...ultimaListaVendedores];
 
     if (sortMode === 'valor') {
@@ -597,7 +690,7 @@
         const ra = rankResp[a.resp || ''] || 99;
         const rb = rankResp[b.resp || ''] || 99;
         if (ra !== rb) return ra - rb;
-        return b.total - a.total; // dentro de cada grupo, por valor
+        return b.total - a.total;
       });
     }
 
@@ -644,7 +737,6 @@
       return;
     }
 
-    // Ordena por responsável (ALEXANDRE, JUMAHIL) e nome
     const dados = [...listaSemVendas];
     const rankResp = { 'ALEXANDRE': 1, 'JUMAHIL': 2 };
     dados.sort((a, b) => {
@@ -680,6 +772,74 @@
     });
   }
 
+  function renderResumoMes() {
+    tbodyResumoMes.innerHTML = '';
+
+    if (resumoMes.length === 0 || totalGeralGlobal === 0) {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 3;
+      td.className = 'empty-state';
+      td.textContent = 'Nenhuma venda com data válida encontrada.';
+      tr.appendChild(td);
+      tbodyResumoMes.appendChild(tr);
+      return;
+    }
+
+    resumoMes.forEach(item => {
+      const tr = document.createElement('tr');
+      const [ano, mes] = item.key.split('-');
+      const label = `${mes}/${ano}`;
+
+      const tdMes = document.createElement('td');
+      tdMes.textContent = label;
+
+      const tdTotal = document.createElement('td');
+      tdTotal.style.textAlign = 'right';
+      tdTotal.textContent = formatCurrency(item.total);
+
+      const tdPerc = document.createElement('td');
+      tdPerc.style.textAlign = 'right';
+      const perc = (item.total / totalGeralGlobal) * 100;
+      tdPerc.textContent = perc.toFixed(1).replace('.', ',') + ' %';
+
+      tr.appendChild(tdMes);
+      tr.appendChild(tdTotal);
+      tr.appendChild(tdPerc);
+      tbodyResumoMes.appendChild(tr);
+    });
+  }
+
+  function renderResumoSemana() {
+    tbodyResumoSemana.innerHTML = '';
+
+    if (resumoSemana.length === 0) {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 2;
+      td.className = 'empty-state';
+      td.textContent = 'Nenhuma venda com data válida encontrada.';
+      tr.appendChild(td);
+      tbodyResumoSemana.appendChild(tr);
+      return;
+    }
+
+    resumoSemana.forEach(item => {
+      const tr = document.createElement('tr');
+
+      const tdPeriodo = document.createElement('td');
+      tdPeriodo.textContent = `${formatDateBR(item.start)} a ${formatDateBR(item.end)}`;
+
+      const tdTotal = document.createElement('td');
+      tdTotal.style.textAlign = 'right';
+      tdTotal.textContent = formatCurrency(item.total);
+
+      tr.appendChild(tdPeriodo);
+      tr.appendChild(tdTotal);
+      tbodyResumoSemana.appendChild(tr);
+    });
+  }
+
   inputExcel.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -688,7 +848,7 @@
 
     reader.onload = function(event) {
       const data = new Uint8Array(event.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
+      const workbook = XLSX.read(data, { type: 'array', cellDates: true });
 
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       if (!sheet || !sheet['!ref']) {
@@ -699,19 +859,20 @@
       const range = XLSX.utils.decode_range(sheet['!ref']);
 
       const totais = {};
+      const totaisMes = {};     // key "YYYY-MM" -> total
+      const totaisSemana = {};  // key startISO -> {start, end, total}
       let totalGeral = 0;
       let linhasValidas = 0;
 
-      // Percorre as linhas da planilha, ignorando cabeçalho (começa da segunda linha)
       for (let r = range.s.r + 1; r <= range.e.r; r++) {
-        const rowNumber = r + 1; // linhas no Excel são 1-based
+        const rowNumber = r + 1;
 
-        const cellVendedor = sheet['I' + rowNumber];  // coluna I = vendedor
-        const cellValor   = sheet['J' + rowNumber];   // coluna J = valor
-        const cellDesc    = sheet['R' + rowNumber];   // coluna R = descrição
-        const cellStatus  = sheet['B' + rowNumber];   // coluna B = status
+        const cellVendedor = sheet['I' + rowNumber];
+        const cellValor   = sheet['J' + rowNumber];
+        const cellDesc    = sheet['R' + rowNumber];
+        const cellStatus  = sheet['B' + rowNumber];
+        const cellData    = sheet['D' + rowNumber];
 
-        // precisa ter descrição, vendedor, valor e status
         if (!cellDesc || cellDesc.v == null) continue;
         if (!cellVendedor || cellVendedor.v == null) continue;
         if (!cellValor || cellValor.v == null) continue;
@@ -720,29 +881,26 @@
         const descricao = String(cellDesc.v).trim().toLowerCase();
         const statusRaw = String(cellStatus.v).trim().toLowerCase();
 
-        // filtro 1: R começa com "venda"
-        if (!descricao.startsWith('venda')) {
-          continue;
-        }
-
-        // filtro 2: status B dentro da lista
-        if (!STATUS_VALIDOS.includes(statusRaw)) {
-          continue;
-        }
+        if (!descricao.startsWith('venda')) continue;
+        if (!STATUS_VALIDOS.includes(statusRaw)) continue;
 
         const vendedor = String(cellVendedor.v).trim();
         let bruto = cellValor.v;
 
-        // Trata valor:
         if (typeof bruto === 'string') {
           let s = bruto.trim();
-          s = s.replace(/\./g, ''); // remove pontos (milhares)
-          s = s.replace(',', '.');  // troca vírgula por ponto
+          s = s.replace(/\./g, '');
+          s = s.replace(',', '.');
           bruto = s;
         }
 
         const valor = parseFloat(bruto);
         if (isNaN(valor)) continue;
+
+        // Data
+        const dataVenda = parseExcelDate(cellData);
+        // Se quiser obrigar data válida, descomente:
+        // if (!dataVenda) continue;
 
         if (!totais[vendedor]) {
           totais[vendedor] = 0;
@@ -750,15 +908,40 @@
         totais[vendedor] += valor;
         totalGeral += valor;
         linhasValidas++;
+
+        if (dataVenda) {
+          // Mês: YYYY-MM
+          const ano = dataVenda.getFullYear();
+          const mes = String(dataVenda.getMonth() + 1).padStart(2, '0');
+          const mesKey = `${ano}-${mes}`;
+          if (!totaisMes[mesKey]) totaisMes[mesKey] = 0;
+          totaisMes[mesKey] += valor;
+
+          // Semana: sábado a sexta
+          const d = new Date(dataVenda.getTime());
+          d.setHours(0, 0, 0, 0);
+          const day = d.getDay(); // 0=dom,1=seg,...6=sáb
+          const diff = (day - 6 + 7) % 7; // dias desde o último sábado
+          const start = new Date(d.getTime());
+          start.setDate(d.getDate() - diff);
+          const end = new Date(start.getTime());
+          end.setDate(start.getDate() + 6);
+          const startKey = start.toISOString().slice(0, 10);
+
+          if (!totaisSemana[startKey]) {
+            totaisSemana[startKey] = { start, end, total: 0 };
+          }
+          totaisSemana[startKey].total += valor;
+        }
       }
 
-      // Atualiza resumo
+      // Atualiza resumo geral
+      totalGeralGlobal = totalGeral;
       totalGeralEl.textContent = formatCurrency(totalGeral);
       totalRegistrosEl.textContent = `${linhasValidas} linhas válidas (R "venda..." + status B permitido)`;
       const vendedores = Object.keys(totais);
       qtdVendedoresEl.textContent = vendedores.length;
 
-      // Descobre maior vendedor
       if (vendedores.length > 0) {
         let melhor = vendedores[0];
         vendedores.forEach(v => {
@@ -771,17 +954,16 @@
         topVendedorValorEl.textContent = 'R$ 0,00';
       }
 
-      // Monta lista principal com responsavel
+      // Lista principal
       ultimaListaVendedores = vendedores.map(v => ({
         vendedor: v,
         total: totais[v],
         resp: getResponsavel(v) || ''
       }));
 
-      // Calcula lista de vendedores sem vendas (ALEXANDRE / JUMAHIL)
+      // Vendedores sem vendas
       listaSemVendas = [];
       const setComVenda = new Set(vendedores);
-
       VENDEDORES_ALEXANDRE.forEach(nome => {
         if (!setComVenda.has(nome)) {
           listaSemVendas.push({ vendedor: nome, resp: 'ALEXANDRE' });
@@ -793,19 +975,27 @@
         }
       });
 
-      // reset ordenação para valor
+      // Resumo por mês
+      resumoMes = Object.entries(totaisMes).map(([key, total]) => ({ key, total }));
+      resumoMes.sort((a, b) => a.key.localeCompare(b.key));
+
+      // Resumo por semana
+      resumoSemana = Object.values(totaisSemana);
+      resumoSemana.sort((a, b) => a.start - b.start);
+
+      // Render
       sortMode = 'valor';
       atualizarIndicadoresOrdenacao();
       renderTabelaPrincipal();
       renderTabelaSemVendas();
-      // mostra seção de sem vendas se já estiver aberta
-      // (não muda estado do display aqui)
+      renderResumoMes();
+      renderResumoSemana();
     };
 
     reader.readAsArrayBuffer(file);
   });
 
-  // Toggle da aba de vendedores sem vendas
+  // Toggle aba de sem vendas
   btnSemVendas.addEventListener('click', () => {
     if (semVendasWrapper.style.display === 'none' || semVendasWrapper.style.display === '') {
       semVendasWrapper.style.display = 'block';
@@ -833,7 +1023,7 @@
     renderTabelaPrincipal();
   });
 
-  // Estado inicial da aba de sem vendas
+  // Estado inicial
   semVendasWrapper.style.display = 'none';
   atualizarIndicadoresOrdenacao();
 </script>
