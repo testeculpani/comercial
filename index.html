@@ -1,98 +1,455 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Somatório por Vendedor</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
-  body { font-family: Arial, sans-serif; padding: 20px; background:#f5f5f5; }
-  h1 { margin-bottom: 10px; }
-  .card {
-    background:#fff; padding:20px; border-radius:10px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.1); max-width:600px;
-  }
-  input[type="file"] { margin: 10px 0 20px 0; }
-  table { border-collapse: collapse; width:100%; margin-top:10px; }
-  table, th, td { border: 1px solid #ccc; }
-  th, td { padding: 8px; text-align: left; }
-  th { background:#eee; }
-</style>
+  <meta charset="UTF-8">
+  <title>Painel de Vendas por Vendedor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #0ea5e9, #22c55e);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #0f172a;
+    }
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background: rgba(255, 255, 255, 0.97);
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
+      padding: 24px 26px 28px 26px;
+      position: relative;
+      overflow: hidden;
+    }
+    .container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 55%),
+                  radial-gradient(circle at bottom left, rgba(34, 197, 94, 0.13), transparent 55%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .title-area {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #020617;
+    }
+    h1 span.icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #0ea5e9, #22c55e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: white;
+      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.45);
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #64748b;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+    }
+
+    .upload-area {
+      margin-top: 12px;
+      margin-bottom: 20px;
+      padding: 14px 14px 16px 14px;
+      border-radius: 14px;
+      border: 1px dashed #cbd5f5;
+      background: #f8fafc;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 14px;
+      justify-content: space-between;
+    }
+    .upload-info {
+      font-size: 13px;
+      color: #475569;
+    }
+    .upload-info strong {
+      color: #0f172a;
+    }
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 8px 16px;
+      border: none;
+      background: linear-gradient(135deg, #0ea5e9, #22c55e);
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(14, 165, 233, 0.45);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+      white-space: nowrap;
+    }
+    .btn span.icon {
+      font-size: 15px;
+    }
+    .btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 6px 14px rgba(14, 165, 233, 0.4);
+      filter: brightness(0.98);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .summary-card {
+      background: white;
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .summary-label {
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .summary-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .summary-chip {
+      font-size: 11px;
+      color: #16a34a;
+    }
+
+    .table-wrapper {
+      margin-top: 8px;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead {
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    th, td {
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th {
+      font-weight: 600;
+      border-bottom: 1px solid #1e293b;
+    }
+    tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    tbody tr:hover {
+      background: #e0f2fe;
+    }
+    .td-vendedor {
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .td-total {
+      font-feature-settings: "tnum" 1, "lnum" 1;
+      text-align: right;
+    }
+    .empty-state {
+      padding: 16px;
+      text-align: center;
+      font-size: 13px;
+      color: #64748b;
+    }
+    .footer-note {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 720px) {
+      .container {
+        padding: 18px 16px 22px 16px;
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+      th, td {
+        padding: 7px 8px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<div class="card">
-  <h1>Somar Valor Total por Vendedor</h1>
-  <p>Importe a planilha (coluna F = valor, coluna Q = vendedor).</p>
-  <input type="file" id="inputExcel" accept=".xlsx, .xls">
-  <h2>Resultado:</h2>
-  <div id="resultado"></div>
+<div class="container">
+  <header>
+    <div class="title-area">
+      <h1><span class="icon">₿</span> Painel de Vendas por Vendedor</h1>
+      <div class="subtitle">Importe sua planilha e veja o total vendido por cada vendedor<br><small>(Comparando pela coluna <strong>Q</strong> e somando a coluna <strong>F</strong>)</small></div>
+    </div>
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Planilha Excel · F = valor · Q = vendedor
+    </div>
+  </header>
+
+  <div class="upload-area">
+    <div class="upload-info">
+      <div><strong>1)</strong> Clique no botão ao lado e selecione sua planilha (.xls ou .xlsx).</div>
+      <div><strong>2)</strong> O sistema vai somar automaticamente a <strong>coluna F</strong> por cada vendedor da <strong>coluna Q</strong>.</div>
+    </div>
+    <div class="file-input-wrapper">
+      <button class="btn">
+        <span class="icon">📎</span>
+        Importar planilha
+      </button>
+      <input type="file" id="inputExcel" accept=".xlsx, .xls">
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-label">Total geral vendido</div>
+      <div id="totalGeral" class="summary-value">R$ 0,00</div>
+      <div class="summary-chip" id="totalRegistros">0 linhas lidas</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Quantidade de vendedores</div>
+      <div id="qtdVendedores" class="summary-value">0</div>
+      <div class="summary-chip">Com pelo menos 1 venda</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Maior vendedor</div>
+      <div id="topVendedor" class="summary-value">–</div>
+      <div class="summary-chip" id="topVendedorValor">R$ 0,00</div>
+    </div>
+  </div>
+
+  <div class="table-wrapper" id="tabelaContainer">
+    <table>
+      <thead>
+        <tr>
+          <th>Vendedor (Q)</th>
+          <th style="text-align:right;">Total vendido (soma de F)</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyVendedores">
+        <tr><td colspan="2" class="empty-state">Nenhuma planilha importada ainda.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer-note">
+    <span>Leitura direta das células <strong>Q</strong> (vendedor) e <strong>F</strong> (valor) da planilha.</span>
+    <span>Suporta valores com vírgula (ex: 1.234,56) ou ponto (ex: 1234.56).</span>
+  </div>
 </div>
 
 <script>
-document.getElementById('inputExcel').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  const inputExcel = document.getElementById('inputExcel');
+  const tbodyVendedores = document.getElementById('tbodyVendedores');
+  const totalGeralEl = document.getElementById('totalGeral');
+  const totalRegistrosEl = document.getElementById('totalRegistros');
+  const qtdVendedoresEl = document.getElementById('qtdVendedores');
+  const topVendedorEl = document.getElementById('topVendedor');
+  const topVendedorValorEl = document.getElementById('topVendedorValor');
 
-  const reader = new FileReader();
+  function formatCurrency(valor) {
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
 
-  reader.onload = function(event) {
-    const data = new Uint8Array(event.target.result);
-    const workbook = XLSX.read(data, { type: 'array' });
+  inputExcel.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const reader = new FileReader();
 
-    // Converte para matriz (array de arrays) mantendo letras de coluna por posição
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    reader.onload = function(event) {
+      const data = new Uint8Array(event.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
 
-    // Índices: F = 5, Q = 16 (0-based)
-    const COL_VALOR = 5;   // F
-    const COL_VENDEDOR = 16; // Q
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      if (!sheet || !sheet['!ref']) {
+        alert('Não foi possível ler a planilha. Confira se há dados na aba 1.');
+        return;
+      }
 
-    const totais = {};
+      const range = XLSX.utils.decode_range(sheet['!ref']);
 
-    // Começa da linha 1 (pulando o cabeçalho na linha 0)
-    for (let i = 1; i < rows.length; i++) {
-      const linha = rows[i];
-      if (!linha) continue;
+      const totais = {};
+      let totalGeral = 0;
+      let linhasLidas = 0;
 
-      const vendedor = linha[COL_VENDEDOR];
-      let valorBruto = linha[COL_VALOR];
+      // Percorre as linhas da planilha, ignorando cabeçalho (começa da segunda linha)
+      for (let r = range.s.r + 1; r <= range.e.r; r++) {
+        const rowNumber = r + 1; // linhas no Excel são 1-based
 
-      if (vendedor == null || valorBruto == null) continue;
+        const cellVendedor = sheet['Q' + rowNumber]; // coluna Q = vendedor
+        const cellValor = sheet['F' + rowNumber];    // coluna F = valor
 
-      // Converte para string e troca vírgula por ponto
-      valorBruto = String(valorBruto).toString().replace('.', '').replace(',', '.');
+        if (!cellVendedor || cellVendedor.v == null) {
+          continue; // sem vendedor, ignora linha
+        }
+        if (!cellValor || cellValor.v == null) {
+          continue; // sem valor, ignora linha
+        }
 
-      let valor = parseFloat(valorBruto);
-      if (isNaN(valor)) continue;
+        const vendedor = String(cellVendedor.v).trim();
+        let bruto = cellValor.v;
 
-      if (!totais[vendedor]) totais[vendedor] = 0;
-      totais[vendedor] += valor;
-    }
+        // Trata valor:
+        // - Se for número, usa direto
+        // - Se for string, converte 1.234,56 -> 1234.56
+        if (typeof bruto === 'string') {
+          let s = bruto.trim();
+          s = s.replace(/\./g, ''); // remove pontos (milhares)
+          s = s.replace(',', '.');  // troca vírgula por ponto
+          bruto = s;
+        }
 
-    // Monta tabela HTML
-    let html = "<table><tr><th>Vendedor</th><th>Total</th></tr>";
+        const valor = parseFloat(bruto);
+        if (isNaN(valor)) {
+          continue;
+        }
 
-    const vendedores = Object.keys(totais);
-    if (vendedores.length === 0) {
-      html += "<tr><td colspan='2'>Nenhum dado encontrado. Confira se a coluna F é valor e Q é vendedor.</td></tr>";
-    } else {
+        if (!totais[vendedor]) {
+          totais[vendedor] = 0;
+        }
+        totais[vendedor] += valor;
+        totalGeral += valor;
+        linhasLidas++;
+      }
+
+      // Atualiza resumo
+      totalGeralEl.textContent = formatCurrency(totalGeral);
+      totalRegistrosEl.textContent = `${linhasLidas} linhas lidas`;
+      const vendedores = Object.keys(totais);
+      qtdVendedoresEl.textContent = vendedores.length;
+
+      // Descobre maior vendedor
+      if (vendedores.length > 0) {
+        let melhor = vendedores[0];
+        vendedores.forEach(v => {
+          if (totais[v] > totais[melhor]) melhor = v;
+        });
+        topVendedorEl.textContent = melhor;
+        topVendedorValorEl.textContent = formatCurrency(totais[melhor] || 0);
+      } else {
+        topVendedorEl.textContent = '–';
+        topVendedorValorEl.textContent = 'R$ 0,00';
+      }
+
+      // Monta tabela
+      tbodyVendedores.innerHTML = '';
+
+      if (vendedores.length === 0) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 2;
+        td.className = 'empty-state';
+        td.textContent = 'Nenhum dado encontrado. Confira se a coluna Q tem o vendedor e a coluna F tem o valor.';
+        tr.appendChild(td);
+        tbodyVendedores.appendChild(tr);
+        return;
+      }
+
+      // Ordena do maior para o menor
+      vendedores.sort((a, b) => totais[b] - totais[a]);
+
       vendedores.forEach(v => {
-        html += `
-          <tr>
-            <td>${v}</td>
-            <td>R$ ${totais[v].toFixed(2)}</td>
-          </tr>
-        `;
+        const tr = document.createElement('tr');
+
+        const tdVendedor = document.createElement('td');
+        tdVendedor.textContent = v;
+        tdVendedor.className = 'td-vendedor';
+
+        const tdTotal = document.createElement('td');
+        tdTotal.textContent = formatCurrency(totais[v]);
+        tdTotal.className = 'td-total';
+
+        tr.appendChild(tdVendedor);
+        tr.appendChild(tdTotal);
+        tbodyVendedores.appendChild(tr);
       });
-    }
+    };
 
-    html += "</table>";
-    document.getElementById("resultado").innerHTML = html;
-  };
-
-  reader.readAsArrayBuffer(file);
-});
+    reader.readAsArrayBuffer(file);
+  });
 </script>
 
 </body>
