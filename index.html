@@ -260,18 +260,26 @@
   <header>
     <div class="title-area">
       <h1><span class="icon">₿</span> Painel de Vendas por Vendedor</h1>
-      <div class="subtitle">Importe sua planilha e veja o total vendido por cada vendedor<br><small>(Comparando pela coluna <strong>Q</strong> e somando a coluna <strong>F</strong>)</small></div>
+      <div class="subtitle">
+        Importe sua planilha e veja o total vendido por cada vendedor<br>
+        <small>
+          Soma da coluna <strong>F</strong> por vendedor da <strong>Q</strong>,<br>
+          apenas se:
+          <strong>AA</strong> começar com "venda" e
+          <strong>C</strong> for Pendente / Aprovado / Atendido / Em Alteração / Validado
+        </small>
+      </div>
     </div>
     <div class="badge">
       <span class="badge-dot"></span>
-      Planilha Excel · F = valor · Q = vendedor
+      F = valor · Q = vendedor · AA "venda..." · C status válido
     </div>
   </header>
 
   <div class="upload-area">
     <div class="upload-info">
       <div><strong>1)</strong> Clique no botão ao lado e selecione sua planilha (.xls ou .xlsx).</div>
-      <div><strong>2)</strong> O sistema vai somar automaticamente a <strong>coluna F</strong> por cada vendedor da <strong>coluna Q</strong>.</div>
+      <div><strong>2)</strong> Entram no cálculo só as linhas com AA iniciando em <strong>"venda"</strong> e status da coluna <strong>C</strong> permitido.</div>
     </div>
     <div class="file-input-wrapper">
       <button class="btn">
@@ -286,12 +294,12 @@
     <div class="summary-card">
       <div class="summary-label">Total geral vendido</div>
       <div id="totalGeral" class="summary-value">R$ 0,00</div>
-      <div class="summary-chip" id="totalRegistros">0 linhas lidas</div>
+      <div class="summary-chip" id="totalRegistros">0 linhas válidas</div>
     </div>
     <div class="summary-card">
       <div class="summary-label">Quantidade de vendedores</div>
       <div id="qtdVendedores" class="summary-value">0</div>
-      <div class="summary-chip">Com pelo menos 1 venda</div>
+      <div class="summary-chip">Com pelo menos 1 venda válida</div>
     </div>
     <div class="summary-card">
       <div class="summary-label">Maior vendedor</div>
@@ -315,8 +323,8 @@
   </div>
 
   <div class="footer-note">
-    <span>Leitura direta das células <strong>Q</strong> (vendedor) e <strong>F</strong> (valor) da planilha.</span>
-    <span>Suporta valores com vírgula (ex: 1.234,56) ou ponto (ex: 1234.56).</span>
+    <span>Lendo colunas <strong>Q</strong> (vendedor), <strong>F</strong> (valor), <strong>AA</strong> (descrição) e <strong>C</strong> (status).</span>
+    <span>Apenas linhas com AA iniciando em "venda" e status C dentro da lista definida entram no cálculo.</span>
   </div>
 </div>
 
@@ -328,6 +336,15 @@
   const qtdVendedoresEl = document.getElementById('qtdVendedores');
   const topVendedorEl = document.getElementById('topVendedor');
   const topVendedorValorEl = document.getElementById('topVendedorValor');
+
+  const STATUS_VALIDOS = [
+    'pendente',
+    'aprovado',
+    'atendido',
+    'em alteração',
+    'em alteracao', // sem acento, caso venha assim
+    'validado'
+  ];
 
   function formatCurrency(valor) {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -353,20 +370,34 @@
 
       const totais = {};
       let totalGeral = 0;
-      let linhasLidas = 0;
+      let linhasValidas = 0;
 
       // Percorre as linhas da planilha, ignorando cabeçalho (começa da segunda linha)
       for (let r = range.s.r + 1; r <= range.e.r; r++) {
         const rowNumber = r + 1; // linhas no Excel são 1-based
 
-        const cellVendedor = sheet['Q' + rowNumber]; // coluna Q = vendedor
-        const cellValor = sheet['F' + rowNumber];    // coluna F = valor
+        const cellVendedor = sheet['Q' + rowNumber];  // coluna Q = vendedor
+        const cellValor   = sheet['F' + rowNumber];   // coluna F = valor
+        const cellDesc    = sheet['AA' + rowNumber];  // coluna AA = descrição
+        const cellStatus  = sheet['C' + rowNumber];   // coluna C = status
 
-        if (!cellVendedor || cellVendedor.v == null) {
-          continue; // sem vendedor, ignora linha
+        // precisa ter descrição, vendedor, valor e status
+        if (!cellDesc || cellDesc.v == null) continue;
+        if (!cellVendedor || cellVendedor.v == null) continue;
+        if (!cellValor || cellValor.v == null) continue;
+        if (!cellStatus || cellStatus.v == null) continue;
+
+        const descricao = String(cellDesc.v).trim().toLowerCase();
+        const statusRaw = String(cellStatus.v).trim().toLowerCase();
+
+        // filtro 1: AA começa com "venda"
+        if (!descricao.startsWith('venda')) {
+          continue;
         }
-        if (!cellValor || cellValor.v == null) {
-          continue; // sem valor, ignora linha
+
+        // filtro 2: status C dentro da lista
+        if (!STATUS_VALIDOS.includes(statusRaw)) {
+          continue;
         }
 
         const vendedor = String(cellVendedor.v).trim();
@@ -383,21 +414,19 @@
         }
 
         const valor = parseFloat(bruto);
-        if (isNaN(valor)) {
-          continue;
-        }
+        if (isNaN(valor)) continue;
 
         if (!totais[vendedor]) {
           totais[vendedor] = 0;
         }
         totais[vendedor] += valor;
         totalGeral += valor;
-        linhasLidas++;
+        linhasValidas++;
       }
 
       // Atualiza resumo
       totalGeralEl.textContent = formatCurrency(totalGeral);
-      totalRegistrosEl.textContent = `${linhasLidas} linhas lidas`;
+      totalRegistrosEl.textContent = `${linhasValidas} linhas válidas (AA "venda..." + status C permitido)`;
       const vendedores = Object.keys(totais);
       qtdVendedoresEl.textContent = vendedores.length;
 
@@ -422,7 +451,7 @@
         const td = document.createElement('td');
         td.colSpan = 2;
         td.className = 'empty-state';
-        td.textContent = 'Nenhum dado encontrado. Confira se a coluna Q tem o vendedor e a coluna F tem o valor.';
+        td.textContent = 'Nenhuma linha válida encontrada. Confira AA iniciando em "venda", Q com vendedor, F com valor e C com status permitido.';
         tr.appendChild(td);
         tbodyVendedores.appendChild(tr);
         return;
