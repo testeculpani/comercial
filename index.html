@@ -68,7 +68,7 @@
       justify-content: center;
       font-size: 16px;
       color: white;
-      box-shadow: 0 6px 16px rgba(34, 189, 94, 0.45);
+      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.45);
     }
     .subtitle {
       font-size: 13px;
@@ -125,6 +125,7 @@
       opacity: 0;
       cursor: pointer;
     }
+
     .btn {
       display: inline-flex;
       align-items: center;
@@ -149,6 +150,16 @@
       padding: 6px 10px;
       font-size: 11px;
       box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+    }
+    .btn.tertiary {
+      background: #e2e8f0;
+      color: #0f172a;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+    }
+    .btn-toggle-active {
+      background: linear-gradient(135deg, #0ea5e9, #22c55e);
+      color: white;
+      box-shadow: 0 8px 16px rgba(34, 197, 94, 0.45);
     }
     .btn span.icon {
       font-size: 15px;
@@ -204,6 +215,51 @@
     .hint {
       font-size: 11px;
       color: #94a3b8;
+    }
+
+    .weekly-panel {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #f1f5f9;
+      border: 1px dashed #cbd5f5;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+    .weekly-left {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .weekly-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .weekly-label {
+      font-size: 12px;
+      color: #475569;
+      font-weight: 500;
+    }
+    .weekly-select {
+      padding: 5px 8px;
+      border-radius: 999px;
+      border: 1px solid #cbd5f5;
+      font-size: 12px;
+      background: #ffffff;
+      outline: none;
+    }
+    .weekly-summary-text {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
     }
 
     .table-wrapper {
@@ -335,7 +391,7 @@
       background: #ecfdf5 !important;
     }
 
-    /* MODAL (POPUP) */
+    /* MODAIS (POPUPS) */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -378,6 +434,10 @@
         padding: 7px 8px;
       }
       .actions-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .weekly-panel {
         flex-direction: column;
         align-items: flex-start;
       }
@@ -450,7 +510,29 @@
     </button>
   </div>
 
-  <!-- MODAL POPUP -->
+  <!-- PAINEL SEMANAL POR RESPONSÁVEL -->
+  <div class="weekly-panel">
+    <div class="weekly-left">
+      <span class="weekly-label">Apresentação semanal do responsável:</span>
+      <button class="btn small tertiary" id="btnRespAlex">Sou ALEXANDRE</button>
+      <button class="btn small tertiary" id="btnRespJum">Sou JUMAHIL</button>
+    </div>
+    <div class="weekly-right">
+      <label for="selectSemanaResp" class="weekly-label">Semana (sáb–sex):</label>
+      <select id="selectSemanaResp" class="weekly-select">
+        <option value="">Selecione um responsável primeiro</option>
+      </select>
+      <button class="btn small" id="btnVerSemanaResp">
+        <span class="icon">📅</span>
+        Ver resumo da semana selecionada
+      </button>
+      <div class="weekly-summary-text" id="resumoSemanaResp">
+        Nenhum responsável selecionado.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL POPUP VENDEDOR -->
   <div id="detalhesOverlay" class="modal-overlay">
     <div id="detalhesVendedorWrapper" class="modal-card">
       <div class="modal-close">
@@ -525,6 +607,52 @@
     </div>
   </div>
 
+  <!-- MODAL POPUP SEMANAL POR RESPONSÁVEL -->
+  <div id="semanaOverlay" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-close">
+        <button class="btn small secondary" id="btnFecharSemana">
+          X Fechar
+        </button>
+      </div>
+
+      <div class="section-header-row" style="margin-bottom: 8px; padding-right: 80px;">
+        <h3 style="margin-top: 0;">
+          <span>📈</span>
+          Resumo semanal – Responsável:
+          <span id="semanaRespNome">–</span>
+        </h3>
+      </div>
+
+      <div class="subtitle-small">
+        Semana selecionada:
+        <span id="semanaPeriodoTexto">–</span>
+      </div>
+
+      <div class="summary-grid" style="margin-top:8px;">
+        <div class="summary-card">
+          <div class="summary-label">Total da semana</div>
+          <div id="semanaTotalSemana" class="summary-value">R$ 0,00</div>
+          <div class="summary-chip">Soma de todos os vendedores do responsável</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Total do mês</div>
+          <div id="semanaTotalMes" class="summary-value">R$ 0,00</div>
+          <div class="summary-chip" id="semanaMesRef">Mês de referência: –</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">% da semana no mês</div>
+          <div id="semanaPercentual" class="summary-value">0%</div>
+          <div class="summary-chip">Participação da semana no total do mês</div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;" class="subtitle-small">
+        Dica: use esse painel para a reunião semanal – já mostra quanto você tem na semana e como está o acumulado do mês para o responsável escolhido.
+      </div>
+    </div>
+  </div>
+
   <div class="table-wrapper" id="tabelaContainer">
     <table>
       <thead>
@@ -586,6 +714,7 @@
   const sortIndicadorV = document.getElementById('sortIndicadorV');
   const sortIndicadorR = document.getElementById('sortIndicadorR');
 
+  // Modal vendedor
   const detalhesOverlay = document.getElementById('detalhesOverlay');
   const btnFecharDetalhes = document.getElementById('btnFecharDetalhes');
   const detVendedorNomeEl = document.getElementById('detVendedorNome');
@@ -596,6 +725,23 @@
   const detSemanasCountEl = document.getElementById('detSemanasCount');
   const tbodyDetMes = document.getElementById('tbodyDetMes');
   const tbodyDetSemana = document.getElementById('tbodyDetSemana');
+
+  // Painel semanal por responsável
+  const btnRespAlex = document.getElementById('btnRespAlex');
+  const btnRespJum = document.getElementById('btnRespJum');
+  const selectSemanaResp = document.getElementById('selectSemanaResp');
+  const btnVerSemanaResp = document.getElementById('btnVerSemanaResp');
+  const resumoSemanaRespEl = document.getElementById('resumoSemanaResp');
+
+  // Modal semanal por responsável
+  const semanaOverlay = document.getElementById('semanaOverlay');
+  const btnFecharSemana = document.getElementById('btnFecharSemana');
+  const semanaRespNomeEl = document.getElementById('semanaRespNome');
+  const semanaPeriodoTextoEl = document.getElementById('semanaPeriodoTexto');
+  const semanaTotalSemanaEl = document.getElementById('semanaTotalSemana');
+  const semanaTotalMesEl = document.getElementById('semanaTotalMes');
+  const semanaMesRefEl = document.getElementById('semanaMesRef');
+  const semanaPercentualEl = document.getElementById('semanaPercentual');
 
   const STATUS_VALIDOS = [
     'pendente',
@@ -734,6 +880,11 @@
   let totalGeralGlobal = 0;
   let sortMode = 'valor';              
   let vendedorSelecionado = null;
+
+  // Estruturas para o painel semanal por responsável
+  let semanasPorResp = { 'ALEXANDRE': [], 'JUMAHIL': [] }; // [{key, start, end, total}]
+  let mesesPorResp = { 'ALEXANDRE': {}, 'JUMAHIL': {} };   // resp -> {mesKey: total}
+  let responsavelSelecionado = null;
 
   function atualizarIndicadoresOrdenacao() {
     if (sortMode === 'valor') {
@@ -965,6 +1116,98 @@
     renderDetalhesVendedor(nome);
   }
 
+  // --- Painel semanal por responsável ---
+
+  function resetResponsavelUI() {
+    btnRespAlex.classList.remove('btn-toggle-active');
+    btnRespJum.classList.remove('btn-toggle-active');
+    selectSemanaResp.innerHTML = '<option value="">Selecione um responsável primeiro</option>';
+    resumoSemanaRespEl.textContent = 'Nenhum responsável selecionado.';
+  }
+
+  function atualizarSemanasRespUI() {
+    if (!responsavelSelecionado) {
+      resetResponsavelUI();
+      return;
+    }
+
+    const semanas = semanasPorResp[responsavelSelecionado] || [];
+    selectSemanaResp.innerHTML = '';
+
+    if (semanas.length === 0) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = 'Nenhuma semana com vendas para ' + responsavelSelecionado;
+      opt.disabled = true;
+      opt.selected = true;
+      selectSemanaResp.appendChild(opt);
+      resumoSemanaRespEl.textContent = 'Nenhuma semana válida para este responsável nas regras atuais.';
+      return;
+    }
+
+    // ordenar por data de início
+    semanas.sort((a, b) => a.start - b.start);
+
+    semanas.forEach((sem, idx) => {
+      const opt = document.createElement('option');
+      opt.value = sem.key;
+      opt.textContent = `${formatDateBR(sem.start)} a ${formatDateBR(sem.end)} – ${formatCurrency(sem.total)}`;
+      if (idx === semanas.length - 1) {
+        opt.selected = true; // última semana como padrão
+      }
+      selectSemanaResp.appendChild(opt);
+    });
+
+    const ultima = semanas[semanas.length - 1];
+    resumoSemanaRespEl.textContent =
+      `Última semana (${formatDateBR(ultima.start)} a ${formatDateBR(ultima.end)}): ${formatCurrency(ultima.total)} (${responsavelSelecionado})`;
+  }
+
+  function abrirResumoSemanalResponsavel() {
+    if (!responsavelSelecionado) {
+      alert('Selecione primeiro se você é ALEXANDRE ou JUMAHIL.');
+      return;
+    }
+    const semanas = semanasPorResp[responsavelSelecionado] || [];
+    if (semanas.length === 0) {
+      alert('Nenhuma semana com vendas para este responsável nas regras atuais.');
+      return;
+    }
+    const keySel = selectSemanaResp.value || (semanas[semanas.length - 1]?.key);
+    if (!keySel) {
+      alert('Nenhuma semana selecionada.');
+      return;
+    }
+
+    const semana = semanas.find(s => s.key === keySel) || semanas[semanas.length - 1];
+    if (!semana) {
+      alert('Semana não encontrada.');
+      return;
+    }
+
+    const d = semana.start;
+    const ano = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const mesKey = `${ano}-${mes}`;
+    const totalMes = (mesesPorResp[responsavelSelecionado] && mesesPorResp[responsavelSelecionado][mesKey]) || 0;
+
+    semanaRespNomeEl.textContent = responsavelSelecionado;
+    semanaPeriodoTextoEl.textContent = `${formatDateBR(semana.start)} a ${formatDateBR(semana.end)}`;
+    semanaTotalSemanaEl.textContent = formatCurrency(semana.total);
+    semanaTotalMesEl.textContent = formatCurrency(totalMes);
+    semanaMesRefEl.textContent = `Mês de referência: ${mes}/${ano}`;
+
+    let perc = 0;
+    if (totalMes > 0) {
+      perc = (semana.total / totalMes) * 100;
+    }
+    semanaPercentualEl.textContent = `${perc.toFixed(1)}%`;
+
+    semanaOverlay.style.display = 'flex';
+  }
+
+  // --- Importação da planilha ---
+
   inputExcel.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -1110,6 +1353,41 @@
         };
       });
 
+      // Montar semanasPorResp e mesesPorResp
+      semanasPorResp = { 'ALEXANDRE': [], 'JUMAHIL': [] };
+      mesesPorResp = { 'ALEXANDRE': {}, 'JUMAHIL': {} };
+
+      // Meses por responsável
+      resumoMesVendedor.forEach(item => {
+        const resp = item.resp;
+        if (resp === 'ALEXANDRE' || resp === 'JUMAHIL') {
+          if (!mesesPorResp[resp][item.mesKey]) mesesPorResp[resp][item.mesKey] = 0;
+          mesesPorResp[resp][item.mesKey] += item.total;
+        }
+      });
+
+      // Semanas por responsável
+      const aggSemanasResp = { 'ALEXANDRE': {}, 'JUMAHIL': {} };
+      resumoSemanaVendedor.forEach(item => {
+        const resp = item.resp;
+        if (resp === 'ALEXANDRE' || resp === 'JUMAHIL') {
+          const key = item.start.toISOString().slice(0, 10);
+          if (!aggSemanasResp[resp][key]) {
+            aggSemanasResp[resp][key] = {
+              key,
+              start: item.start,
+              end: item.end,
+              total: 0
+            };
+          }
+          aggSemanasResp[resp][key].total += item.total;
+        }
+      });
+
+      ['ALEXANDRE', 'JUMAHIL'].forEach(resp => {
+        semanasPorResp[resp] = Object.values(aggSemanasResp[resp]);
+      });
+
       sortMode = 'valor';
       atualizarIndicadoresOrdenacao();
       vendedorSelecionado = null;
@@ -1118,11 +1396,17 @@
       detVendedorRespLinhaEl.textContent = 'Selecione um vendedor na tabela para ver o dashboard semanal e mensal.';
       renderTabelaPrincipal();
       renderTabelaSemVendas();
+
+      // Reset painel semanal
+      responsavelSelecionado = null;
+      resetResponsavelUI();
+      semanaOverlay.style.display = 'none';
     };
 
     reader.readAsArrayBuffer(file);
   });
 
+  // Botão vendedores sem vendas
   btnSemVendas.addEventListener('click', () => {
     if (semVendasWrapper.style.display === 'none' || semVendasWrapper.style.display === '') {
       semVendasWrapper.style.display = 'block';
@@ -1134,13 +1418,12 @@
     }
   });
 
+  // Fechar modal vendedor
   btnFecharDetalhes.addEventListener('click', () => {
     detalhesOverlay.style.display = 'none';
     vendedorSelecionado = null;
     limparSelecaoLinhas();
   });
-
-  // Fecha clicando fora do card
   detalhesOverlay.addEventListener('click', (e) => {
     if (e.target === detalhesOverlay) {
       detalhesOverlay.style.display = 'none';
@@ -1149,6 +1432,7 @@
     }
   });
 
+  // Ordenação
   thVendedor.addEventListener('click', () => {
     if (ultimaListaVendedores.length === 0) return;
     sortMode = 'valor';
@@ -1169,9 +1453,40 @@
     }
   });
 
+  // Seleção de responsável (ALEXANDRE / JUMAHIL)
+  btnRespAlex.addEventListener('click', () => {
+    responsavelSelecionado = 'ALEXANDRE';
+    btnRespAlex.classList.add('btn-toggle-active');
+    btnRespJum.classList.remove('btn-toggle-active');
+    atualizarSemanasRespUI();
+  });
+
+  btnRespJum.addEventListener('click', () => {
+    responsavelSelecionado = 'JUMAHIL';
+    btnRespJum.classList.add('btn-toggle-active');
+    btnRespAlex.classList.remove('btn-toggle-active');
+    atualizarSemanasRespUI();
+  });
+
+  btnVerSemanaResp.addEventListener('click', () => {
+    abrirResumoSemanalResponsavel();
+  });
+
+  // Fechar modal semanal responsável
+  btnFecharSemana.addEventListener('click', () => {
+    semanaOverlay.style.display = 'none';
+  });
+  semanaOverlay.addEventListener('click', (e) => {
+    if (e.target === semanaOverlay) {
+      semanaOverlay.style.display = 'none';
+    }
+  });
+
   semVendasWrapper.style.display = 'none';
   detalhesOverlay.style.display = 'none';
+  semanaOverlay.style.display = 'none';
   atualizarIndicadoresOrdenacao();
+  resetResponsavelUI();
 </script>
 
 </body>
