@@ -498,12 +498,13 @@
           <thead>
             <tr>
               <th>Vendedor</th>
+              <th>Responsável</th>
               <th>Mês</th>
               <th style="text-align:right;">Total vendido</th>
             </tr>
           </thead>
           <tbody id="tbodyResumoMesVend">
-            <tr><td colspan="3" class="empty-state">Nenhuma venda com data válida encontrada.</td></tr>
+            <tr><td colspan="4" class="empty-state">Nenhuma venda com data válida encontrada.</td></tr>
           </tbody>
         </table>
       </div>
@@ -543,12 +544,13 @@
           <thead>
             <tr>
               <th>Vendedor</th>
+              <th>Responsável</th>
               <th>Período (sáb–sex)</th>
               <th style="text-align:right;">Total vendido</th>
             </tr>
           </thead>
           <tbody id="tbodyResumoSemanaVend">
-            <tr><td colspan="3" class="empty-state">Nenhuma venda com data válida encontrada.</td></tr>
+            <tr><td colspan="4" class="empty-state">Nenhuma venda com data válida encontrada.</td></tr>
           </tbody>
         </table>
       </div>
@@ -718,14 +720,14 @@
     return null;
   }
 
-  let ultimaListaVendedores = [];      // [{vendedor, total, resp}]
-  let listaSemVendas = [];             // [{vendedor, resp}]
-  let resumoMes = [];                  // [{key, total}] key = "YYYY-MM"
-  let resumoSemana = [];               // [{start, end, total}]
-  let resumoMesVendedor = [];          // [{vendedor, mesKey, total}]
-  let resumoSemanaVendedor = [];       // [{vendedor, start, end, total}]
+  let ultimaListaVendedores = [];      
+  let listaSemVendas = [];             
+  let resumoMes = [];                  
+  let resumoSemana = [];               
+  let resumoMesVendedor = [];          
+  let resumoSemanaVendedor = [];       
   let totalGeralGlobal = 0;
-  let sortMode = 'valor';              // 'valor' ou 'responsavel'
+  let sortMode = 'valor';              
 
   function atualizarIndicadoresOrdenacao() {
     if (sortMode === 'valor') {
@@ -887,7 +889,7 @@
     if (resumoMesVendedor.length === 0) {
       const tr = document.createElement('tr');
       const td = document.createElement('td');
-      td.colSpan = 3;
+      td.colSpan = 4;
       td.className = 'empty-state';
       td.textContent = 'Nenhuma venda com data válida encontrada.';
       tr.appendChild(td);
@@ -911,6 +913,16 @@
       const tdVendedor = document.createElement('td');
       tdVendedor.textContent = item.vendedor;
 
+      const tdResp = document.createElement('td');
+      tdResp.style.textAlign = 'center';
+      if (item.resp === 'ALEXANDRE') {
+        tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
+      } else if (item.resp === 'JUMAHIL') {
+        tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
+      } else {
+        tdResp.textContent = '';
+      }
+
       const tdMes = document.createElement('td');
       tdMes.textContent = label;
 
@@ -919,6 +931,7 @@
       tdTotal.textContent = formatCurrency(item.total);
 
       tr.appendChild(tdVendedor);
+      tr.appendChild(tdResp);
       tr.appendChild(tdMes);
       tr.appendChild(tdTotal);
       tbodyResumoMesVend.appendChild(tr);
@@ -961,7 +974,7 @@
     if (resumoSemanaVendedor.length === 0) {
       const tr = document.createElement('tr');
       const td = document.createElement('td');
-      td.colSpan = 3;
+      td.colSpan = 4;
       td.className = 'empty-state';
       td.textContent = 'Nenhuma venda com data válida encontrada.';
       tr.appendChild(td);
@@ -983,6 +996,16 @@
       const tdVendedor = document.createElement('td');
       tdVendedor.textContent = item.vendedor;
 
+      const tdResp = document.createElement('td');
+      tdResp.style.textAlign = 'center';
+      if (item.resp === 'ALEXANDRE') {
+        tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
+      } else if (item.resp === 'JUMAHIL') {
+        tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
+      } else {
+        tdResp.textContent = '';
+      }
+
       const tdPeriodo = document.createElement('td');
       tdPeriodo.textContent = `${formatDateBR(item.start)} a ${formatDateBR(item.end)}`;
 
@@ -991,6 +1014,7 @@
       tdTotal.textContent = formatCurrency(item.total);
 
       tr.appendChild(tdVendedor);
+      tr.appendChild(tdResp);
       tr.appendChild(tdPeriodo);
       tr.appendChild(tdTotal);
       tbodyResumoSemanaVend.appendChild(tr);
@@ -1016,10 +1040,10 @@
       const range = XLSX.utils.decode_range(sheet['!ref']);
 
       const totais = {};
-      const totaisMes = {};             // geral mês
-      const totaisSemana = {};          // geral semana
-      const totaisMesVend = {};        // chave: vendedor||YYYY-MM
-      const totaisSemanaVend = {};     // chave: vendedor||startISO
+      const totaisMes = {};             
+      const totaisSemana = {};          
+      const totaisMesVend = {};        
+      const totaisSemanaVend = {};     
 
       let totalGeral = 0;
       let linhasValidas = 0;
@@ -1058,10 +1082,7 @@
         if (isNaN(valor)) continue;
 
         const dataVenda = parseExcelDate(cellData);
-        // Se quiser descartar sem data, descomente:
-        // if (!dataVenda) continue;
 
-        // Totais por vendedor
         if (!totais[vendedor]) totais[vendedor] = 0;
         totais[vendedor] += valor;
 
@@ -1069,7 +1090,6 @@
         linhasValidas++;
 
         if (dataVenda) {
-          // Mês
           const ano = dataVenda.getFullYear();
           const mes = String(dataVenda.getMonth() + 1).padStart(2, '0');
           const mesKey = `${ano}-${mes}`;
@@ -1081,11 +1101,10 @@
           if (!totaisMesVend[keyMV]) totaisMesVend[keyMV] = 0;
           totaisMesVend[keyMV] += valor;
 
-          // Semana sábado–sexta
           const d = new Date(dataVenda.getTime());
           d.setHours(0, 0, 0, 0);
-          const day = d.getDay(); // 0=dom ... 6=sáb
-          const diff = (day - 6 + 7) % 7; // dias desde o sábado
+          const day = d.getDay(); 
+          const diff = (day - 6 + 7) % 7; 
           const start = new Date(d.getTime());
           start.setDate(d.getDate() - diff);
           const end = new Date(start.getTime());
@@ -1105,7 +1124,6 @@
         }
       }
 
-      // Resumo geral
       totalGeralGlobal = totalGeral;
       totalGeralEl.textContent = formatCurrency(totalGeral);
       totalRegistrosEl.textContent = `${linhasValidas} linhas válidas (R "venda..." + status B permitido)`;
@@ -1124,14 +1142,12 @@
         topVendedorValorEl.textContent = 'R$ 0,00';
       }
 
-      // Lista principal
       ultimaListaVendedores = vendedores.map(v => ({
         vendedor: v,
         total: totais[v],
         resp: getResponsavel(v) || ''
       }));
 
-      // Vendedores sem vendas
       listaSemVendas = [];
       const setComVenda = new Set(vendedores);
       VENDEDORES_ALEXANDRE.forEach(nome => {
@@ -1145,27 +1161,28 @@
         }
       });
 
-      // Resumo mês geral
       resumoMes = Object.entries(totaisMes).map(([key, total]) => ({ key, total }));
       resumoMes.sort((a, b) => a.key.localeCompare(b.key));
 
-      // Resumo mês por vendedor
       resumoMesVendedor = Object.entries(totaisMesVend).map(([key, total]) => {
         const [vendedor, mesKey] = key.split('||');
-        return { vendedor, mesKey, total };
+        return { vendedor, mesKey, total, resp: getResponsavel(vendedor) || '' };
       });
 
-      // Resumo semana geral
       resumoSemana = Object.values(totaisSemana);
       resumoSemana.sort((a, b) => a.start - b.start);
 
-      // Resumo semana por vendedor
       resumoSemanaVendedor = Object.entries(totaisSemanaVend).map(([key, obj]) => {
         const [vendedor] = key.split('||');
-        return { vendedor, start: obj.start, end: obj.end, total: obj.total };
+        return {
+          vendedor,
+          start: obj.start,
+          end: obj.end,
+          total: obj.total,
+          resp: getResponsavel(vendedor) || ''
+        };
       });
 
-      // Render
       sortMode = 'valor';
       atualizarIndicadoresOrdenacao();
       renderTabelaPrincipal();
@@ -1179,7 +1196,6 @@
     reader.readAsArrayBuffer(file);
   });
 
-  // Toggle sem vendas
   btnSemVendas.addEventListener('click', () => {
     if (semVendasWrapper.style.display === 'none' || semVendasWrapper.style.display === '') {
       semVendasWrapper.style.display = 'block';
@@ -1191,7 +1207,6 @@
     }
   });
 
-  // Toggle resumo mês por vendedor
   btnToggleMesVend.addEventListener('click', () => {
     const visible = resumoMesVendWrapper.style.display === 'block';
     resumoMesVendWrapper.style.display = visible ? 'none' : 'block';
@@ -1200,7 +1215,6 @@
       : 'Ocultar resumo por mês por vendedor';
   });
 
-  // Toggle resumo semana por vendedor
   btnToggleSemanaVend.addEventListener('click', () => {
     const visible = resumoSemanaVendWrapper.style.display === 'block';
     resumoSemanaVendWrapper.style.display = visible ? 'none' : 'block';
@@ -1209,7 +1223,6 @@
       : 'Ocultar resumo por semana por vendedor';
   });
 
-  // Ordenação
   thVendedor.addEventListener('click', () => {
     if (ultimaListaVendedores.length === 0) return;
     sortMode = 'valor';
@@ -1224,7 +1237,6 @@
     renderTabelaPrincipal();
   });
 
-  // Estado inicial
   semVendasWrapper.style.display = 'none';
   resumoMesVendWrapper.style.display = 'none';
   resumoSemanaVendWrapper.style.display = 'none';
