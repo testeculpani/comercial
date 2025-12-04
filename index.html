@@ -221,6 +221,32 @@
       font-feature-settings: "tnum" 1, "lnum" 1;
       text-align: right;
     }
+    .td-resp {
+      text-align: center;
+      font-size: 12px;
+    }
+    .tag-alexandre {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #16a34a;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .tag-jumahil {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: #fee2e2;
+      color: #dc2626;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
     .empty-state {
       padding: 16px;
       text-align: center;
@@ -266,7 +292,8 @@
           Soma da coluna <strong>F</strong> por vendedor da <strong>Q</strong>,<br>
           apenas se:
           <strong>AA</strong> começar com "venda" e
-          <strong>C</strong> for Pendente / Aprovado / Atendido / Em Alteração / Validado
+          <strong>C</strong> for Pendente / Aprovado / Atendido / Em Alteração / Validado. <br>
+          Alguns vendedores são marcados como <strong>ALEXANDRE</strong> (verde) ou <strong>JUMAHIL</strong> (vermelho).
         </small>
       </div>
     </div>
@@ -314,17 +341,18 @@
         <tr>
           <th>Vendedor (Q)</th>
           <th style="text-align:right;">Total vendido (soma de F)</th>
+          <th style="text-align:center;">Responsável</th>
         </tr>
       </thead>
       <tbody id="tbodyVendedores">
-        <tr><td colspan="2" class="empty-state">Nenhuma planilha importada ainda.</td></tr>
+        <tr><td colspan="3" class="empty-state">Nenhuma planilha importada ainda.</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="footer-note">
     <span>Lendo colunas <strong>Q</strong> (vendedor), <strong>F</strong> (valor), <strong>AA</strong> (descrição) e <strong>C</strong> (status).</span>
-    <span>Apenas linhas com AA iniciando em "venda" e status C dentro da lista definida entram no cálculo.</span>
+    <span>Apenas linhas com AA iniciando em "venda" e status C dentro da lista entram no cálculo. Vendedores podem ser ALEXANDRE ou JUMAHIL.</span>
   </div>
 </div>
 
@@ -342,12 +370,97 @@
     'aprovado',
     'atendido',
     'em alteração',
-    'em alteracao', // sem acento, caso venha assim
+    'em alteracao',
     'validado'
+  ];
+
+  // Lista de vendedores ALEXANDRE
+  const VENDEDORES_ALEXANDRE = [
+    "ANDERSON MAICO FREDERICO REPRESENTACOES COMER",
+    "J. G. VARGAS REPRESENTACOES COMERCIAIS MARING",
+    "60.132.034 MOHANDAS VINICIUS DA SILVA DELL IS",
+    "HOPPE REPRESENTACOES LTDA",
+    "FURLANETTO E GONCALVES LTDA",
+    "ROGERIO ANTONELLO DA ROSA",
+    "TAVARES IMPORTAÇÃO E COMERCIO LTDA",
+    "MICAEL MENEZES DE OLIVEIRA",
+    "ANGELA DE FATIMA ALVES SOUZA 48825433034",
+    "P. F. VIEIRA FARIA & CIA LTDA",
+    "ROCELU REPRESENTACAO COMERCIAL LTDA",
+    "AUTHENTIC SALES REPRESENTACOES LTDA",
+    "MAZINHO REPRESENTACAO COMERCIAL LTDA",
+    "V9 REPRESENTACOES E EVENTOS LTDA",
+    "AMARILDO DE LELIS OLIVEIRA RIOS",
+    "STRONG REPRESENTACOES LTDA",
+    "J. R. QUARESMA REPRESENTACAO COMERCIAL DE U. D. LTDA",
+    "CARLOS ALBERTO LEHRBACK BARBOSA ME",
+    "JOSE WANDERLEY PEREIRA DOS SANTOS REPRES",
+    "R C SANTOS REPRESENTACOES LTDA",
+    "MARFIGRAN SP DISTRIBUIDORA LTDA",
+    "REMA REPRESENTACAO E APOIO ADMINISTRATIVO LTD",
+    "MARCIO CORAINE",
+    "AATR - REPRESENTACOES COMERCIAIS LTDA",
+    "FEROLETO REPRESENTACAO E COMERCIO DE UTILIDAD",
+    "WELLINGTON L. F. ARTAL LTDA",
+    "DAL EVEDOVE LIMA COMERCIAL LTDA",
+    "MENESES E BRAGA REPRESENTACOES LTDA ME",
+    "FORTES REPRESENTACOES LTDA",
+    "RICARDO BEZERRA REPRESENTACOES LTDA",
+    "VALDEMIR ASTRESSE",
+    "53.836.657 FRANCISCO CARDOSO DE SOUSA ROCHA",
+    "RRB REPRESENTACAO E COMERCIO DE ARTIGOS ESPORTIVOS LTDA",
+    "MAPRI REPRESENTAÇÕES LTDA"
+  ];
+
+  // Lista de vendedores JUMAHIL
+  const VENDEDORES_JUMAHIL = [
+    "CLEBSON MARQUES LOPES 71545808287",
+    "J F A N REPRESENTACOES LTDA",
+    "E CORDEIRO CAMPOS",
+    "ERISVALDO PEREIRA FERREIRA",
+    "SETCOM COMERCIO LTDA",
+    "V. R. PACIFICO",
+    "A B DE OLIVEIRA FILHO REPRESENTACOES LTDA",
+    "JOANE SILVA SANTOS",
+    "FENIX REPRESENTACOES LTDA",
+    "J P DA SILVA REPRESENTANTE COMERCIAL EIRELI",
+    "E O DUARTE REPRESENTACOES LTDA.",
+    "JK COMERCIO E REPRESENTACAO LTDA",
+    "HUNTERS REPRESENTAÇÕES LTDA",
+    "LUIZ H. ZORDAN",
+    "MARCONI REPRESENTAÇOES",
+    "C N DE MELO REPRESENTACOES DE MATERIAL DE CON",
+    "ELUILSON FELIPE DE SOUZA JUNIOR - ME",
+    "CURITINTAS REPRESENTACOES EIRELI",
+    "E.M. RIBEIRO LTDA",
+    "JOSE CARLOS MACEDO JUNIOR & CIA LTDA",
+    "CEZAR LUIZ HOOGEVOONINK",
+    "ARENDT E RAMOS REPRESENTACOES COMERCIAIS LTDA",
+    "FREITAS REPRESENTACAO COMERCIAL LTDA",
+    "GILSON CARLOS DALLA COSTA PEREIRA & CIA",
+    "QUEIROZ & QUEIROZ REP COMERCIAIS LTDA",
+    "EXPOMARCAS COMERCIAL EXPORTADORA DE MANUFATURADOS LTDA",
+    "S. SILVA REPRESENTACOES LTDA",
+    "VIDAL REPRESENTACOES LTDA",
+    "ANTONIO CARLOS RAVANELLO 38377870010",
+    "ARV REPRESENTACAO COMERCIAL LTDA",
+    "E. L. BIAVATTI & CIA. LTDA.",
+    "LEANDRO DE SOUZA LTDA",
+    "SANTORO GESTAO E VENDAS LTDA",
+    "ANA JANET ZULIANI 54224055015",
+    "LUCIANO GONCALVES RODRIGUES",
+    "PAIDEIA AGORA COM DE BEB E REP LTDA ME",
+    "VIALE BR EMPREENDIMENTOS LTDA"
   ];
 
   function formatCurrency(valor) {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function getResponsavel(vendedor) {
+    if (VENDEDORES_ALEXANDRE.includes(vendedor)) return 'ALEXANDRE';
+    if (VENDEDORES_JUMAHIL.includes(vendedor)) return 'JUMAHIL';
+    return null;
   }
 
   inputExcel.addEventListener('change', function(e) {
@@ -449,7 +562,7 @@
       if (vendedores.length === 0) {
         const tr = document.createElement('tr');
         const td = document.createElement('td');
-        td.colSpan = 2;
+        td.colSpan = 3;
         td.className = 'empty-state';
         td.textContent = 'Nenhuma linha válida encontrada. Confira AA iniciando em "venda", Q com vendedor, F com valor e C com status permitido.';
         tr.appendChild(td);
@@ -471,8 +584,21 @@
         tdTotal.textContent = formatCurrency(totais[v]);
         tdTotal.className = 'td-total';
 
+        const tdResp = document.createElement('td');
+        tdResp.className = 'td-resp';
+
+        const resp = getResponsavel(v);
+        if (resp === 'ALEXANDRE') {
+          tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
+        } else if (resp === 'JUMAHIL') {
+          tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
+        } else {
+          tdResp.textContent = '';
+        }
+
         tr.appendChild(tdVendedor);
         tr.appendChild(tdTotal);
+        tr.appendChild(tdResp);
         tbodyVendedores.appendChild(tr);
       });
     };
