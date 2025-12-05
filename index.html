@@ -7,7 +7,7 @@
 
   <!-- SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- Chart.js -->
+  <!-- Chart.js (não será usado mais, mas pode deixar; se quiser pode remover) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -578,7 +578,7 @@
     </div>
   </section>
 
-  <!-- APRESENTAÇÃO -->
+  <!-- APRESENTAÇÃO (SEM GRÁFICO, SÓ NÚMEROS) -->
   <section id="secApresentacao" class="section hidden">
     <div class="top-controls">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -613,7 +613,7 @@
 
     <div class="hint">
       Escolha o <strong>responsável</strong>, o <strong>vendedor</strong>, o <strong>ano</strong> e o <strong>mês</strong>.<br>
-      O painel mostra as <strong>vendas x metas</strong> anual, mensal e por semanas (Sáb–Sex) do mês selecionado.
+      O painel mostra as <strong>vendas x metas</strong> anual, mensal e, semana a semana, apenas em números.
     </div>
 
     <div class="summary-cards">
@@ -642,11 +642,22 @@
 
     <div class="table-wrapper" style="margin-top:6px;">
       <div style="padding:8px 10px;font-size:12px;color:#475569;border-bottom:1px solid #e2e8f0;">
-        Comparativo semanal do mês selecionado – <strong>Vendas x Meta semanal</strong>
+        Resumo semanal do mês – <strong>Vendas x Meta semanal</strong>
       </div>
-      <div style="padding:4px 8px 10px;">
-        <canvas id="apChart" height="140"></canvas>
-      </div>
+      <table>
+        <thead>
+        <tr>
+          <th>Semana (Sáb–Sex)</th>
+          <th style="text-align:right;">Vendas semana (R$)</th>
+          <th style="text-align:right;">Meta semanal (R$)</th>
+          <th style="text-align:right;">Diferença (R$)</th>
+          <th style="text-align:right;">% da meta</th>
+        </tr>
+        </thead>
+        <tbody id="apWeeksBody">
+        <tr><td colspan="5" style="text-align:center;padding:8px;font-size:12px;color:#64748b;">Nenhuma semana carregada.</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <div class="footer-note">
@@ -732,7 +743,6 @@
     "FORTES REPRESENTACOES LTDA",
     "RICARDO BEZERRA REPRESENTACOES LTDA",
     "VALDEMIR ASTRESSE",
-    "FURLANETTO E GONCALVES LTDA",
     "53.836.657 FRANCISCO CARDOSO DE SOUSA ROCHA",
     "RRB REPRESENTACAO E COMERCIO DE ARTIGOS ESPORTIVOS LTDA",
     "MAPRI REPRESENTAÇÕES LTDA"
@@ -1281,7 +1291,7 @@
   });
   btnRecarregarMetas.addEventListener("click",recarregarTabelaMetas);
 
-  // APRESENTAÇÃO
+  // APRESENTAÇÃO (NÚMEROS)
   const btnApRespAlex=document.getElementById("btnApRespAlex");
   const btnApRespJum=document.getElementById("btnApRespJum");
   const selectApVendedor=document.getElementById("selectApVendedor");
@@ -1294,9 +1304,9 @@
   const apAnoPerc=document.getElementById("apAnoPerc");
   const apMesPerc=document.getElementById("apMesPerc");
   const apResumoCurto=document.getElementById("apResumoCurto");
+  const apWeeksBody=document.getElementById("apWeeksBody");
 
   let apRespAtual="ALEXANDRE";
-  let apChart=null;
 
   function initFiltrosApresentacao(){
     const hoje=new Date();
@@ -1351,7 +1361,7 @@
       apAnoPerc.textContent="0%";
       apMesPerc.textContent="0%";
       apResumoCurto.textContent="Selecione um vendedor.";
-      atualizarGraficoApresentacao([],[],[]);
+      apWeeksBody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:8px;font-size:12px;color:#64748b;">Nenhuma semana carregada.</td></tr>';
       return;
     }
     if(allRows.length===0){
@@ -1360,7 +1370,7 @@
       apAnoPerc.textContent="0%";
       apMesPerc.textContent="0%";
       apResumoCurto.textContent="Importe uma planilha na aba Vendas.";
-      atualizarGraficoApresentacao([],[],[]);
+      apWeeksBody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:8px;font-size:12px;color:#64748b;">Nenhuma semana carregada.</td></tr>';
       return;
     }
 
@@ -1388,7 +1398,7 @@
 
     const metasDoc=await carregarMetasDocCompleto(vendedor,ano);
     const metaAnual=Number(metasDoc.metaAnual||0);
-    const metaMensal=Number((metasDoc.mesasMensais||metasDoc.metasMensais||{})[mesKey]||0); // fallback se typo
+    const metaMensal=Number((metasDoc.metasMensais||{})[mesKey]||0);
     const metasSemanais=metasDoc.metasSemanais||{};
 
     apAnoValores.textContent=`${formatCurrency(vendasAno)} / ${formatCurrency(metaAnual)}`;
@@ -1400,82 +1410,67 @@
     apAnoPerc.textContent=`${percAno.toFixed(1)}%`;
     apMesPerc.textContent=`${percMes.toFixed(1)}%`;
 
-    const qtdSemanas=Object.keys(semanasMap).length;
+    const semanaKeysOrdenadas=Object.keys(semanasMap).sort();
+    const qtdSemanas=semanaKeysOrdenadas.length;
     apResumoCurto.textContent=`${qtdSemanas} semana(s) com venda no mês selecionado.`;
 
-    const labels=[];
-    const vendasSemanais=[];
-    const metasSemanaisArray=[];
-    const semanaKeysOrdenadas=Object.keys(semanasMap).sort();
+    apWeeksBody.innerHTML="";
+    if(qtdSemanas===0){
+      apWeeksBody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:8px;font-size:12px;color:#64748b;">Nenhuma semana com venda neste mês.</td></tr>';
+      return;
+    }
 
     for(const sk of semanaKeysOrdenadas){
       const info=semanasMap[sk];
-      labels.push(`${formatDateBR(info.start)} a ${formatDateBR(info.end)}`);
-      vendasSemanais.push(info.total);
-
-      const raw=metasSemanais[sk] ?? 0;
-      let metaNum=0;
-      if(typeof raw==="number") metaNum=raw;
+      const vendasSemana=info.total;
+      const rawMeta=metasSemanais[sk] ?? 0;
+      let metaSemana=0;
+      if(typeof rawMeta==="number") metaSemana=rawMeta;
       else{
-        const p=parseValorBR(String(raw));
-        metaNum=p!=null?p:Number(raw)||0;
+        const p=parseValorBR(String(rawMeta));
+        metaSemana=p!=null?p:Number(rawMeta)||0;
       }
-      metasSemanaisArray.push(metaNum);
-    }
+      const diff=vendasSemana-metaSemana;
+      const perc=metaSemana>0?(vendasSemana/metaSemana)*100:0;
 
-    atualizarGraficoApresentacao(labels,vendasSemanais,metasSemanaisArray);
-  }
+      const tr=document.createElement("tr");
 
-  function atualizarGraficoApresentacao(labels,vendasData,metasData){
-    const ctx=document.getElementById("apChart").getContext("2d");
-    if(!apChart){
-      apChart=new Chart(ctx,{
-        type:"bar",
-        data:{
-          labels,
-          datasets:[
-            {label:"Vendas semanais",data:vendasData},
-            {label:"Meta semanal",data:metasData}
-          ]
-        },
-        options:{
-          responsive:true,
-          maintainAspectRatio:false,
-          scales:{
-            y:{
-              beginAtZero:true,
-              ticks:{
-                callback:value=>value.toLocaleString("pt-BR",{minimumFractionDigits:0})
-              }
-            }
-          },
-          plugins:{
-            legend:{position:"top"},
-            tooltip:{
-              callbacks:{
-                label(context){
-                  const v=context.parsed.y||0;
-                  return `${context.dataset.label}: R$ ${v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-                }
-              }
-            }
-          }
-        }
-      });
-    }else{
-      apChart.data.labels=labels;
-      apChart.data.datasets[0].data=vendasData;
-      apChart.data.datasets[1].data=metasData;
-      apChart.update();
+      const tdSem=document.createElement("td");
+      tdSem.textContent=`${formatDateBR(info.start)} a ${formatDateBR(info.end)}`;
+
+      const tdVend=document.createElement("td");
+      tdVend.style.textAlign="right";
+      tdVend.textContent=formatCurrency(vendasSemana);
+
+      const tdMeta=document.createElement("td");
+      tdMeta.style.textAlign="right";
+      tdMeta.textContent=formatCurrency(metaSemana);
+
+      const tdDiff=document.createElement("td");
+      tdDiff.style.textAlign="right";
+      tdDiff.textContent=formatCurrency(diff);
+
+      const tdPerc=document.createElement("td");
+      tdPerc.style.textAlign="right";
+      tdPerc.textContent=`${perc.toFixed(1)}%`;
+
+      tr.appendChild(tdSem);
+      tr.appendChild(tdVend);
+      tr.appendChild(tdMeta);
+      tr.appendChild(tdDiff);
+      tr.appendChild(tdPerc);
+      apWeeksBody.appendChild(tr);
     }
   }
 
   // init
-  initFiltrosVendas();
-  initFiltrosMetas();
-  initFiltrosApresentacao();
+  function initFiltrosVendasMetasAp(){
+    initFiltrosVendas();
+    initFiltrosMetas();
+    initFiltrosApresentacao();
+  }
+  initFiltrosVendasMetasAp();
   recarregarTabelaMetas();
 </script>
 </body>
 </html>
-
