@@ -5,9 +5,9 @@
   <title>Painel Comercial – Vendas e Metas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- SheetJS para ler Excel -->
+  <!-- SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- Chart.js para gráficos -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -28,409 +28,394 @@
       max-width: 1250px;
       background: #f8fafc;
       border-radius: 18px;
-      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
-      padding: 20px 22px 24px 22px;
+      box-shadow: 0 20px 45px rgba(15,23,42,0.35);
+      padding: 20px 22px 24px;
       position: relative;
       overflow: hidden;
     }
     .container::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.13), transparent 55%),
-                  radial-gradient(circle at bottom left, rgba(34, 197, 94, 0.16), transparent 55%);
-      pointer-events: none;
-      z-index: -1;
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at top right, rgba(56,189,248,0.13), transparent 55%),
+        radial-gradient(circle at bottom left, rgba(34,197,94,0.16), transparent 55%);
+      z-index:-1;
+      pointer-events:none;
     }
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-      margin-bottom: 14px;
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      margin-bottom:14px;
     }
     h1 {
-      margin: 0;
-      font-size: 22px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #020617;
+      margin:0;
+      font-size:22px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      color:#020617;
     }
-    h1 span.icon {
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, #0ea5e9, #22c55e);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.45);
-      font-size: 16px;
+    h1 .icon {
+      width:26px;
+      height:26px;
+      border-radius:999px;
+      background:linear-gradient(135deg,#0ea5e9,#22c55e);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:16px;
+      box-shadow:0 6px 16px rgba(34,197,94,0.45);
     }
     .subtitle {
-      font-size: 13px;
-      color: #64748b;
-      margin-top: 4px;
-      line-height: 1.3;
+      font-size:13px;
+      color:#64748b;
+      margin-top:4px;
+      line-height:1.3;
     }
     .badge {
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      background: #e0f2fe;
-      color: #0369a1;
-      border: 1px solid #bae6fd;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:11px;
+      background:#e0f2fe;
+      color:#0369a1;
+      border:1px solid #bae6fd;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
     }
     .badge-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+      width:7px;
+      height:7px;
+      border-radius:999px;
+      background:#22c55e;
+      box-shadow:0 0 0 4px rgba(34,197,94,0.25);
     }
 
     .tabs {
-      display: inline-flex;
-      background: #e2e8f0;
-      border-radius: 999px;
-      padding: 3px;
-      gap: 4px;
-      margin-bottom: 10px;
+      display:inline-flex;
+      background:#e2e8f0;
+      border-radius:999px;
+      padding:3px;
+      gap:4px;
+      margin-bottom:10px;
     }
     .tab-btn {
-      border-radius: 999px;
-      border: none;
-      padding: 6px 14px;
-      font-size: 12px;
-      cursor: pointer;
-      background: transparent;
-      color: #475569;
-      font-weight: 500;
-      transition: all 0.12s ease;
+      border-radius:999px;
+      border:none;
+      padding:6px 14px;
+      font-size:12px;
+      cursor:pointer;
+      background:transparent;
+      color:#475569;
+      font-weight:500;
+      transition:all 0.12s;
     }
     .tab-btn.active {
-      background: white;
-      color: #0f172a;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+      background:#fff;
+      color:#0f172a;
+      box-shadow:0 4px 12px rgba(15,23,42,0.2);
     }
 
-    .section { margin-top: 6px; }
-    .section.hidden { display: none; }
+    .section { margin-top:6px; }
+    .section.hidden { display:none; }
 
     .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border-radius: 999px;
-      padding: 6px 12px;
-      border: none;
-      background: #0f172a;
-      color: white;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 5px 12px rgba(15, 23, 42, 0.35);
-      white-space: nowrap;
-      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:6px 12px;
+      border:none;
+      background:#0f172a;
+      color:#fff;
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+      box-shadow:0 5px 12px rgba(15,23,42,0.35);
+      white-space:nowrap;
+      transition:transform .1s, box-shadow .1s, filter .1s;
     }
     .btn.small {
-      padding: 4px 9px;
-      font-size: 11px;
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
+      padding:4px 9px;
+      font-size:11px;
+      box-shadow:0 4px 10px rgba(15,23,42,0.25);
     }
     .btn.outline {
-      background: transparent;
-      color: #0f172a;
-      border: 1px solid #cbd5f5;
-      box-shadow: none;
+      background:transparent;
+      color:#0f172a;
+      border:1px solid #cbd5f5;
+      box-shadow:none;
     }
     .btn:active {
-      transform: translateY(1px);
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
-      filter: brightness(0.97);
+      transform:translateY(1px);
+      box-shadow:0 4px 10px rgba(15,23,42,0.25);
+      filter:brightness(.97);
     }
 
     .top-controls {
-      background: #e2e8f0;
-      border-radius: 14px;
-      padding: 10px 12px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px 16px;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
+      background:#e2e8f0;
+      border-radius:14px;
+      padding:10px 12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px 16px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:10px;
     }
     .label {
-      font-size: 13px;
-      color: #475569;
-      font-weight: 500;
+      font-size:13px;
+      color:#475569;
+      font-weight:500;
     }
     .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 10px;
-      align-items: center;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px 10px;
+      align-items:center;
     }
     .filters-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #475569;
+      display:flex;
+      gap:6px;
+      align-items:center;
+      font-size:12px;
+      color:#475569;
     }
     .filters-group input,
     .filters-group select {
-      padding: 4px 7px;
-      border-radius: 999px;
-      border: 1px solid #cbd5f5;
-      font-size: 12px;
-      background: white;
-      outline: none;
+      padding:4px 7px;
+      border-radius:999px;
+      border:1px solid #cbd5f5;
+      font-size:12px;
+      background:#fff;
+      outline:none;
     }
     .hint {
-      font-size: 11px;
-      color: #94a3b8;
-      margin-bottom: 8px;
+      font-size:11px;
+      color:#94a3b8;
+      margin-bottom:8px;
     }
     .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-      background: #e0f2fe;
-      color: #0369a1;
-    }
-
-    .table-wrapper {
-      margin-top: 4px;
-      border-radius: 14px;
-      border: 1px solid #e2e8f0;
-      overflow: hidden;
-      background: white;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    thead {
-      background: #0f172a;
-      color: #e5e7eb;
-    }
-    th, td {
-      padding: 7px 9px;
-      text-align: left;
-    }
-    th {
-      font-weight: 600;
-      border-bottom: 1px solid #1e293b;
-    }
-    tbody tr:nth-child(even) { background: #f8fafc; }
-    tbody tr:hover { background: #e0f2fe; }
-
-    .td-vendedor { font-weight: 600; color: #0f172a; }
-    .tag-alexandre {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 999px;
-      background: #dcfce7;
-      color: #16a34a;
-      font-weight: 700;
-      font-size: 11px;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
-    .tag-jumahil {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 999px;
-      background: #fee2e2;
-      color: #dc2626;
-      font-weight: 700;
-      font-size: 11px;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
-    .input-money {
-      width: 100%;
-      max-width: 120px;
-      padding: 3px 6px;
-      font-size: 12px;
-      border-radius: 8px;
-      border: 1px solid #cbd5f5;
-      text-align: right;
-    }
-    .input-money:focus {
-      outline: none;
-      border-color: #0ea5e9;
-      box-shadow: 0 0 0 1px #0ea5e9;
-    }
-    .status-cell {
-      font-size: 11px;
-      color: #64748b;
-    }
-    .status-ok {
-      color: #16a34a;
-      font-weight: 500;
-    }
-    .status-warning {
-      color: #f97316;
-      font-weight: 500;
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+      background:#e0f2fe;
+      color:#0369a1;
     }
 
     .summary-cards {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 4px;
-      margin-bottom: 10px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:4px;
+      margin-bottom:10px;
     }
     .card {
-      flex: 1;
-      min-width: 180px;
-      background: #0f172a;
-      color: #e5e7eb;
-      border-radius: 14px;
-      padding: 10px 12px;
-      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.5);
+      flex:1;
+      min-width:180px;
+      background:#0f172a;
+      color:#e5e7eb;
+      border-radius:14px;
+      padding:10px 12px;
+      box-shadow:0 10px 25px rgba(15,23,42,0.5);
     }
     .card-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #9ca3af;
-      margin-bottom: 4px;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      color:#9ca3af;
+      margin-bottom:4px;
     }
     .card-value {
-      font-size: 18px;
-      font-weight: 600;
+      font-size:18px;
+      font-weight:600;
     }
     .card-detail {
-      font-size: 11px;
-      color: #9ca3af;
-      margin-top: 2px;
+      font-size:11px;
+      color:#9ca3af;
+      margin-top:2px;
     }
-    .card-detail strong { color: #e5e7eb; }
+    .card-detail strong { color:#e5e7eb; }
 
-    .footer-note {
-      margin-top: 10px;
-      font-size: 11px;
-      color: #94a3b8;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+    .table-wrapper {
+      margin-top:4px;
+      border-radius:14px;
+      border:1px solid #e2e8f0;
+      overflow:hidden;
+      background:#fff;
+      box-shadow:0 12px 30px rgba(15,23,42,0.16);
     }
+    table {
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+    thead {
+      background:#0f172a;
+      color:#e5e7eb;
+    }
+    th,td {
+      padding:7px 9px;
+      text-align:left;
+    }
+    th {
+      font-weight:600;
+      border-bottom:1px solid #1e293b;
+    }
+    tbody tr:nth-child(even){background:#f8fafc;}
+    tbody tr:hover{background:#e0f2fe;}
 
-    /* Popup detalhes vendas */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
+    .td-vendedor{font-weight:600;color:#0f172a;}
+    .tag-alexandre{
+      display:inline-block;
+      padding:2px 10px;
+      border-radius:999px;
+      background:#dcfce7;
+      color:#16a34a;
+      font-weight:700;
+      font-size:11px;
+      letter-spacing:.03em;
+      text-transform:uppercase;
     }
-    .overlay-content {
-      width: 100%;
-      max-width: 750px;
-      max-height: 90vh;
-      background: #f8fafc;
-      border-radius: 18px;
-      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.75);
-      padding: 14px 16px 16px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .overlay-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-    }
-    .overlay-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: #020617;
-    }
-    .overlay-sub {
-      font-size: 11px;
-      color: #64748b;
-    }
-    .overlay-close {
-      border: none;
-      background: transparent;
-      font-size: 18px;
-      cursor: pointer;
-      color: #64748b;
-    }
-    .overlay-body {
-      overflow-y: auto;
-      padding-top: 4px;
-    }
-    .chips-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      font-size: 11px;
-      margin-bottom: 6px;
-      align-items: center;
-    }
-    .chip {
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: #e2e8f0;
-      color: #475569;
-    }
-    .chip-strong {
-      background: #0f172a;
-      color: #e5e7eb;
-    }
-    .weeks-list {
-      margin-top: 6px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      background: white;
-      overflow: hidden;
-    }
-    .weeks-header {
-      padding: 6px 8px;
-      background: #0f172a;
-      color: #e5e7eb;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .week-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 8px;
-      font-size: 12px;
-      border-top: 1px solid #e2e8f0;
-    }
-    .week-row:nth-child(even) {
-      background: #f8fafc;
+    .tag-jumahil{
+      display:inline-block;
+      padding:2px 10px;
+      border-radius:999px;
+      background:#fee2e2;
+      color:#dc2626;
+      font-weight:700;
+      font-size:11px;
+      letter-spacing:.03em;
+      text-transform:uppercase;
     }
 
-    @media (max-width: 900px) {
-      .container { padding: 16px 14px 18px 14px; }
-      header { flex-direction: column; align-items: flex-start; }
-      .top-controls { flex-direction: column; align-items: flex-start; }
-      th, td { padding: 6px 7px; }
-      .input-money { max-width: 100px; }
-      .overlay-content { max-width: 95%; }
+    .input-money{
+      width:100%;
+      max-width:120px;
+      padding:3px 6px;
+      font-size:12px;
+      border-radius:8px;
+      border:1px solid #cbd5f5;
+      text-align:right;
+    }
+    .input-money:focus{
+      outline:none;
+      border-color:#0ea5e9;
+      box-shadow:0 0 0 1px #0ea5e9;
+    }
+    .status-cell{font-size:11px;color:#64748b;}
+    .status-ok{color:#16a34a;font-weight:500;}
+    .status-warning{color:#f97316;font-weight:500;}
+
+    .footer-note{
+      margin-top:10px;
+      font-size:11px;
+      color:#94a3b8;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    /* Overlay detalhes vendedor */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,0.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+    }
+    .overlay-content{
+      width:100%;
+      max-width:750px;
+      max-height:90vh;
+      background:#f8fafc;
+      border-radius:18px;
+      box-shadow:0 20px 50px rgba(15,23,42,0.75);
+      padding:14px 16px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .overlay-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .overlay-title{
+      font-size:15px;
+      font-weight:600;
+      color:#020617;
+    }
+    .overlay-sub{
+      font-size:11px;
+      color:#64748b;
+    }
+    .overlay-close{
+      border:none;
+      background:transparent;
+      font-size:18px;
+      cursor:pointer;
+      color:#64748b;
+    }
+    .overlay-body{overflow-y:auto;padding-top:4px;}
+    .chips-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      font-size:11px;
+      margin-bottom:6px;
+      align-items:center;
+    }
+    .chip{
+      padding:3px 8px;
+      border-radius:999px;
+      background:#e2e8f0;
+      color:#475569;
+    }
+    .chip-strong{background:#0f172a;color:#e5e7eb;}
+    .weeks-list{
+      margin-top:6px;
+      border-radius:12px;
+      border:1px solid #e2e8f0;
+      background:#fff;
+      overflow:hidden;
+    }
+    .weeks-header{
+      padding:6px 8px;
+      background:#0f172a;
+      color:#e5e7eb;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    .week-row{
+      display:flex;
+      justify-content:space-between;
+      padding:6px 8px;
+      font-size:12px;
+      border-top:1px solid #e2e8f0;
+    }
+    .week-row:nth-child(even){background:#f8fafc;}
+
+    @media(max-width:900px){
+      .container{padding:16px 14px 18px;}
+      header{flex-direction:column;align-items:flex-start;}
+      .top-controls{flex-direction:column;align-items:flex-start;}
+      th,td{padding:6px 7px;}
+      .input-money{max-width:100px;}
+      .overlay-content{max-width:95%;}
     }
   </style>
 </head>
@@ -461,25 +446,19 @@
     <div class="top-controls">
       <div>
         <div class="label" style="margin-bottom:4px;">Importar planilha de vendas</div>
-        <input type="file" id="inputArquivo" accept=".xlsx,.xls" />
+        <input type="file" id="inputArquivo" accept=".xlsx,.xls">
       </div>
       <div class="filters">
         <div class="filters-group">
           <span>Filtrar por mês:</span>
           <select id="selectMesVendas">
             <option value="">Todos</option>
-            <option value="01">Jan</option>
-            <option value="02">Fev</option>
-            <option value="03">Mar</option>
-            <option value="04">Abr</option>
-            <option value="05">Mai</option>
-            <option value="06">Jun</option>
-            <option value="07">Jul</option>
-            <option value="08">Ago</option>
-            <option value="09">Set</option>
-            <option value="10">Out</option>
-            <option value="11">Nov</option>
-            <option value="12">Dez</option>
+            <option value="01">Jan</option><option value="02">Fev</option>
+            <option value="03">Mar</option><option value="04">Abr</option>
+            <option value="05">Mai</option><option value="06">Jun</option>
+            <option value="07">Jul</option><option value="08">Ago</option>
+            <option value="09">Set</option><option value="10">Out</option>
+            <option value="11">Nov</option><option value="12">Dez</option>
           </select>
         </div>
         <div class="filters-group">
@@ -520,12 +499,12 @@
         <tr>
           <th>Vendedor</th>
           <th>Responsável</th>
-          <th style="width:160px; text-align:right;">Total de Vendas (R$)</th>
-          <th style="width:120px; text-align:center;">Ações</th>
+          <th style="width:160px;text-align:right;">Total de Vendas (R$)</th>
+          <th style="width:120px;text-align:center;">Ações</th>
         </tr>
         </thead>
         <tbody id="tbodyVendas">
-        <tr><td colspan="4" style="text-align:center; padding:10px; font-size:13px; color:#64748b;">Importe uma planilha para ver os resultados.</td></tr>
+        <tr><td colspan="4" style="text-align:center;padding:10px;font-size:13px;color:#64748b;">Importe uma planilha para ver os resultados.</td></tr>
         </tbody>
       </table>
     </div>
@@ -553,18 +532,12 @@
         <div class="filters-group">
           <span>Mês:</span>
           <select id="selectMesMetas">
-            <option value="01">Jan</option>
-            <option value="02">Fev</option>
-            <option value="03">Mar</option>
-            <option value="04">Abr</option>
-            <option value="05">Mai</option>
-            <option value="06">Jun</option>
-            <option value="07">Jul</option>
-            <option value="08">Ago</option>
-            <option value="09">Set</option>
-            <option value="10">Out</option>
-            <option value="11">Nov</option>
-            <option value="12">Dez</option>
+            <option value="01">Jan</option><option value="02">Fev</option>
+            <option value="03">Mar</option><option value="04">Abr</option>
+            <option value="05">Mai</option><option value="06">Jun</option>
+            <option value="07">Jul</option><option value="08">Ago</option>
+            <option value="09">Set</option><option value="10">Out</option>
+            <option value="11">Nov</option><option value="12">Dez</option>
           </select>
         </div>
         <div class="filters-group">
@@ -586,15 +559,15 @@
         <tr>
           <th>Vendedor</th>
           <th>Responsável</th>
-          <th style="width: 140px; text-align: right;">Meta Anual (R$)</th>
-          <th style="width: 140px; text-align: right;">Meta Mensal (R$)</th>
-          <th style="width: 140px; text-align: right;">Meta Semanal (R$)</th>
-          <th style="width: 110px; text-align: center;">Ações</th>
-          <th style="width: 160px;">Status</th>
+          <th style="width:140px;text-align:right;">Meta Anual (R$)</th>
+          <th style="width:140px;text-align:right;">Meta Mensal (R$)</th>
+          <th style="width:140px;text-align:right;">Meta Semanal (R$)</th>
+          <th style="width:110px;text-align:center;">Ações</th>
+          <th style="width:160px;">Status</th>
         </tr>
         </thead>
         <tbody id="tbodyMetas">
-        <tr><td colspan="7" style="text-align:center; padding:10px; font-size:13px; color:#64748b;">Carregando...</td></tr>
+        <tr><td colspan="7" style="text-align:center;padding:10px;font-size:13px;color:#64748b;">Carregando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -626,18 +599,12 @@
         <div class="filters-group">
           <span>Mês:</span>
           <select id="selectApMes">
-            <option value="01">Jan</option>
-            <option value="02">Fev</option>
-            <option value="03">Mar</option>
-            <option value="04">Abr</option>
-            <option value="05">Mai</option>
-            <option value="06">Jun</option>
-            <option value="07">Jul</option>
-            <option value="08">Ago</option>
-            <option value="09">Set</option>
-            <option value="10">Out</option>
-            <option value="11">Nov</option>
-            <option value="12">Dez</option>
+            <option value="01">Jan</option><option value="02">Fev</option>
+            <option value="03">Mar</option><option value="04">Abr</option>
+            <option value="05">Mai</option><option value="06">Jun</option>
+            <option value="07">Jul</option><option value="08">Ago</option>
+            <option value="09">Set</option><option value="10">Out</option>
+            <option value="11">Nov</option><option value="12">Dez</option>
           </select>
         </div>
         <button class="btn small" id="btnApAtualizar">Atualizar</button>
@@ -677,8 +644,8 @@
       <div style="padding:8px 10px;font-size:12px;color:#475569;border-bottom:1px solid #e2e8f0;">
         Comparativo semanal do mês selecionado – <strong>Vendas x Meta semanal</strong>
       </div>
-      <div style="padding:4px 8px 10px 8px;">
-        <canvas id="apChart" height="180"></canvas>
+      <div style="padding:4px 8px 10px;">
+        <canvas id="apChart" height="140"></canvas>
       </div>
     </div>
 
@@ -734,13 +701,11 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // ------- listas Alexandre / Jumahil --------
   const VENDEDORES_ALEXANDRE = [
     "ANDERSON MAICO FREDERICO REPRESENTACOES COMER",
     "J. G. VARGAS REPRESENTACOES COMERCIAIS MARING",
     "60.132.034 MOHANDAS VINICIUS DA SILVA DELL IS",
     "HOPPE REPRESENTACOES LTDA",
-    "FURLANETTO E GONCALVES LTDA",
     "ROGERIO ANTONELLO DA ROSA",
     "TAVARES IMPORTAÇÃO E COMERCIO LTDA",
     "MICAEL MENEZES DE OLIVEIRA",
@@ -821,520 +786,472 @@
     return resp === 'ALEXANDRE' ? VENDEDORES_ALEXANDRE : VENDEDORES_JUMAHIL;
   }
 
-  // -------- helpers gerais ----------
-  function slugifyVendedor(nome) {
+  function slugifyVendedor(nome){
     return String(nome)
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-zA-Z0-9]+/g,"_")
+      .replace(/^_+|_+$/g,"")
       .toUpperCase();
   }
-  function getMetaVendedorDocId(vendedor, ano) {
-    const slug = slugifyVendedor(vendedor);
-    return `${slug}_${ano}`;
+  function getMetaVendedorDocId(vendedor,ano){
+    return `${slugifyVendedor(vendedor)}_${ano}`;
   }
-  function parseValorBR(str) {
-    if (!str) return null;
-    let s = String(str).trim();
-    if (!s) return null;
-    s = s.replace(/\./g, '');
-    s = s.replace(',', '.');
-    const v = parseFloat(s);
-    if (isNaN(v)) return null;
-    return v;
+  function parseValorBR(str){
+    if(!str) return null;
+    let s=String(str).trim();
+    if(!s) return null;
+    s=s.replace(/\./g,"").replace(",",".");
+    const v=parseFloat(s);
+    return isNaN(v)?null:v;
   }
-  function formatInputFromNumber(n) {
-    if (!n || isNaN(n)) return "";
-    return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function formatInputFromNumber(n){
+    if(!n || isNaN(n)) return "";
+    return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
   }
-  function formatCurrency(valor) {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  function formatCurrency(v){
+    return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   }
 
-  // data flexível: texto, Date ou serial Excel
-  function parseDataExcel(cell) {
-    if (!cell) return null;
-    if (cell instanceof Date) {
-      return new Date(cell.getTime());
-    }
-    if (typeof cell === 'number') {
-      const base = new Date(1899, 11, 30);
-      const d = new Date(base.getTime());
-      d.setDate(d.getDate() + cell);
+  function parseDataExcel(cell){
+    if(!cell) return null;
+    if(cell instanceof Date) return new Date(cell.getTime());
+    if(typeof cell==="number"){
+      const base=new Date(1899,11,30);
+      const d=new Date(base.getTime());
+      d.setDate(d.getDate()+cell);
       return d;
     }
-    if (typeof cell === 'string') {
-      const s = cell.trim();
-      if (!s) return null;
-      const parts = s.split('/');
-      if (parts.length === 3) {
-        const d = parseInt(parts[0], 10);
-        const m = parseInt(parts[1], 10) - 1;
-        const y = parseInt(parts[2], 10);
-        if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
-          return new Date(y, m, d);
-        }
+    if(typeof cell==="string"){
+      const s=cell.trim();
+      if(!s) return null;
+      const p=s.split("/");
+      if(p.length===3){
+        const d=parseInt(p[0],10),m=parseInt(p[1],10)-1,y=parseInt(p[2],10);
+        if(!isNaN(d)&&!isNaN(m)&&!isNaN(y)) return new Date(y,m,d);
       }
       return null;
     }
     return null;
   }
-  function getWeekStartSaturday(date) {
-    const d = new Date(date.getTime());
-    const day = d.getDay(); // 0=Dom,...6=Sab
-    const offset = (day + 1) % 7;
-    const start = new Date(d);
-    start.setHours(0, 0, 0, 0);
-    start.setDate(start.getDate() - offset);
+  function getWeekStartSaturday(date){
+    const d=new Date(date.getTime());
+    const day=d.getDay(); //0=Dom,...6=Sab
+    const offset=(day+1)%7;
+    const start=new Date(d);
+    start.setHours(0,0,0,0);
+    start.setDate(start.getDate()-offset);
     return start;
   }
-  function formatDateBR(d) {
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const yyyy = d.getFullYear();
+  function formatDateBR(d){
+    const dd=String(d.getDate()).padStart(2,"0");
+    const mm=String(d.getMonth()+1).padStart(2,"0");
+    const yyyy=d.getFullYear();
     return `${dd}/${mm}/${yyyy}`;
   }
 
-  // -------- Firestore metas ----------
-  async function carregarMetasVendedor(vendedor, ano, mesKey, semanaKey) {
-    const docId = getMetaVendedorDocId(vendedor, ano);
-    const ref = doc(db, 'metasVendedor', docId);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-      return { metaAnual: 0, metaMensal: 0, metaSemanal: 0 };
-    }
-    const data = snap.data() || {};
-    const mm = data.metasMensais || {};
-    const ss = data.metasSemanais || {};
-    return {
-      metaAnual: data.metaAnual || 0,
-      metaMensal: mm[mesKey] || 0,
-      metaSemanal: ss[semanaKey] || 0
+  async function carregarMetasVendedor(vendedor,ano,mesKey,semanaKey){
+    const ref=doc(db,"metasVendedor",getMetaVendedorDocId(vendedor,ano));
+    const snap=await getDoc(ref);
+    if(!snap.exists()) return{metaAnual:0,metaMensal:0,metaSemanal:0};
+    const data=snap.data()||{};
+    const mm=data.metasMensais||{};
+    const ss=data.metasSemanais||{};
+    return{
+      metaAnual:Number(data.metaAnual||0),
+      metaMensal:Number(mm[mesKey]||0),
+      metaSemanal:Number(ss[semanaKey]||0)
     };
   }
 
-  async function salvarMetasVendedor({ vendedor, ano, metaAnual, mesKey, metaMensal, semanaKey, metaSemanal, resp }) {
-    const docId = getMetaVendedorDocId(vendedor, ano);
-    const ref = doc(db, 'metasVendedor', docId);
-    const snap = await getDoc(ref);
-    let dataAtual = {};
-    if (snap.exists()) dataAtual = snap.data() || {};
-    else dataAtual = { vendedor, resp, ano, metaAnual: 0, metasMensais: {}, metasSemanais: {} };
+  async function salvarMetasVendedor({vendedor,ano,metaAnual,mesKey,metaMensal,semanaKey,metaSemanal,resp}){
+    const ref=doc(db,"metasVendedor",getMetaVendedorDocId(vendedor,ano));
+    const snap=await getDoc(ref);
+    let dataAtual=snap.exists()? (snap.data()||{}):{vendedor,resp,ano,metaAnual:0,metasMensais:{},metasSemanais:{}};
 
-    const mm = dataAtual.metasMensais || {};
-    const ss = dataAtual.metasSemanais || {};
+    const mm=dataAtual.metasMensais||{};
+    const ss=dataAtual.metasSemanais||{};
 
-    if (metaAnual != null) dataAtual.metaAnual = metaAnual;
-    if (mesKey && metaMensal != null) mm[mesKey] = metaMensal;
-    if (semanaKey && metaSemanal != null) ss[semanaKey] = metaSemanal;
+    if(metaAnual!=null) dataAtual.metaAnual=metaAnual;
+    if(mesKey && metaMensal!=null) mm[mesKey]=metaMensal;
+    if(semanaKey && metaSemanal!=null) ss[semanaKey]=metaSemanal;
 
-    dataAtual.metasMensais = mm;
-    dataAtual.metasSemanais = ss;
-    dataAtual.vendedor = vendedor;
-    dataAtual.resp = resp;
-    dataAtual.ano = ano;
-    dataAtual.atualizadoEm = serverTimestamp();
+    dataAtual.metasMensais=mm;
+    dataAtual.metasSemanais=ss;
+    dataAtual.vendedor=vendedor;
+    dataAtual.resp=resp;
+    dataAtual.ano=ano;
+    dataAtual.atualizadoEm=serverTimestamp();
 
-    await setDoc(ref, dataAtual, { merge: true });
+    await setDoc(ref,dataAtual,{merge:true});
   }
 
-  async function carregarMetasDocCompleto(vendedor, ano) {
-    const docId = getMetaVendedorDocId(vendedor, ano);
-    const ref = doc(db, 'metasVendedor', docId);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) {
-      return {
-        metaAnual: 0,
-        metasMensais: {},
-        metasSemanais: {}
-      };
-    }
-    const data = snap.data() || {};
-    return {
-      metaAnual: data.metaAnual || 0,
-      metasMensais: data.metasMensais || {},
-      metasSemanais: data.metasSemanais || {}
+  async function carregarMetasDocCompleto(vendedor,ano){
+    const ref=doc(db,"metasVendedor",getMetaVendedorDocId(vendedor,ano));
+    const snap=await getDoc(ref);
+    if(!snap.exists()) return{metaAnual:0,metasMensais:{},metasSemanais:{}};
+    const data=snap.data()||{};
+    return{
+      metaAnual:Number(data.metaAnual||0),
+      metasMensais:data.metasMensais||{},
+      metasSemanais:data.metasSemanais||{}
     };
   }
 
-  // -------- Tabs ----------
-  const tabVendas = document.getElementById('tabVendas');
-  const tabMetas = document.getElementById('tabMetas');
-  const tabApresentacao = document.getElementById('tabApresentacao');
-  const secVendas = document.getElementById('secVendas');
-  const secMetas = document.getElementById('secMetas');
-  const secApresentacao = document.getElementById('secApresentacao');
+  // Tabs
+  const tabVendas=document.getElementById("tabVendas");
+  const tabMetas=document.getElementById("tabMetas");
+  const tabApresentacao=document.getElementById("tabApresentacao");
+  const secVendas=document.getElementById("secVendas");
+  const secMetas=document.getElementById("secMetas");
+  const secApresentacao=document.getElementById("secApresentacao");
 
-  function ativarTab(nome) {
-    tabVendas.classList.remove('active');
-    tabMetas.classList.remove('active');
-    tabApresentacao.classList.remove('active');
-    secVendas.classList.add('hidden');
-    secMetas.classList.add('hidden');
-    secApresentacao.classList.add('hidden');
+  function ativarTab(nome){
+    tabVendas.classList.remove("active");
+    tabMetas.classList.remove("active");
+    tabApresentacao.classList.remove("active");
+    secVendas.classList.add("hidden");
+    secMetas.classList.add("hidden");
+    secApresentacao.classList.add("hidden");
+    if(nome==="vendas"){tabVendas.classList.add("active");secVendas.classList.remove("hidden");}
+    else if(nome==="metas"){tabMetas.classList.add("active");secMetas.classList.remove("hidden");}
+    else{tabApresentacao.classList.add("active");secApresentacao.classList.remove("hidden");}
+  }
+  tabVendas.addEventListener("click",()=>ativarTab("vendas"));
+  tabMetas.addEventListener("click",()=>ativarTab("metas"));
+  tabApresentacao.addEventListener("click",()=>ativarTab("apresentacao"));
 
-    if (nome === 'vendas') {
-      tabVendas.classList.add('active');
-      secVendas.classList.remove('hidden');
-    } else if (nome === 'metas') {
-      tabMetas.classList.add('active');
-      secMetas.classList.remove('hidden');
-    } else if (nome === 'apresentacao') {
-      tabApresentacao.classList.add('active');
-      secApresentacao.classList.remove('hidden');
-    }
+  // VENDAS
+  const inputArquivo=document.getElementById("inputArquivo");
+  const selectMesVendas=document.getElementById("selectMesVendas");
+  const inputAnoVendas=document.getElementById("inputAnoVendas");
+  const btnAplicarFiltro=document.getElementById("btnAplicarFiltro");
+  const tbodyVendas=document.getElementById("tbodyVendas");
+  const cardTotalGeral=document.getElementById("cardTotalGeral");
+  const cardQtdVendedores=document.getElementById("cardQtdVendedores");
+  const cardMesAno=document.getElementById("cardMesAno");
+
+  const overlayVendedor=document.getElementById("overlayVendedor");
+  const btnFecharOverlay=document.getElementById("btnFecharOverlay");
+  const ovTituloVendedor=document.getElementById("ovTituloVendedor");
+  const ovSubVendedor=document.getElementById("ovSubVendedor");
+  const ovChipMesAno=document.getElementById("ovChipMesAno");
+  const ovChipTotalVendedor=document.getElementById("ovChipTotalVendedor");
+  const ovWeeksList=document.getElementById("ovWeeksList");
+
+  let allRows=[];
+  let filtroMesAtual="";
+  let filtroAnoAtual=null;
+
+  function initFiltrosVendas(){
+    inputAnoVendas.value="";
+    filtroAnoAtual=null;
+    selectMesVendas.value="";
+    cardMesAno.textContent="Todos";
   }
 
-  tabVendas.addEventListener('click', () => ativarTab('vendas'));
-  tabMetas.addEventListener('click', () => ativarTab('metas'));
-  tabApresentacao.addEventListener('click', () => ativarTab('apresentacao'));
+  inputArquivo.addEventListener("change",()=>{
+    const file=inputArquivo.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const data=new Uint8Array(e.target.result);
+      const workbook=XLSX.read(data,{type:"array"});
+      const sheetName=workbook.SheetNames[0];
+      const sheet=workbook.Sheets[sheetName];
+      const json=XLSX.utils.sheet_to_json(sheet,{header:1});
 
-  // -------- VENDAS ----------
-  const inputArquivo = document.getElementById('inputArquivo');
-  const selectMesVendas = document.getElementById('selectMesVendas');
-  const inputAnoVendas = document.getElementById('inputAnoVendas');
-  const btnAplicarFiltro = document.getElementById('btnAplicarFiltro');
-  const tbodyVendas = document.getElementById('tbodyVendas');
-  const cardTotalGeral = document.getElementById('cardTotalGeral');
-  const cardQtdVendedores = document.getElementById('cardQtdVendedores');
-  const cardMesAno = document.getElementById('cardMesAno');
+      allRows=[];
+      const STATUS_VALIDOS=["PENDENTE","APROVADO","ATENDIDO","EM ALTERAÇÃO","VALIDADO"];
 
-  const overlayVendedor = document.getElementById('overlayVendedor');
-  const btnFecharOverlay = document.getElementById('btnFecharOverlay');
-  const ovTituloVendedor = document.getElementById('ovTituloVendedor');
-  const ovSubVendedor = document.getElementById('ovSubVendedor');
-  const ovChipMesAno = document.getElementById('ovChipMesAno');
-  const ovChipTotalVendedor = document.getElementById('ovChipTotalVendedor');
-  const ovWeeksList = document.getElementById('ovWeeksList');
+      for(let i=1;i<json.length;i++){
+        const row=json[i];
+        if(!row||row.length===0) continue;
 
-  let allRows = [];
-  let filtroMesAtual = '';
-  let filtroAnoAtual = null;
+        const status=(row[1]||"").toString().trim();    // B
+        const dataCell=row[3];                          // D
+        const vendedor=(row[8]||"").toString().trim();  // I
+        const valorRaw=row[9];                          // J
+        const descricao=(row[17]||"").toString().trim();// R
 
-  function initFiltrosVendas() {
-    inputAnoVendas.value = ""; // sem filtro de ano por padrão
-    filtroAnoAtual = null;
-    selectMesVendas.value = "";
-    cardMesAno.textContent = "Todos";
-  }
+        if(!STATUS_VALIDOS.includes(status.toUpperCase())) continue;
+        if(!descricao.toLowerCase().startsWith("venda")) continue;
+        if(!vendedor) continue;
 
-  inputArquivo.addEventListener('change', () => {
-    const file = inputArquivo.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        const data=parseDataExcel(dataCell);
+        if(!data) continue;
 
-      allRows = [];
-      const STATUS_VALIDOS = ["PENDENTE", "APROVADO", "ATENDIDO", "EM ALTERAÇÃO", "VALIDADO"];
-
-      for (let i = 1; i < json.length; i++) {
-        const row = json[i];
-        if (!row || row.length === 0) continue;
-
-        const status = (row[1] || "").toString().trim();        // B
-        const dataCell = row[3];                                // D
-        const vendedor = (row[8] || "").toString().trim();      // I
-        const valorRaw = row[9];                                // J
-        const descricao = (row[17] || "").toString().trim();    // R
-
-        if (!STATUS_VALIDOS.includes(status.toUpperCase())) continue;
-        if (!descricao.toLowerCase().startsWith("venda")) continue;
-        if (!vendedor) continue;
-
-        const data = parseDataExcel(dataCell);
-        if (!data) continue;
-
-        let valor = 0;
-        if (typeof valorRaw === 'number') valor = valorRaw;
-        else if (typeof valorRaw === 'string') {
-          const parsed = parseValorBR(valorRaw);
-          if (parsed != null) valor = parsed;
+        let valor=0;
+        if(typeof valorRaw==="number") valor=valorRaw;
+        else if(typeof valorRaw==="string"){
+          const p=parseValorBR(valorRaw);
+          if(p!=null) valor=p;
         }
-        if (!valor || isNaN(valor)) continue;
+        if(!valor||isNaN(valor)) continue;
 
-        const ano = data.getFullYear();
-        const mes = String(data.getMonth() + 1).padStart(2, '0');
-        const mesKey = `${ano}-${mes}`;
-        const weekStart = getWeekStartSaturday(data);
-        const semanaKey = weekStart.toISOString().slice(0, 10);
-        const resp = getResponsavel(vendedor);
+        const ano=data.getFullYear();
+        const mes=String(data.getMonth()+1).padStart(2,"0");
+        const mesKey=`${ano}-${mes}`;
+        const weekStart=getWeekStartSaturday(data);
+        const semanaKey=weekStart.toISOString().slice(0,10);
+        const resp=getResponsavel(vendedor);
 
-        allRows.push({ vendedor, resp, valor, data, mesKey, semanaKey });
+        allRows.push({vendedor,resp,valor,data,mesKey,semanaKey});
       }
       aplicarFiltroVendas();
-      // atualizar opções na apresentação, se estiver na aba
       atualizarOpcoesApresentacao();
     };
     reader.readAsArrayBuffer(file);
   });
 
-  function aplicarFiltroVendas() {
-    filtroMesAtual = selectMesVendas.value || '';
-    const anoInput = parseInt(inputAnoVendas.value, 10);
-    filtroAnoAtual = isNaN(anoInput) ? null : anoInput;
+  function aplicarFiltroVendas(){
+    filtroMesAtual=selectMesVendas.value||"";
+    const anoInput=parseInt(inputAnoVendas.value,10);
+    filtroAnoAtual=isNaN(anoInput)?null:anoInput;
 
-    let rowsFiltradas = allRows.slice();
-    if (filtroAnoAtual) rowsFiltradas = rowsFiltradas.filter(r => r.data.getFullYear() === filtroAnoAtual);
-    if (filtroMesAtual) rowsFiltradas = rowsFiltradas.filter(r => r.mesKey.endsWith(`-${filtroMesAtual}`));
+    let rows=allRows.slice();
+    if(filtroAnoAtual) rows=rows.filter(r=>r.data.getFullYear()===filtroAnoAtual);
+    if(filtroMesAtual) rows=rows.filter(r=>r.mesKey.endsWith(`-${filtroMesAtual}`));
 
-    const totaisPorVendedor = {};
-    let totalGeral = 0;
-
-    for (const r of rowsFiltradas) {
-      if (!totaisPorVendedor[r.vendedor]) totaisPorVendedor[r.vendedor] = 0;
-      totaisPorVendedor[r.vendedor] += r.valor;
-      totalGeral += r.valor;
+    const totais={};
+    let totalGeral=0;
+    for(const r of rows){
+      if(!totais[r.vendedor]) totais[r.vendedor]=0;
+      totais[r.vendedor]+=r.valor;
+      totalGeral+=r.valor;
     }
 
-    cardTotalGeral.textContent = formatCurrency(totalGeral);
-    cardQtdVendedores.textContent = Object.keys(totaisPorVendedor).length.toString();
-    if (filtroMesAtual && filtroAnoAtual) cardMesAno.textContent = `${filtroMesAtual}/${filtroAnoAtual}`;
-    else if (filtroAnoAtual) cardMesAno.textContent = `Ano ${filtroAnoAtual}`;
-    else cardMesAno.textContent = "Todos";
+    cardTotalGeral.textContent=formatCurrency(totalGeral);
+    cardQtdVendedores.textContent=Object.keys(totais).length.toString();
+    if(filtroMesAtual && filtroAnoAtual) cardMesAno.textContent=`${filtroMesAtual}/${filtroAnoAtual}`;
+    else if(filtroAnoAtual) cardMesAno.textContent=`Ano ${filtroAnoAtual}`;
+    else cardMesAno.textContent="Todos";
 
-    tbodyVendas.innerHTML = '';
-    if (Object.keys(totaisPorVendedor).length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 4;
-      td.style.textAlign = 'center';
-      td.style.padding = '10px';
-      td.style.fontSize = '13px';
-      td.style.color = '#64748b';
-      td.textContent = 'Nenhum resultado com os filtros atuais.';
+    tbodyVendas.innerHTML="";
+    if(Object.keys(totais).length===0){
+      const tr=document.createElement("tr");
+      const td=document.createElement("td");
+      td.colSpan=4;
+      td.style.textAlign="center";
+      td.style.padding="10px";
+      td.style.fontSize="13px";
+      td.style.color="#64748b";
+      td.textContent="Nenhum resultado com os filtros atuais.";
       tr.appendChild(td);
       tbodyVendas.appendChild(tr);
       return;
     }
 
-    for (const vendedor of Object.keys(totaisPorVendedor).sort()) {
-      const totalVend = totaisPorVendedor[vendedor];
-      const resp = getResponsavel(vendedor);
+    for(const vendedor of Object.keys(totais).sort()){
+      const totalVend=totais[vendedor];
+      const resp=getResponsavel(vendedor);
 
-      const tr = document.createElement('tr');
-      const tdVend = document.createElement('td');
-      tdVend.className = 'td-vendedor';
-      tdVend.textContent = vendedor;
+      const tr=document.createElement("tr");
+      const tdVend=document.createElement("td");
+      tdVend.className="td-vendedor";
+      tdVend.textContent=vendedor;
 
-      const tdResp = document.createElement('td');
-      if (resp === 'ALEXANDRE') tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
-      else if (resp === 'JUMAHIL') tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
-      else tdResp.textContent = '-';
+      const tdResp=document.createElement("td");
+      if(resp==="ALEXANDRE") tdResp.innerHTML='<span class="tag-alexandre">ALEXANDRE</span>';
+      else if(resp==="JUMAHIL") tdResp.innerHTML='<span class="tag-jumahil">JUMAHIL</span>';
+      else tdResp.textContent="-";
 
-      const tdTotal = document.createElement('td');
-      tdTotal.style.textAlign = 'right';
-      tdTotal.textContent = formatCurrency(totalVend);
+      const tdTotal=document.createElement("td");
+      tdTotal.style.textAlign="right";
+      tdTotal.textContent=formatCurrency(totalVend);
 
-      const tdAcao = document.createElement('td');
-      tdAcao.style.textAlign = 'center';
-      const btnDetalhes = document.createElement('button');
-      btnDetalhes.className = 'btn small';
-      btnDetalhes.textContent = 'Ver detalhes';
-      btnDetalhes.addEventListener('click', () => abrirDetalhesVendedor(vendedor, resp));
-      tdAcao.appendChild(btnDetalhes);
+      const tdAcao=document.createElement("td");
+      tdAcao.style.textAlign="center";
+      const btn=document.createElement("button");
+      btn.className="btn small";
+      btn.textContent="Ver detalhes";
+      btn.addEventListener("click",()=>abrirDetalhesVendedor(vendedor,resp));
+      tdAcao.appendChild(btn);
 
       tr.appendChild(tdVend);
       tr.appendChild(tdResp);
       tr.appendChild(tdTotal);
       tr.appendChild(tdAcao);
-
       tbodyVendas.appendChild(tr);
     }
   }
-  btnAplicarFiltro.addEventListener('click', aplicarFiltroVendas);
+  btnAplicarFiltro.addEventListener("click",aplicarFiltroVendas);
 
-  function abrirDetalhesVendedor(vendedor, resp) {
-    let rows = allRows.filter(r => r.vendedor === vendedor);
-    if (filtroAnoAtual) rows = rows.filter(r => r.data.getFullYear() === filtroAnoAtual);
-    if (filtroMesAtual) rows = rows.filter(r => r.mesKey.endsWith(`-${filtroMesAtual}`));
-
-    if (rows.length === 0) {
-      alert('Nenhuma venda para este vendedor com os filtros atuais.');
+  function abrirDetalhesVendedor(vendedor,resp){
+    let rows=allRows.filter(r=>r.vendedor===vendedor);
+    if(filtroAnoAtual) rows=rows.filter(r=>r.data.getFullYear()===filtroAnoAtual);
+    if(filtroMesAtual) rows=rows.filter(r=>r.mesKey.endsWith(`-${filtroMesAtual}`));
+    if(rows.length===0){
+      alert("Nenhuma venda para este vendedor com os filtros atuais.");
       return;
     }
 
-    let totalVend = 0;
-    const semanas = {};
-    let minDate = rows[0].data;
-    let maxDate = rows[0].data;
+    let totalVend=0;
+    const semanas={};
+    let minDate=rows[0].data;
+    let maxDate=rows[0].data;
 
-    for (const r of rows) {
-      totalVend += r.valor;
-      if (!semanas[r.semanaKey]) semanas[r.semanaKey] = { total: 0, start: null, end: null };
-      semanas[r.semanaKey].total += r.valor;
+    for(const r of rows){
+      totalVend+=r.valor;
+      if(!semanas[r.semanaKey]) semanas[r.semanaKey]={total:0,start:null,end:null};
+      semanas[r.semanaKey].total+=r.valor;
 
-      const weekStart = getWeekStartSaturday(r.data);
-      const end = new Date(weekStart);
-      end.setDate(end.getDate() + 6);
-      if (!semanas[r.semanaKey].start || weekStart < semanas[r.semanaKey].start) semanas[r.semanaKey].start = weekStart;
-      if (!semanas[r.semanaKey].end || end > semanas[r.semanaKey].end) semanas[r.semanaKey].end = end;
+      const weekStart=getWeekStartSaturday(r.data);
+      const end=new Date(weekStart);
+      end.setDate(end.getDate()+6);
+      if(!semanas[r.semanaKey].start||weekStart<semanas[r.semanaKey].start) semanas[r.semanaKey].start=weekStart;
+      if(!semanas[r.semanaKey].end||end>semanas[r.semanaKey].end) semanas[r.semanaKey].end=end;
 
-      if (r.data < minDate) minDate = r.data;
-      if (r.data > maxDate) maxDate = r.data;
+      if(r.data<minDate) minDate=r.data;
+      if(r.data>maxDate) maxDate=r.data;
     }
 
-    ovTituloVendedor.textContent = vendedor;
-    const respTxt = resp ? `Responsável: ${resp}` : 'Responsável não mapeado';
-    ovSubVendedor.textContent = `${respTxt} • Período: ${formatDateBR(minDate)} a ${formatDateBR(maxDate)}`;
-    const mesLabel = filtroMesAtual && filtroAnoAtual ? `${filtroMesAtual}/${filtroAnoAtual}` : 'Todos';
-    ovChipMesAno.textContent = `Filtro: ${mesLabel}`;
-    ovChipTotalVendedor.textContent = `Total no filtro: ${formatCurrency(totalVend)}`;
+    ovTituloVendedor.textContent=vendedor;
+    const respTxt=resp?`Responsável: ${resp}`:"Responsável não mapeado";
+    ovSubVendedor.textContent=`${respTxt} • Período: ${formatDateBR(minDate)} a ${formatDateBR(maxDate)}`;
+    const mesLabel=(filtroMesAtual && filtroAnoAtual)?`${filtroMesAtual}/${filtroAnoAtual}`:"Todos";
+    ovChipMesAno.textContent=`Filtro: ${mesLabel}`;
+    ovChipTotalVendedor.textContent=`Total no filtro: ${formatCurrency(totalVend)}`;
 
-    ovWeeksList.innerHTML = '<div class="weeks-header">Semanas com venda (Sábado – Sexta)</div>';
-    const keys = Object.keys(semanas).sort();
-    if (keys.length === 0) {
-      const div = document.createElement('div');
-      div.className = 'week-row';
-      div.textContent = 'Nenhuma semana encontrada.';
+    ovWeeksList.innerHTML='<div class="weeks-header">Semanas com venda (Sábado – Sexta)</div>';
+    const keys=Object.keys(semanas).sort();
+    if(keys.length===0){
+      const div=document.createElement("div");
+      div.className="week-row";
+      div.textContent="Nenhuma semana encontrada.";
       ovWeeksList.appendChild(div);
-    } else {
-      for (const k of keys) {
-        const w = semanas[k];
-        const row = document.createElement('div');
-        row.className = 'week-row';
-        const left = document.createElement('div');
-        left.textContent = `${formatDateBR(w.start)} a ${formatDateBR(w.end)}`;
-        const right = document.createElement('div');
-        right.style.fontWeight = '600';
-        right.textContent = formatCurrency(w.total);
+    }else{
+      for(const k of keys){
+        const w=semanas[k];
+        const row=document.createElement("div");
+        row.className="week-row";
+        const left=document.createElement("div");
+        left.textContent=`${formatDateBR(w.start)} a ${formatDateBR(w.end)}`;
+        const right=document.createElement("div");
+        right.style.fontWeight="600";
+        right.textContent=formatCurrency(w.total);
         row.appendChild(left);
         row.appendChild(right);
         ovWeeksList.appendChild(row);
       }
     }
-
-    overlayVendedor.style.display = 'flex';
+    overlayVendedor.style.display="flex";
   }
-  btnFecharOverlay.addEventListener('click', () => overlayVendedor.style.display = 'none');
-  overlayVendedor.addEventListener('click', (e) => { if (e.target === overlayVendedor) overlayVendedor.style.display = 'none'; });
+  btnFecharOverlay.addEventListener("click",()=>overlayVendedor.style.display="none");
+  overlayVendedor.addEventListener("click",e=>{if(e.target===overlayVendedor)overlayVendedor.style.display="none";});
 
-  // -------- METAS ----------
-  const btnAlexandre = document.getElementById('btnAlexandre');
-  const btnJumahil = document.getElementById('btnJumahil');
-  const inputAnoMetas = document.getElementById('inputAnoMetas');
-  const selectMesMetas = document.getElementById('selectMesMetas');
-  const inputSabadoMetas = document.getElementById('inputSabadoMetas');
-  const btnRecarregarMetas = document.getElementById('btnRecarregarMetas');
-  const tbodyMetas = document.getElementById('tbodyMetas');
+  // METAS
+  const btnAlexandre=document.getElementById("btnAlexandre");
+  const btnJumahil=document.getElementById("btnJumahil");
+  const inputAnoMetas=document.getElementById("inputAnoMetas");
+  const selectMesMetas=document.getElementById("selectMesMetas");
+  const inputSabadoMetas=document.getElementById("inputSabadoMetas");
+  const btnRecarregarMetas=document.getElementById("btnRecarregarMetas");
+  const tbodyMetas=document.getElementById("tbodyMetas");
+  let responsavelAtualMetas="ALEXANDRE";
 
-  let responsavelAtualMetas = 'ALEXANDRE';
-
-  function initFiltrosMetas() {
-    const hoje = new Date();
-    inputAnoMetas.value = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    selectMesMetas.value = mes;
-
-    const day = hoje.getDay();
-    const diff = (6 - day + 7) % 7;
-    const sab = new Date(hoje);
-    sab.setDate(hoje.getDate() + diff);
-    inputSabadoMetas.value = sab.toISOString().slice(0, 10);
+  function initFiltrosMetas(){
+    const hoje=new Date();
+    inputAnoMetas.value=hoje.getFullYear();
+    const mes=String(hoje.getMonth()+1).padStart(2,"0");
+    selectMesMetas.value=mes;
+    const day=hoje.getDay();
+    const diff=(6-day+7)%7;
+    const sab=new Date(hoje);
+    sab.setDate(hoje.getDate()+diff);
+    inputSabadoMetas.value=sab.toISOString().slice(0,10);
   }
 
-  async function recarregarTabelaMetas() {
-    const ano = parseInt(inputAnoMetas.value, 10) || new Date().getFullYear();
-    const mes = selectMesMetas.value || "01";
-    const mesKey = `${ano}-${mes}`;
-    const sab = inputSabadoMetas.value;
-    const semanaKey = sab || `${ano}-${mes}-01`;
+  async function recarregarTabelaMetas(){
+    const ano=parseInt(inputAnoMetas.value,10)||new Date().getFullYear();
+    const mes=selectMesMetas.value||"01";
+    const mesKey=`${ano}-${mes}`;
+    const sab=inputSabadoMetas.value;
+    const semanaKey=sab||`${ano}-${mes}-01`;
 
-    const vendedores = getListaVendedores(responsavelAtualMetas);
-
-    tbodyMetas.innerHTML = '';
-    if (vendedores.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 7;
-      td.style.textAlign = 'center';
-      td.style.padding = '10px';
-      td.style.fontSize = '13px';
-      td.style.color = '#64748b';
-      td.textContent = 'Nenhum vendedor cadastrado para este responsável.';
+    const vendedores=getListaVendedores(responsavelAtualMetas);
+    tbodyMetas.innerHTML="";
+    if(vendedores.length===0){
+      const tr=document.createElement("tr");
+      const td=document.createElement("td");
+      td.colSpan=7;
+      td.style.textAlign="center";
+      td.style.padding="10px";
+      td.style.fontSize="13px";
+      td.style.color="#64748b";
+      td.textContent="Nenhum vendedor cadastrado para este responsável.";
       tr.appendChild(td);
       tbodyMetas.appendChild(tr);
       return;
     }
 
-    for (const vendedor of vendedores) {
-      const metas = await carregarMetasVendedor(vendedor, ano, mesKey, semanaKey);
+    for(const vendedor of vendedores){
+      const metas=await carregarMetasVendedor(vendedor,ano,mesKey,semanaKey);
 
-      const tr = document.createElement('tr');
+      const tr=document.createElement("tr");
+      const tdVend=document.createElement("td");
+      tdVend.className="td-vendedor";
+      tdVend.textContent=vendedor;
 
-      const tdVend = document.createElement('td');
-      tdVend.className = 'td-vendedor';
-      tdVend.textContent = vendedor;
+      const tdResp=document.createElement("td");
+      tdResp.innerHTML=responsavelAtualMetas==="ALEXANDRE"
+        ?'<span class="tag-alexandre">ALEXANDRE</span>'
+        :'<span class="tag-jumahil">JUMAHIL</span>';
 
-      const tdResp = document.createElement('td');
-      if (responsavelAtualMetas === 'ALEXANDRE') tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
-      else tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
-
-      const tdMetaAnual = document.createElement('td');
-      tdMetaAnual.style.textAlign = 'right';
-      const inpAnual = document.createElement('input');
-      inpAnual.type = 'text';
-      inpAnual.className = 'input-money';
-      inpAnual.value = formatInputFromNumber(metas.metaAnual);
+      const tdMetaAnual=document.createElement("td");
+      tdMetaAnual.style.textAlign="right";
+      const inpAnual=document.createElement("input");
+      inpAnual.type="text";inpAnual.className="input-money";
+      inpAnual.value=formatInputFromNumber(metas.metaAnual);
       tdMetaAnual.appendChild(inpAnual);
 
-      const tdMetaMensal = document.createElement('td');
-      tdMetaMensal.style.textAlign = 'right';
-      const inpMensal = document.createElement('input');
-      inpMensal.type = 'text';
-      inpMensal.className = 'input-money';
-      inpMensal.value = formatInputFromNumber(metas.metaMensal);
+      const tdMetaMensal=document.createElement("td");
+      tdMetaMensal.style.textAlign="right";
+      const inpMensal=document.createElement("input");
+      inpMensal.type="text";inpMensal.className="input-money";
+      inpMensal.value=formatInputFromNumber(metas.metaMensal);
       tdMetaMensal.appendChild(inpMensal);
 
-      const tdMetaSemanal = document.createElement('td');
-      tdMetaSemanal.style.textAlign = 'right';
-      const inpSemanal = document.createElement('input');
-      inpSemanal.type = 'text';
-      inpSemanal.className = 'input-money';
-      inpSemanal.value = formatInputFromNumber(metas.metaSemanal);
+      const tdMetaSemanal=document.createElement("td");
+      tdMetaSemanal.style.textAlign="right";
+      const inpSemanal=document.createElement("input");
+      inpSemanal.type="text";inpSemanal.className="input-money";
+      inpSemanal.value=formatInputFromNumber(metas.metaSemanal);
       tdMetaSemanal.appendChild(inpSemanal);
 
-      const tdAcao = document.createElement('td');
-      tdAcao.style.textAlign = 'center';
-      const btnSalvar = document.createElement('button');
-      btnSalvar.className = 'btn small';
-      btnSalvar.textContent = 'Salvar';
+      const tdAcao=document.createElement("td");
+      tdAcao.style.textAlign="center";
+      const btnSalvar=document.createElement("button");
+      btnSalvar.className="btn small";
+      btnSalvar.textContent="Salvar";
       tdAcao.appendChild(btnSalvar);
 
-      const tdStatus = document.createElement('td');
-      tdStatus.className = 'status-cell';
-      tdStatus.textContent = '—';
+      const tdStatus=document.createElement("td");
+      tdStatus.className="status-cell";
+      tdStatus.textContent="—";
 
-      btnSalvar.addEventListener('click', async () => {
-        const vAnual = parseValorBR(inpAnual.value);
-        const vMensal = parseValorBR(inpMensal.value);
-        const vSemanal = parseValorBR(inpSemanal.value);
-
-        try {
+      btnSalvar.addEventListener("click",async()=>{
+        const vAnual=parseValorBR(inpAnual.value);
+        const vMensal=parseValorBR(inpMensal.value);
+        const vSemanal=parseValorBR(inpSemanal.value);
+        try{
           await salvarMetasVendedor({
             vendedor,
             ano,
-            metaAnual: vAnual != null ? vAnual : 0,
+            metaAnual:vAnual!=null?vAnual:0,
             mesKey,
-            metaMensal: vMensal != null ? vMensal : 0,
+            metaMensal:vMensal!=null?vMensal:0,
             semanaKey,
-            metaSemanal: vSemanal != null ? vSemanal : 0,
-            resp: responsavelAtualMetas
+            metaSemanal:vSemanal!=null?vSemanal:0,
+            resp:responsavelAtualMetas
           });
-          tdStatus.textContent = `Salvo às ${new Date().toLocaleTimeString('pt-BR')}`;
-          tdStatus.classList.remove('status-warning');
-          tdStatus.classList.add('status-ok');
-        } catch (err) {
-          console.error('Erro ao salvar metas', err);
-          tdStatus.textContent = 'Erro ao salvar. Veja o console.';
-          tdStatus.classList.remove('status-ok');
-          tdStatus.classList.add('status-warning');
+          tdStatus.textContent=`Salvo às ${new Date().toLocaleTimeString("pt-BR")}`;
+          tdStatus.classList.remove("status-warning");
+          tdStatus.classList.add("status-ok");
+        }catch(err){
+          console.error("Erro ao salvar metas",err);
+          tdStatus.textContent="Erro ao salvar. Veja o console.";
+          tdStatus.classList.remove("status-ok");
+          tdStatus.classList.add("status-warning");
         }
       });
 
@@ -1345,227 +1262,214 @@
       tr.appendChild(tdMetaSemanal);
       tr.appendChild(tdAcao);
       tr.appendChild(tdStatus);
-
       tbodyMetas.appendChild(tr);
     }
   }
 
-  btnAlexandre.addEventListener('click', () => {
-    responsavelAtualMetas = 'ALEXANDRE';
-    btnAlexandre.classList.add('active');
-    btnJumahil.classList.remove('active');
+  btnAlexandre.addEventListener("click",()=>{
+    responsavelAtualMetas="ALEXANDRE";
+    btnAlexandre.classList.add("active");
+    btnJumahil.classList.remove("active");
     recarregarTabelaMetas();
   });
-  btnJumahil.addEventListener('click', () => {
-    responsavelAtualMetas = 'JUMAHIL';
-    btnJumahil.classList.add('active');
-    btnAlexandre.classList.remove('active');
+  btnJumahil.addEventListener("click",()=>{
+    responsavelAtualMetas="JUMAHIL";
+    btnJumahil.classList.add("active");
+    btnAlexandre.classList.remove("active");
     recarregarTabelaMetas();
   });
-  btnRecarregarMetas.addEventListener('click', recarregarTabelaMetas);
+  btnRecarregarMetas.addEventListener("click",recarregarTabelaMetas);
 
-  // -------- APRESENTAÇÃO ----------
-  const btnApRespAlex = document.getElementById('btnApRespAlex');
-  const btnApRespJum = document.getElementById('btnApRespJum');
-  const selectApVendedor = document.getElementById('selectApVendedor');
-  const inputApAno = document.getElementById('inputApAno');
-  const selectApMes = document.getElementById('selectApMes');
-  const btnApAtualizar = document.getElementById('btnApAtualizar');
+  // APRESENTAÇÃO
+  const btnApRespAlex=document.getElementById("btnApRespAlex");
+  const btnApRespJum=document.getElementById("btnApRespJum");
+  const selectApVendedor=document.getElementById("selectApVendedor");
+  const inputApAno=document.getElementById("inputApAno");
+  const selectApMes=document.getElementById("selectApMes");
+  const btnApAtualizar=document.getElementById("btnApAtualizar");
 
-  const apAnoValores = document.getElementById('apAnoValores');
-  const apMesValores = document.getElementById('apMesValores');
-  const apAnoPerc = document.getElementById('apAnoPerc');
-  const apMesPerc = document.getElementById('apMesPerc');
-  const apResumoCurto = document.getElementById('apResumoCurto');
+  const apAnoValores=document.getElementById("apAnoValores");
+  const apMesValores=document.getElementById("apMesValores");
+  const apAnoPerc=document.getElementById("apAnoPerc");
+  const apMesPerc=document.getElementById("apMesPerc");
+  const apResumoCurto=document.getElementById("apResumoCurto");
 
-  let apRespAtual = 'ALEXANDRE';
-  let apChart = null;
+  let apRespAtual="ALEXANDRE";
+  let apChart=null;
 
-  function initFiltrosApresentacao() {
-    const hoje = new Date();
-    inputApAno.value = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    selectApMes.value = mes;
+  function initFiltrosApresentacao(){
+    const hoje=new Date();
+    inputApAno.value=hoje.getFullYear();
+    const mes=String(hoje.getMonth()+1).padStart(2,"0");
+    selectApMes.value=mes;
     atualizarOpcoesApresentacao();
   }
 
-  function atualizarOpcoesApresentacao() {
-    // Popula vendedores conforme responsável e conforme lista oficial, não conforme planilha
-    const lista = getListaVendedores(apRespAtual);
-    selectApVendedor.innerHTML = '';
-    const optPadrao = document.createElement('option');
-    optPadrao.value = '';
-    optPadrao.textContent = 'Selecione um vendedor';
-    selectApVendedor.appendChild(optPadrao);
-    for (const v of lista) {
-      const opt = document.createElement('option');
-      opt.value = v;
-      opt.textContent = v;
+  function atualizarOpcoesApresentacao(){
+    const lista=getListaVendedores(apRespAtual);
+    selectApVendedor.innerHTML="";
+    const opt0=document.createElement("option");
+    opt0.value="";
+    opt0.textContent="Selecione um vendedor";
+    selectApVendedor.appendChild(opt0);
+    for(const v of lista){
+      const opt=document.createElement("option");
+      opt.value=v;
+      opt.textContent=v;
       selectApVendedor.appendChild(opt);
     }
   }
 
-  btnApRespAlex.addEventListener('click', () => {
-    apRespAtual = 'ALEXANDRE';
-    btnApRespAlex.classList.add('active');
-    btnApRespJum.classList.remove('active');
+  btnApRespAlex.addEventListener("click",()=>{
+    apRespAtual="ALEXANDRE";
+    btnApRespAlex.classList.add("active");
+    btnApRespJum.classList.remove("active");
     atualizarOpcoesApresentacao();
     atualizarApresentacao();
   });
-  btnApRespJum.addEventListener('click', () => {
-    apRespAtual = 'JUMAHIL';
-    btnApRespJum.classList.add('active');
-    btnApRespAlex.classList.remove('active');
+  btnApRespJum.addEventListener("click",()=>{
+    apRespAtual="JUMAHIL";
+    btnApRespJum.classList.add("active");
+    btnApRespAlex.classList.remove("active");
     atualizarOpcoesApresentacao();
     atualizarApresentacao();
   });
 
-  btnApAtualizar.addEventListener('click', atualizarApresentacao);
-  selectApVendedor.addEventListener('change', atualizarApresentacao);
+  btnApAtualizar.addEventListener("click",atualizarApresentacao);
+  selectApVendedor.addEventListener("change",atualizarApresentacao);
 
-  async function atualizarApresentacao() {
-    const vendedor = selectApVendedor.value;
-    const ano = parseInt(inputApAno.value, 10) || new Date().getFullYear();
-    const mes = selectApMes.value || "01";
-    const mesKey = `${ano}-${mes}`;
+  async function atualizarApresentacao(){
+    const vendedor=selectApVendedor.value;
+    const ano=parseInt(inputApAno.value,10)||new Date().getFullYear();
+    const mes=selectApMes.value||"01";
+    const mesKey=`${ano}-${mes}`;
 
-    if (!vendedor) {
-      apAnoValores.textContent = 'R$ 0,00 / R$ 0,00';
-      apMesValores.textContent = 'R$ 0,00 / R$ 0,00';
-      apAnoPerc.textContent = '0%';
-      apMesPerc.textContent = '0%';
-      apResumoCurto.textContent = 'Selecione um vendedor.';
-      atualizarGraficoApresentacao([], [], []);
+    if(!vendedor){
+      apAnoValores.textContent="R$ 0,00 / R$ 0,00";
+      apMesValores.textContent="R$ 0,00 / R$ 0,00";
+      apAnoPerc.textContent="0%";
+      apMesPerc.textContent="0%";
+      apResumoCurto.textContent="Selecione um vendedor.";
+      atualizarGraficoApresentacao([],[],[]);
+      return;
+    }
+    if(allRows.length===0){
+      apAnoValores.textContent="R$ 0,00 / R$ 0,00";
+      apMesValores.textContent="R$ 0,00 / R$ 0,00";
+      apAnoPerc.textContent="0%";
+      apMesPerc.textContent="0%";
+      apResumoCurto.textContent="Importe uma planilha na aba Vendas.";
+      atualizarGraficoApresentacao([],[],[]);
       return;
     }
 
-    if (allRows.length === 0) {
-      apAnoValores.textContent = 'R$ 0,00 / R$ 0,00';
-      apMesValores.textContent = 'R$ 0,00 / R$ 0,00';
-      apAnoPerc.textContent = '0%';
-      apMesPerc.textContent = '0%';
-      apResumoCurto.textContent = 'Importe uma planilha na aba Vendas.';
-      atualizarGraficoApresentacao([], [], []);
-      return;
-    }
+    const rowsVend=allRows.filter(r=>r.vendedor===vendedor);
+    let vendasAno=0;
+    let vendasMes=0;
+    const semanasMap={};
 
-    const rowsVend = allRows.filter(r => r.vendedor === vendedor);
-
-    let vendasAno = 0;
-    let vendasMes = 0;
-    const semanasMap = {}; // semanaKey -> {total: number, start: Date, end: Date}
-
-    for (const r of rowsVend) {
-      if (r.data.getFullYear() === ano) {
-        vendasAno += r.valor;
-        if (r.mesKey === mesKey) {
-          vendasMes += r.valor;
-
-          const weekStart = getWeekStartSaturday(r.data);
-          const semanaKey = weekStart.toISOString().slice(0, 10);
-          if (!semanasMap[semanaKey]) {
-            const end = new Date(weekStart);
-            end.setDate(end.getDate() + 6);
-            semanasMap[semanaKey] = {
-              total: 0,
-              start: weekStart,
-              end
-            };
+    for(const r of rowsVend){
+      if(r.data.getFullYear()===ano){
+        vendasAno+=r.valor;
+        if(r.mesKey===mesKey){
+          vendasMes+=r.valor;
+          const weekStart=getWeekStartSaturday(r.data);
+          const semanaKey=weekStart.toISOString().slice(0,10);
+          if(!semanasMap[semanaKey]){
+            const end=new Date(weekStart);
+            end.setDate(end.getDate()+6);
+            semanasMap[semanaKey]={total:0,start:weekStart,end};
           }
-          semanasMap[semanaKey].total += r.valor;
+          semanasMap[semanaKey].total+=r.valor;
         }
       }
     }
 
-    const metasDoc = await carregarMetasDocCompleto(vendedor, ano);
-    const metaAnual = metasDoc.metaAnual || 0;
-    const metaMensal = (metasDoc.metasMensais && metasDoc.metasMensais[mesKey]) || 0;
-    const metasSemanais = metasDoc.metasSemanais || {};
+    const metasDoc=await carregarMetasDocCompleto(vendedor,ano);
+    const metaAnual=Number(metasDoc.metaAnual||0);
+    const metaMensal=Number((metasDoc.mesasMensais||metasDoc.metasMensais||{})[mesKey]||0); // fallback se typo
+    const metasSemanais=metasDoc.metasSemanais||{};
 
-    // Atualiza cards de ano e mês
-    apAnoValores.textContent = `${formatCurrency(vendasAno)} / ${formatCurrency(metaAnual)}`;
-    apMesValores.textContent = `${formatCurrency(vendasMes)} / ${formatCurrency(metaMensal)}`;
+    apAnoValores.textContent=`${formatCurrency(vendasAno)} / ${formatCurrency(metaAnual)}`;
+    apMesValores.textContent=`${formatCurrency(vendasMes)} / ${formatCurrency(metaMensal)}`;
 
-    const percAno = metaAnual > 0 ? (vendasAno / metaAnual) * 100 : 0;
-    const percMes = metaMensal > 0 ? (vendasMes / metaMensal) * 100 : 0;
+    const percAno=metaAnual>0?(vendasAno/metaAnual)*100:0;
+    const percMes=metaMensal>0?(vendasMes/metaMensal)*100:0;
 
-    apAnoPerc.textContent = `${percAno.toFixed(1)}%`;
-    apMesPerc.textContent = `${percMes.toFixed(1)}%`;
+    apAnoPerc.textContent=`${percAno.toFixed(1)}%`;
+    apMesPerc.textContent=`${percMes.toFixed(1)}%`;
 
-    const qtdSemanas = Object.keys(semanasMap).length;
-    apResumoCurto.textContent = `${qtdSemanas} semana(s) com venda no mês selecionado.`;
+    const qtdSemanas=Object.keys(semanasMap).length;
+    apResumoCurto.textContent=`${qtdSemanas} semana(s) com venda no mês selecionado.`;
 
-    // Dados para o gráfico
-    const labels = [];
-    const vendasSemanais = [];
-    const metasSemanaisArray = [];
+    const labels=[];
+    const vendasSemanais=[];
+    const metasSemanaisArray=[];
+    const semanaKeysOrdenadas=Object.keys(semanasMap).sort();
 
-    const semanaKeysOrdenadas = Object.keys(semanasMap).sort();
-    for (const sk of semanaKeysOrdenadas) {
-      const info = semanasMap[sk];
+    for(const sk of semanaKeysOrdenadas){
+      const info=semanasMap[sk];
       labels.push(`${formatDateBR(info.start)} a ${formatDateBR(info.end)}`);
       vendasSemanais.push(info.total);
-      const metaSem = metasSemanais[sk] || 0;
-      metasSemanaisArray.push(metaSem);
+
+      const raw=metasSemanais[sk] ?? 0;
+      let metaNum=0;
+      if(typeof raw==="number") metaNum=raw;
+      else{
+        const p=parseValorBR(String(raw));
+        metaNum=p!=null?p:Number(raw)||0;
+      }
+      metasSemanaisArray.push(metaNum);
     }
 
-    atualizarGraficoApresentacao(labels, vendasSemanais, metasSemanaisArray);
+    atualizarGraficoApresentacao(labels,vendasSemanais,metasSemanaisArray);
   }
 
-  function atualizarGraficoApresentacao(labels, vendasData, metasData) {
-    const ctx = document.getElementById('apChart').getContext('2d');
-    if (!apChart) {
-      apChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
+  function atualizarGraficoApresentacao(labels,vendasData,metasData){
+    const ctx=document.getElementById("apChart").getContext("2d");
+    if(!apChart){
+      apChart=new Chart(ctx,{
+        type:"bar",
+        data:{
           labels,
-          datasets: [
-            {
-              label: 'Vendas semanais',
-              data: vendasData
-            },
-            {
-              label: 'Meta semanal',
-              data: metasData
-            }
+          datasets:[
+            {label:"Vendas semanais",data:vendasData},
+            {label:"Meta semanal",data:metasData}
           ]
         },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                callback: function(value) {
-                  return value.toLocaleString('pt-BR', { minimumFractionDigits: 0 });
-                }
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          scales:{
+            y:{
+              beginAtZero:true,
+              ticks:{
+                callback:value=>value.toLocaleString("pt-BR",{minimumFractionDigits:0})
               }
             }
           },
-          plugins: {
-            legend: {
-              position: 'top'
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const v = context.parsed.y || 0;
-                  return `${context.dataset.label}: R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          plugins:{
+            legend:{position:"top"},
+            tooltip:{
+              callbacks:{
+                label(context){
+                  const v=context.parsed.y||0;
+                  return `${context.dataset.label}: R$ ${v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
                 }
               }
             }
           }
         }
       });
-    } else {
-      apChart.data.labels = labels;
-      apChart.data.datasets[0].data = vendasData;
-      apChart.data.datasets[1].data = metasData;
+    }else{
+      apChart.data.labels=labels;
+      apChart.data.datasets[0].data=vendasData;
+      apChart.data.datasets[1].data=metasData;
       apChart.update();
     }
   }
 
-  // ---- inicialização ----
+  // init
   initFiltrosVendas();
   initFiltrosMetas();
   initFiltrosApresentacao();
