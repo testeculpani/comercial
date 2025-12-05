@@ -7,6 +7,8 @@
 
   <!-- SheetJS para ler Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Chart.js para gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     * { box-sizing: border-box; }
@@ -318,6 +320,7 @@
       color: #9ca3af;
       margin-top: 2px;
     }
+    .card-detail strong { color: #e5e7eb; }
 
     .footer-note {
       margin-top: 10px;
@@ -329,7 +332,7 @@
       flex-wrap: wrap;
     }
 
-    /* Popup */
+    /* Popup detalhes vendas */
     .overlay {
       position: fixed;
       inset: 0;
@@ -450,6 +453,7 @@
   <div class="tabs">
     <button class="tab-btn active" id="tabVendas">Vendas</button>
     <button class="tab-btn" id="tabMetas">Metas Representantes</button>
+    <button class="tab-btn" id="tabApresentacao">Apresentação</button>
   </div>
 
   <!-- VENDAS -->
@@ -598,6 +602,89 @@
     <div class="footer-note">
       <span>Estrutura Firestore: <strong>metasVendedor / SLUG_VENDEDOR_ANO</strong>.</span>
       <span>Campos: metaAnual · metasMensais[YYYY-MM] · metasSemanais[YYYY-MM-DD].</span>
+    </div>
+  </section>
+
+  <!-- APRESENTAÇÃO -->
+  <section id="secApresentacao" class="section hidden">
+    <div class="top-controls">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span class="label">Responsável:</span>
+        <button class="btn outline active" id="btnApRespAlex">ALEXANDRE</button>
+        <button class="btn outline" id="btnApRespJum">JUMAHIL</button>
+      </div>
+
+      <div class="filters">
+        <div class="filters-group">
+          <span>Vendedor:</span>
+          <select id="selectApVendedor" style="min-width:220px;"></select>
+        </div>
+        <div class="filters-group">
+          <span>Ano:</span>
+          <input type="number" id="inputApAno" min="2020" max="2100" style="width:80px;">
+        </div>
+        <div class="filters-group">
+          <span>Mês:</span>
+          <select id="selectApMes">
+            <option value="01">Jan</option>
+            <option value="02">Fev</option>
+            <option value="03">Mar</option>
+            <option value="04">Abr</option>
+            <option value="05">Mai</option>
+            <option value="06">Jun</option>
+            <option value="07">Jul</option>
+            <option value="08">Ago</option>
+            <option value="09">Set</option>
+            <option value="10">Out</option>
+            <option value="11">Nov</option>
+            <option value="12">Dez</option>
+          </select>
+        </div>
+        <button class="btn small" id="btnApAtualizar">Atualizar</button>
+      </div>
+    </div>
+
+    <div class="hint">
+      Escolha o <strong>responsável</strong>, o <strong>vendedor</strong>, o <strong>ano</strong> e o <strong>mês</strong>.<br>
+      O painel mostra as <strong>vendas x metas</strong> anual, mensal e por semanas (Sáb–Sex) do mês selecionado.
+    </div>
+
+    <div class="summary-cards">
+      <div class="card">
+        <div class="card-title">Ano – Vendas x Meta</div>
+        <div class="card-value" id="apAnoValores">R$ 0,00 / R$ 0,00</div>
+        <div class="card-detail">
+          <strong id="apAnoPerc">0%</strong> da meta anual atingida.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Mês – Vendas x Meta</div>
+        <div class="card-value" id="apMesValores">R$ 0,00 / R$ 0,00</div>
+        <div class="card-detail">
+          <strong id="apMesPerc">0%</strong> da meta mensal atingida.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Resumo rápido</div>
+        <div class="card-value" id="apResumoCurto">Sem dados</div>
+        <div class="card-detail">
+          Semanas consideradas: <strong>Sábado a Sexta</strong> dentro do mês selecionado.
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper" style="margin-top:6px;">
+      <div style="padding:8px 10px;font-size:12px;color:#475569;border-bottom:1px solid #e2e8f0;">
+        Comparativo semanal do mês selecionado – <strong>Vendas x Meta semanal</strong>
+      </div>
+      <div style="padding:4px 8px 10px 8px;">
+        <canvas id="apChart" height="180"></canvas>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <span>Os dados de vendas vêm da planilha importada na aba <strong>Vendas</strong>.</span>
+      <span>Metas usadas são as salvas em <strong>metasVendedor</strong> para o vendedor/ano selecionado.</span>
     </div>
   </section>
 </div>
@@ -853,24 +940,56 @@
     await setDoc(ref, dataAtual, { merge: true });
   }
 
+  async function carregarMetasDocCompleto(vendedor, ano) {
+    const docId = getMetaVendedorDocId(vendedor, ano);
+    const ref = doc(db, 'metasVendedor', docId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      return {
+        metaAnual: 0,
+        metasMensais: {},
+        metasSemanais: {}
+      };
+    }
+    const data = snap.data() || {};
+    return {
+      metaAnual: data.metaAnual || 0,
+      metasMensais: data.metasMensais || {},
+      metasSemanais: data.metasSemanais || {}
+    };
+  }
+
   // -------- Tabs ----------
   const tabVendas = document.getElementById('tabVendas');
   const tabMetas = document.getElementById('tabMetas');
+  const tabApresentacao = document.getElementById('tabApresentacao');
   const secVendas = document.getElementById('secVendas');
   const secMetas = document.getElementById('secMetas');
+  const secApresentacao = document.getElementById('secApresentacao');
 
-  tabVendas.addEventListener('click', () => {
-    tabVendas.classList.add('active');
-    tabMetas.classList.remove('active');
-    secVendas.classList.remove('hidden');
-    secMetas.classList.add('hidden');
-  });
-  tabMetas.addEventListener('click', () => {
-    tabMetas.classList.add('active');
+  function ativarTab(nome) {
     tabVendas.classList.remove('active');
-    secMetas.classList.remove('hidden');
+    tabMetas.classList.remove('active');
+    tabApresentacao.classList.remove('active');
     secVendas.classList.add('hidden');
-  });
+    secMetas.classList.add('hidden');
+    secApresentacao.classList.add('hidden');
+
+    if (nome === 'vendas') {
+      tabVendas.classList.add('active');
+      secVendas.classList.remove('hidden');
+    } else if (nome === 'metas') {
+      tabMetas.classList.add('active');
+      secMetas.classList.remove('hidden');
+    } else if (nome === 'apresentacao') {
+      tabApresentacao.classList.add('active');
+      secApresentacao.classList.remove('hidden');
+    }
+  }
+
+  tabVendas.addEventListener('click', () => ativarTab('vendas'));
+  tabMetas.addEventListener('click', () => ativarTab('metas'));
+  tabApresentacao.addEventListener('click', () => ativarTab('apresentacao'));
 
   // -------- VENDAS ----------
   const inputArquivo = document.getElementById('inputArquivo');
@@ -950,6 +1069,8 @@
         allRows.push({ vendedor, resp, valor, data, mesKey, semanaKey });
       }
       aplicarFiltroVendas();
+      // atualizar opções na apresentação, se estiver na aba
+      atualizarOpcoesApresentacao();
     };
     reader.readAsArrayBuffer(file);
   });
@@ -1243,9 +1364,211 @@
   });
   btnRecarregarMetas.addEventListener('click', recarregarTabelaMetas);
 
+  // -------- APRESENTAÇÃO ----------
+  const btnApRespAlex = document.getElementById('btnApRespAlex');
+  const btnApRespJum = document.getElementById('btnApRespJum');
+  const selectApVendedor = document.getElementById('selectApVendedor');
+  const inputApAno = document.getElementById('inputApAno');
+  const selectApMes = document.getElementById('selectApMes');
+  const btnApAtualizar = document.getElementById('btnApAtualizar');
+
+  const apAnoValores = document.getElementById('apAnoValores');
+  const apMesValores = document.getElementById('apMesValores');
+  const apAnoPerc = document.getElementById('apAnoPerc');
+  const apMesPerc = document.getElementById('apMesPerc');
+  const apResumoCurto = document.getElementById('apResumoCurto');
+
+  let apRespAtual = 'ALEXANDRE';
+  let apChart = null;
+
+  function initFiltrosApresentacao() {
+    const hoje = new Date();
+    inputApAno.value = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    selectApMes.value = mes;
+    atualizarOpcoesApresentacao();
+  }
+
+  function atualizarOpcoesApresentacao() {
+    // Popula vendedores conforme responsável e conforme lista oficial, não conforme planilha
+    const lista = getListaVendedores(apRespAtual);
+    selectApVendedor.innerHTML = '';
+    const optPadrao = document.createElement('option');
+    optPadrao.value = '';
+    optPadrao.textContent = 'Selecione um vendedor';
+    selectApVendedor.appendChild(optPadrao);
+    for (const v of lista) {
+      const opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = v;
+      selectApVendedor.appendChild(opt);
+    }
+  }
+
+  btnApRespAlex.addEventListener('click', () => {
+    apRespAtual = 'ALEXANDRE';
+    btnApRespAlex.classList.add('active');
+    btnApRespJum.classList.remove('active');
+    atualizarOpcoesApresentacao();
+    atualizarApresentacao();
+  });
+  btnApRespJum.addEventListener('click', () => {
+    apRespAtual = 'JUMAHIL';
+    btnApRespJum.classList.add('active');
+    btnApRespAlex.classList.remove('active');
+    atualizarOpcoesApresentacao();
+    atualizarApresentacao();
+  });
+
+  btnApAtualizar.addEventListener('click', atualizarApresentacao);
+  selectApVendedor.addEventListener('change', atualizarApresentacao);
+
+  async function atualizarApresentacao() {
+    const vendedor = selectApVendedor.value;
+    const ano = parseInt(inputApAno.value, 10) || new Date().getFullYear();
+    const mes = selectApMes.value || "01";
+    const mesKey = `${ano}-${mes}`;
+
+    if (!vendedor) {
+      apAnoValores.textContent = 'R$ 0,00 / R$ 0,00';
+      apMesValores.textContent = 'R$ 0,00 / R$ 0,00';
+      apAnoPerc.textContent = '0%';
+      apMesPerc.textContent = '0%';
+      apResumoCurto.textContent = 'Selecione um vendedor.';
+      atualizarGraficoApresentacao([], [], []);
+      return;
+    }
+
+    if (allRows.length === 0) {
+      apAnoValores.textContent = 'R$ 0,00 / R$ 0,00';
+      apMesValores.textContent = 'R$ 0,00 / R$ 0,00';
+      apAnoPerc.textContent = '0%';
+      apMesPerc.textContent = '0%';
+      apResumoCurto.textContent = 'Importe uma planilha na aba Vendas.';
+      atualizarGraficoApresentacao([], [], []);
+      return;
+    }
+
+    const rowsVend = allRows.filter(r => r.vendedor === vendedor);
+
+    let vendasAno = 0;
+    let vendasMes = 0;
+    const semanasMap = {}; // semanaKey -> {total: number, start: Date, end: Date}
+
+    for (const r of rowsVend) {
+      if (r.data.getFullYear() === ano) {
+        vendasAno += r.valor;
+        if (r.mesKey === mesKey) {
+          vendasMes += r.valor;
+
+          const weekStart = getWeekStartSaturday(r.data);
+          const semanaKey = weekStart.toISOString().slice(0, 10);
+          if (!semanasMap[semanaKey]) {
+            const end = new Date(weekStart);
+            end.setDate(end.getDate() + 6);
+            semanasMap[semanaKey] = {
+              total: 0,
+              start: weekStart,
+              end
+            };
+          }
+          semanasMap[semanaKey].total += r.valor;
+        }
+      }
+    }
+
+    const metasDoc = await carregarMetasDocCompleto(vendedor, ano);
+    const metaAnual = metasDoc.metaAnual || 0;
+    const metaMensal = (metasDoc.metasMensais && metasDoc.metasMensais[mesKey]) || 0;
+    const metasSemanais = metasDoc.metasSemanais || {};
+
+    // Atualiza cards de ano e mês
+    apAnoValores.textContent = `${formatCurrency(vendasAno)} / ${formatCurrency(metaAnual)}`;
+    apMesValores.textContent = `${formatCurrency(vendasMes)} / ${formatCurrency(metaMensal)}`;
+
+    const percAno = metaAnual > 0 ? (vendasAno / metaAnual) * 100 : 0;
+    const percMes = metaMensal > 0 ? (vendasMes / metaMensal) * 100 : 0;
+
+    apAnoPerc.textContent = `${percAno.toFixed(1)}%`;
+    apMesPerc.textContent = `${percMes.toFixed(1)}%`;
+
+    const qtdSemanas = Object.keys(semanasMap).length;
+    apResumoCurto.textContent = `${qtdSemanas} semana(s) com venda no mês selecionado.`;
+
+    // Dados para o gráfico
+    const labels = [];
+    const vendasSemanais = [];
+    const metasSemanaisArray = [];
+
+    const semanaKeysOrdenadas = Object.keys(semanasMap).sort();
+    for (const sk of semanaKeysOrdenadas) {
+      const info = semanasMap[sk];
+      labels.push(`${formatDateBR(info.start)} a ${formatDateBR(info.end)}`);
+      vendasSemanais.push(info.total);
+      const metaSem = metasSemanais[sk] || 0;
+      metasSemanaisArray.push(metaSem);
+    }
+
+    atualizarGraficoApresentacao(labels, vendasSemanais, metasSemanaisArray);
+  }
+
+  function atualizarGraficoApresentacao(labels, vendasData, metasData) {
+    const ctx = document.getElementById('apChart').getContext('2d');
+    if (!apChart) {
+      apChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Vendas semanais',
+              data: vendasData
+            },
+            {
+              label: 'Meta semanal',
+              data: metasData
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value.toLocaleString('pt-BR', { minimumFractionDigits: 0 });
+                }
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const v = context.parsed.y || 0;
+                  return `${context.dataset.label}: R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    } else {
+      apChart.data.labels = labels;
+      apChart.data.datasets[0].data = vendasData;
+      apChart.data.datasets[1].data = metasData;
+      apChart.update();
+    }
+  }
+
   // ---- inicialização ----
   initFiltrosVendas();
   initFiltrosMetas();
+  initFiltrosApresentacao();
   recarregarTabelaMetas();
 </script>
 </body>
