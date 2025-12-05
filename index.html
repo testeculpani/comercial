@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <title>Painel Comercial – Vendas e Metas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <!-- SheetJS para ler Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
     * { box-sizing: border-box; }
     body {
@@ -116,9 +118,7 @@
       box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
     }
 
-    .section {
-      margin-top: 6px;
-    }
+    .section { margin-top: 6px; }
     .section.hidden { display: none; }
 
     .btn {
@@ -286,15 +286,6 @@
       font-weight: 500;
     }
 
-    .badges-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 6px;
-      font-size: 11px;
-      color: #475569;
-    }
-
     .summary-cards {
       display: flex;
       flex-wrap: wrap;
@@ -338,7 +329,7 @@
       flex-wrap: wrap;
     }
 
-    /* Popup de detalhes de vendas por vendedor */
+    /* Popup */
     .overlay {
       position: fixed;
       inset: 0;
@@ -461,9 +452,7 @@
     <button class="tab-btn" id="tabMetas">Metas Representantes</button>
   </div>
 
-  <!-- =========================
-       SEÇÃO VENDAS
-       ========================= -->
+  <!-- VENDAS -->
   <section id="secVendas" class="section">
     <div class="top-controls">
       <div>
@@ -497,10 +486,10 @@
       </div>
     </div>
 
-    <div class="badges-row">
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;font-size:11px;color:#475569;">
       <span class="pill">Status válidos: Pendente, Aprovado, Atendido, Em Alteração, Validado</span>
-      <span class="pill">Coluna R deve começar com “venda” (ignora maiúsc/minúsc)</span>
-      <span class="pill">Colunas esperadas: B=Status · D=Data · I=Vendedor · J=Valor · R=Descrição</span>
+      <span class="pill">Coluna R deve começar com “venda”</span>
+      <span class="pill">Colunas: B=Status · D=Data · I=Vendedor · J=Valor · R=Descrição</span>
     </div>
 
     <div class="summary-cards">
@@ -539,16 +528,14 @@
 
     <div class="footer-note">
       <span>Semana considerada de <strong>Sábado a Sexta</strong> para os detalhes por representante.</span>
-      <span>Baseado nos dados da coluna D (data) da planilha.</span>
+      <span>Baseado na data da coluna D.</span>
     </div>
   </section>
 
-  <!-- =========================
-       SEÇÃO METAS
-       ========================= -->
+  <!-- METAS -->
   <section id="secMetas" class="section hidden">
     <div class="top-controls">
-      <div class="responsavel-toggle">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <span class="label">Responsável:</span>
         <button class="btn outline active" id="btnAlexandre">ALEXANDRE</button>
         <button class="btn outline" id="btnJumahil">JUMAHIL</button>
@@ -585,8 +572,8 @@
     </div>
 
     <div class="hint">
-      Escolha o <strong>responsável</strong>, o <strong>ano</strong>, o <strong>mês</strong> e o <strong>sábado</strong> da semana de referência.<br>
-      Ajuste as metas dos representantes e clique em <strong>Salvar</strong> na linha para gravar no Firestore.
+      Escolha o <strong>responsável</strong>, o <strong>ano</strong>, o <strong>mês</strong> e o <strong>sábado</strong> da semana.<br>
+      Ajuste as metas e clique em <strong>Salvar</strong> na linha para gravar no Firestore.
     </div>
 
     <div class="table-wrapper">
@@ -615,7 +602,7 @@
   </section>
 </div>
 
-<!-- POPUP DETALHES VENDEDOR (VENDAS) -->
+<!-- POPUP DETALHES VENDEDOR -->
 <div class="overlay" id="overlayVendedor">
   <div class="overlay-content">
     <div class="overlay-header">
@@ -633,14 +620,12 @@
       </div>
       <div class="weeks-list" id="ovWeeksList">
         <div class="weeks-header">Semanas com venda (Sábado – Sexta)</div>
-        <!-- linhas criadas via JS -->
       </div>
     </div>
   </div>
 </div>
 
 <script type="module">
-  // Firebase SDK v12
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
   import {
     getFirestore,
@@ -650,7 +635,6 @@
     serverTimestamp
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-  // Config que você mandou
   const firebaseConfig = {
     apiKey: "AIzaSyDWfny0Cx9fhSqPpGZweCGJwu2gO3083h0",
     authDomain: "comercial-1e58d.firebaseapp.com",
@@ -663,9 +647,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // -------------------------
-  // LISTAS DE VENDEDORES (RESPONSÁVEL)
-  // -------------------------
+  // ------- listas Alexandre / Jumahil --------
   const VENDEDORES_ALEXANDRE = [
     "ANDERSON MAICO FREDERICO REPRESENTACOES COMER",
     "J. G. VARGAS REPRESENTACOES COMERCIAIS MARING",
@@ -743,18 +725,16 @@
     "VIALE BR EMPREENDIMENTOS LTDA"
   ];
 
-  function getResponsavel(vendedor) {
-    if (VENDEDORES_ALEXANDRE.includes(vendedor)) return 'ALEXANDRE';
-    if (VENDEDORES_JUMAHIL.includes(vendedor)) return 'JUMAHIL';
+  function getResponsavel(v) {
+    if (VENDEDORES_ALEXANDRE.includes(v)) return 'ALEXANDRE';
+    if (VENDEDORES_JUMAHIL.includes(v)) return 'JUMAHIL';
     return '';
   }
   function getListaVendedores(resp) {
     return resp === 'ALEXANDRE' ? VENDEDORES_ALEXANDRE : VENDEDORES_JUMAHIL;
   }
 
-  // -------------------------
-  // HELPERS GERAIS
-  // -------------------------
+  // -------- helpers gerais ----------
   function slugifyVendedor(nome) {
     return String(nome)
       .normalize('NFD')
@@ -784,21 +764,40 @@
   function formatCurrency(valor) {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
-  function parseDataDDMMYYYY(str) {
-    if (!str) return null;
-    const parts = str.split('/');
-    if (parts.length !== 3) return null;
-    const d = parseInt(parts[0], 10);
-    const m = parseInt(parts[1], 10) - 1;
-    const y = parseInt(parts[2], 10);
-    if (isNaN(d) || isNaN(m) || isNaN(y)) return null;
-    return new Date(y, m, d);
+
+  // data flexível: texto, Date ou serial Excel
+  function parseDataExcel(cell) {
+    if (!cell) return null;
+    if (cell instanceof Date) {
+      return new Date(cell.getTime());
+    }
+    if (typeof cell === 'number') {
+      const base = new Date(1899, 11, 30);
+      const d = new Date(base.getTime());
+      d.setDate(d.getDate() + cell);
+      return d;
+    }
+    if (typeof cell === 'string') {
+      const s = cell.trim();
+      if (!s) return null;
+      const parts = s.split('/');
+      if (parts.length === 3) {
+        const d = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const y = parseInt(parts[2], 10);
+        if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+          return new Date(y, m, d);
+        }
+      }
+      return null;
+    }
+    return null;
   }
-  // Semana sábado–sexta: obtém o sábado de início
   function getWeekStartSaturday(date) {
-    const day = date.getDay(); // 0=Dom,...6=Sab
-    const offset = (day + 1) % 7; // Sab(6)->0, Dom(0)->1, Sex(5)->6
-    const start = new Date(date);
+    const d = new Date(date.getTime());
+    const day = d.getDay(); // 0=Dom,...6=Sab
+    const offset = (day + 1) % 7;
+    const start = new Date(d);
     start.setHours(0, 0, 0, 0);
     start.setDate(start.getDate() - offset);
     return start;
@@ -810,70 +809,42 @@
     return `${dd}/${mm}/${yyyy}`;
   }
 
-  // -------------------------
-  // METAS – Firestore
-  // -------------------------
+  // -------- Firestore metas ----------
   async function carregarMetasVendedor(vendedor, ano, mesKey, semanaKey) {
     const docId = getMetaVendedorDocId(vendedor, ano);
     const ref = doc(db, 'metasVendedor', docId);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
-      return {
-        metaAnual: 0,
-        metaMensal: 0,
-        metaSemanal: 0
-      };
+      return { metaAnual: 0, metaMensal: 0, metaSemanal: 0 };
     }
-
     const data = snap.data() || {};
-    const metasMensais = data.metasMensais || {};
-    const metasSemanais = data.metasSemanais || {};
-
+    const mm = data.metasMensais || {};
+    const ss = data.metasSemanais || {};
     return {
       metaAnual: data.metaAnual || 0,
-      metaMensal: metasMensais[mesKey] || 0,
-      metaSemanal: metasSemanais[semanaKey] || 0
+      metaMensal: mm[mesKey] || 0,
+      metaSemanal: ss[semanaKey] || 0
     };
   }
 
-  async function salvarMetasVendedor({
-    vendedor,
-    ano,
-    metaAnual = null,
-    mesKey = null,
-    metaMensal = null,
-    semanaKey = null,
-    metaSemanal = null,
-    resp
-  }) {
+  async function salvarMetasVendedor({ vendedor, ano, metaAnual, mesKey, metaMensal, semanaKey, metaSemanal, resp }) {
     const docId = getMetaVendedorDocId(vendedor, ano);
     const ref = doc(db, 'metasVendedor', docId);
     const snap = await getDoc(ref);
     let dataAtual = {};
+    if (snap.exists()) dataAtual = snap.data() || {};
+    else dataAtual = { vendedor, resp, ano, metaAnual: 0, metasMensais: {}, metasSemanais: {} };
 
-    if (snap.exists()) {
-      dataAtual = snap.data() || {};
-    } else {
-      dataAtual = {
-        vendedor,
-        resp,
-        ano,
-        metaAnual: 0,
-        metasMensais: {},
-        metasSemanais: {}
-      };
-    }
-
-    const metasMensais = dataAtual.metasMensais || {};
-    const metasSemanais = dataAtual.metasSemanais || {};
+    const mm = dataAtual.metasMensais || {};
+    const ss = dataAtual.metasSemanais || {};
 
     if (metaAnual != null) dataAtual.metaAnual = metaAnual;
-    if (mesKey && metaMensal != null) metasMensais[mesKey] = metaMensal;
-    if (semanaKey && metaSemanal != null) metasSemanais[semanaKey] = metaSemanal;
+    if (mesKey && metaMensal != null) mm[mesKey] = metaMensal;
+    if (semanaKey && metaSemanal != null) ss[semanaKey] = metaSemanal;
 
-    dataAtual.metasMensais = metasMensais;
-    dataAtual.metasSemanais = metasSemanais;
+    dataAtual.metasMensais = mm;
+    dataAtual.metasSemanais = ss;
     dataAtual.vendedor = vendedor;
     dataAtual.resp = resp;
     dataAtual.ano = ano;
@@ -882,9 +853,7 @@
     await setDoc(ref, dataAtual, { merge: true });
   }
 
-  // -------------------------
-  // UI – TABS
-  // -------------------------
+  // -------- Tabs ----------
   const tabVendas = document.getElementById('tabVendas');
   const tabMetas = document.getElementById('tabMetas');
   const secVendas = document.getElementById('secVendas');
@@ -903,9 +872,7 @@
     secVendas.classList.add('hidden');
   });
 
-  // -------------------------
-  // SEÇÃO VENDAS – Import e resumo
-  // -------------------------
+  // -------- VENDAS ----------
   const inputArquivo = document.getElementById('inputArquivo');
   const selectMesVendas = document.getElementById('selectMesVendas');
   const inputAnoVendas = document.getElementById('inputAnoVendas');
@@ -923,16 +890,15 @@
   const ovChipTotalVendedor = document.getElementById('ovChipTotalVendedor');
   const ovWeeksList = document.getElementById('ovWeeksList');
 
-  let allRows = []; // {vendedor, resp, valor, data, mesKey, semanaKey}
+  let allRows = [];
   let filtroMesAtual = '';
   let filtroAnoAtual = null;
 
   function initFiltrosVendas() {
-    const hoje = new Date();
-    inputAnoVendas.value = hoje.getFullYear();
-    filtroAnoAtual = hoje.getFullYear();
+    inputAnoVendas.value = ""; // sem filtro de ano por padrão
+    filtroAnoAtual = null;
     selectMesVendas.value = "";
-    cardMesAno.textContent = 'Todos';
+    cardMesAno.textContent = "Todos";
   }
 
   inputArquivo.addEventListener('change', () => {
@@ -946,8 +912,6 @@
       const sheet = workbook.Sheets[sheetName];
       const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-      // json é array de linhas, cada row é array de células
-      // Primeira linha = cabeçalho
       allRows = [];
       const STATUS_VALIDOS = ["PENDENTE", "APROVADO", "ATENDIDO", "EM ALTERAÇÃO", "VALIDADO"];
 
@@ -955,23 +919,22 @@
         const row = json[i];
         if (!row || row.length === 0) continue;
 
-        const status = (row[1] || "").toString().trim();        // Coluna B
-        const dataStr = (row[3] || "").toString().trim();       // Coluna D
-        const vendedor = (row[8] || "").toString().trim();      // Coluna I
-        const valorRaw = row[9];                                // Coluna J
-        const descricao = (row[17] || "").toString().trim();    // Coluna R
+        const status = (row[1] || "").toString().trim();        // B
+        const dataCell = row[3];                                // D
+        const vendedor = (row[8] || "").toString().trim();      // I
+        const valorRaw = row[9];                                // J
+        const descricao = (row[17] || "").toString().trim();    // R
 
         if (!STATUS_VALIDOS.includes(status.toUpperCase())) continue;
         if (!descricao.toLowerCase().startsWith("venda")) continue;
         if (!vendedor) continue;
 
-        const data = parseDataDDMMYYYY(dataStr);
+        const data = parseDataExcel(dataCell);
         if (!data) continue;
 
         let valor = 0;
-        if (typeof valorRaw === 'number') {
-          valor = valorRaw;
-        } else if (typeof valorRaw === 'string') {
+        if (typeof valorRaw === 'number') valor = valorRaw;
+        else if (typeof valorRaw === 'string') {
           const parsed = parseValorBR(valorRaw);
           if (parsed != null) valor = parsed;
         }
@@ -993,36 +956,27 @@
 
   function aplicarFiltroVendas() {
     filtroMesAtual = selectMesVendas.value || '';
-    filtroAnoAtual = parseInt(inputAnoVendas.value, 10) || null;
+    const anoInput = parseInt(inputAnoVendas.value, 10);
+    filtroAnoAtual = isNaN(anoInput) ? null : anoInput;
 
     let rowsFiltradas = allRows.slice();
-    if (filtroAnoAtual) {
-      rowsFiltradas = rowsFiltradas.filter(r => r.data.getFullYear() === filtroAnoAtual);
-    }
-    if (filtroMesAtual) {
-      rowsFiltradas = rowsFiltradas.filter(r => r.mesKey.endsWith(`-${filtroMesAtual}`));
-    }
+    if (filtroAnoAtual) rowsFiltradas = rowsFiltradas.filter(r => r.data.getFullYear() === filtroAnoAtual);
+    if (filtroMesAtual) rowsFiltradas = rowsFiltradas.filter(r => r.mesKey.endsWith(`-${filtroMesAtual}`));
 
     const totaisPorVendedor = {};
     let totalGeral = 0;
 
     for (const r of rowsFiltradas) {
-      if (!totaisPorVendedor[r.vendedor]) {
-        totaisPorVendedor[r.vendedor] = 0;
-      }
+      if (!totaisPorVendedor[r.vendedor]) totaisPorVendedor[r.vendedor] = 0;
       totaisPorVendedor[r.vendedor] += r.valor;
       totalGeral += r.valor;
     }
 
     cardTotalGeral.textContent = formatCurrency(totalGeral);
     cardQtdVendedores.textContent = Object.keys(totaisPorVendedor).length.toString();
-    if (filtroMesAtual && filtroAnoAtual) {
-      cardMesAno.textContent = `${filtroMesAtual}/${filtroAnoAtual}`;
-    } else if (filtroAnoAtual) {
-      cardMesAno.textContent = `Ano ${filtroAnoAtual}`;
-    } else {
-      cardMesAno.textContent = `Todos`;
-    }
+    if (filtroMesAtual && filtroAnoAtual) cardMesAno.textContent = `${filtroMesAtual}/${filtroAnoAtual}`;
+    else if (filtroAnoAtual) cardMesAno.textContent = `Ano ${filtroAnoAtual}`;
+    else cardMesAno.textContent = "Todos";
 
     tbodyVendas.innerHTML = '';
     if (Object.keys(totaisPorVendedor).length === 0) {
@@ -1044,19 +998,14 @@
       const resp = getResponsavel(vendedor);
 
       const tr = document.createElement('tr');
-
       const tdVend = document.createElement('td');
       tdVend.className = 'td-vendedor';
       tdVend.textContent = vendedor;
 
       const tdResp = document.createElement('td');
-      if (resp === 'ALEXANDRE') {
-        tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
-      } else if (resp === 'JUMAHIL') {
-        tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
-      } else {
-        tdResp.textContent = '-';
-      }
+      if (resp === 'ALEXANDRE') tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
+      else if (resp === 'JUMAHIL') tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
+      else tdResp.textContent = '-';
 
       const tdTotal = document.createElement('td');
       tdTotal.style.textAlign = 'right';
@@ -1067,9 +1016,7 @@
       const btnDetalhes = document.createElement('button');
       btnDetalhes.className = 'btn small';
       btnDetalhes.textContent = 'Ver detalhes';
-      btnDetalhes.addEventListener('click', () => {
-        abrirDetalhesVendedor(vendedor, resp);
-      });
+      btnDetalhes.addEventListener('click', () => abrirDetalhesVendedor(vendedor, resp));
       tdAcao.appendChild(btnDetalhes);
 
       tr.appendChild(tdVend);
@@ -1080,17 +1027,12 @@
       tbodyVendas.appendChild(tr);
     }
   }
-
   btnAplicarFiltro.addEventListener('click', aplicarFiltroVendas);
 
   function abrirDetalhesVendedor(vendedor, resp) {
     let rows = allRows.filter(r => r.vendedor === vendedor);
-    if (filtroAnoAtual) {
-      rows = rows.filter(r => r.data.getFullYear() === filtroAnoAtual);
-    }
-    if (filtroMesAtual) {
-      rows = rows.filter(r => r.mesKey.endsWith(`-${filtroMesAtual}`));
-    }
+    if (filtroAnoAtual) rows = rows.filter(r => r.data.getFullYear() === filtroAnoAtual);
+    if (filtroMesAtual) rows = rows.filter(r => r.mesKey.endsWith(`-${filtroMesAtual}`));
 
     if (rows.length === 0) {
       alert('Nenhuma venda para este vendedor com os filtros atuais.');
@@ -1104,20 +1046,14 @@
 
     for (const r of rows) {
       totalVend += r.valor;
-      if (!semanas[r.semanaKey]) {
-        semanas[r.semanaKey] = { total: 0, start: null, end: null };
-      }
+      if (!semanas[r.semanaKey]) semanas[r.semanaKey] = { total: 0, start: null, end: null };
       semanas[r.semanaKey].total += r.valor;
 
       const weekStart = getWeekStartSaturday(r.data);
       const end = new Date(weekStart);
       end.setDate(end.getDate() + 6);
-      if (!semanas[r.semanaKey].start || weekStart < semanas[r.semanaKey].start) {
-        semanas[r.semanaKey].start = weekStart;
-      }
-      if (!semanas[r.semanaKey].end || end > semanas[r.semanaKey].end) {
-        semanas[r.semanaKey].end = end;
-      }
+      if (!semanas[r.semanaKey].start || weekStart < semanas[r.semanaKey].start) semanas[r.semanaKey].start = weekStart;
+      if (!semanas[r.semanaKey].end || end > semanas[r.semanaKey].end) semanas[r.semanaKey].end = end;
 
       if (r.data < minDate) minDate = r.data;
       if (r.data > maxDate) maxDate = r.data;
@@ -1155,19 +1091,10 @@
 
     overlayVendedor.style.display = 'flex';
   }
+  btnFecharOverlay.addEventListener('click', () => overlayVendedor.style.display = 'none');
+  overlayVendedor.addEventListener('click', (e) => { if (e.target === overlayVendedor) overlayVendedor.style.display = 'none'; });
 
-  btnFecharOverlay.addEventListener('click', () => {
-    overlayVendedor.style.display = 'none';
-  });
-  overlayVendedor.addEventListener('click', (e) => {
-    if (e.target === overlayVendedor) {
-      overlayVendedor.style.display = 'none';
-    }
-  });
-
-  // -------------------------
-  // SEÇÃO METAS – UI
-  // -------------------------
+  // -------- METAS ----------
   const btnAlexandre = document.getElementById('btnAlexandre');
   const btnJumahil = document.getElementById('btnJumahil');
   const inputAnoMetas = document.getElementById('inputAnoMetas');
@@ -1225,11 +1152,8 @@
       tdVend.textContent = vendedor;
 
       const tdResp = document.createElement('td');
-      if (responsavelAtualMetas === 'ALEXANDRE') {
-        tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
-      } else {
-        tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
-      }
+      if (responsavelAtualMetas === 'ALEXANDRE') tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
+      else tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
 
       const tdMetaAnual = document.createElement('td');
       tdMetaAnual.style.textAlign = 'right';
@@ -1319,12 +1243,9 @@
   });
   btnRecarregarMetas.addEventListener('click', recarregarTabelaMetas);
 
-  // -------------------------
-  // INICIALIZAÇÃO GERAL
-  // -------------------------
+  // ---- inicialização ----
   initFiltrosVendas();
   initFiltrosMetas();
-  // Metas: já carrega tabela do Alexandre
   recarregarTabelaMetas();
 </script>
 </body>
