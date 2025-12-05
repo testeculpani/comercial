@@ -195,11 +195,6 @@
       background:#fff;
       outline:none;
     }
-    .hint {
-      font-size:11px;
-      color:#94a3b8;
-      margin-bottom:8px;
-    }
     .pill {
       display:inline-flex;
       align-items:center;
@@ -209,6 +204,8 @@
       font-size:11px;
       background:#e0f2fe;
       color:#0369a1;
+      margin-right:4px;
+      margin-bottom:4px;
     }
 
     .summary-cards {
@@ -469,7 +466,7 @@
       </div>
     </div>
 
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;font-size:11px;color:#475569;">
+    <div style="margin-bottom:6px;">
       <span class="pill">Status válidos: Pendente, Aprovado, Atendido, Em Alteração, Validado</span>
       <span class="pill">Coluna R deve começar com “venda”</span>
       <span class="pill">Colunas: B=Status · D=Data · I=Vendedor · J=Valor · R=Descrição</span>
@@ -541,16 +538,16 @@
           </select>
         </div>
         <div class="filters-group">
-          <span>Sábado da semana:</span>
+          <span>Data da semana:</span>
           <input type="date" id="inputSabadoMetas">
         </div>
         <button class="btn small" id="btnRecarregarMetas">Recarregar metas</button>
       </div>
     </div>
 
-    <div class="hint">
-      Escolha o <strong>responsável</strong>, o <strong>ano</strong>, o <strong>mês</strong> e o <strong>sábado</strong> da semana.<br>
-      Ajuste as metas e clique em <strong>Salvar</strong> na linha para gravar no Firestore.
+    <div style="font-size:11px;color:#64748b;margin-bottom:6px;">
+      Escolha o <strong>responsável</strong>, o <strong>ano</strong>, o <strong>mês</strong> e <strong>qualquer dia</strong> da semana de referência.<br>
+      O sistema converte internamente para a semana correta (Sáb–Sex) respeitando o corte no dia 1 do mês.
     </div>
 
     <div class="table-wrapper">
@@ -574,11 +571,11 @@
 
     <div class="footer-note">
       <span>Estrutura Firestore: <strong>metasVendedor / SLUG_VENDEDOR_ANO</strong>.</span>
-      <span>Campos: metaAnual · metasMensais[YYYY-MM] · metasSemanais[YYYY-MM-DD].</span>
+      <span>Campos: metaAnual · metasMensais[YYYY-MM] · metasSemanais[YYYY-MM-DD] (chave da semana).</span>
     </div>
   </section>
 
-  <!-- APRESENTAÇÃO (RESUMO NUMÉRICO) -->
+  <!-- APRESENTAÇÃO -->
   <section id="secApresentacao" class="section hidden">
     <div class="top-controls">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -611,9 +608,10 @@
       </div>
     </div>
 
-    <div class="hint">
+    <div style="font-size:11px;color:#64748b;margin-bottom:6px;">
       Escolha o <strong>responsável</strong>, o <strong>vendedor</strong>, o <strong>ano</strong> e o <strong>mês</strong>.<br>
-      O painel mostra as <strong>vendas x metas</strong> anual, mensal e, semana a semana, apenas em números.
+      O painel mostra vendas x metas (anual, mensal e semanal) considerando semanas Sáb–Sex,
+      com o mês sempre começando dia 1 (dias quebrados ficam no mês anterior).
     </div>
 
     <div class="summary-cards">
@@ -635,7 +633,7 @@
         <div class="card-title">Resumo rápido</div>
         <div class="card-value" id="apResumoCurto">Sem dados</div>
         <div class="card-detail">
-          Semanas consideradas: <strong>Sábado a Sexta</strong> dentro do mês selecionado.
+          Semanas consideradas: <strong>Sábado a Sexta</strong> dentro do mês selecionado (corte no dia 1).
         </div>
       </div>
     </div>
@@ -844,20 +842,35 @@
     }
     return null;
   }
+
   function getWeekStartSaturday(date){
     const d=new Date(date.getTime());
-    const day=d.getDay(); //0=Dom,...6=Sab
+    const day=d.getDay(); // 0=Dom,...6=Sab
     const offset=(day+1)%7;
     const start=new Date(d);
     start.setHours(0,0,0,0);
     start.setDate(start.getDate()-offset);
     return start;
   }
+
   function formatDateBR(d){
     const dd=String(d.getDate()).padStart(2,"0");
     const mm=String(d.getMonth()+1).padStart(2,"0");
     const yyyy=d.getFullYear();
     return `${dd}/${mm}/${yyyy}`;
+  }
+
+  // 🔵 chave de semana respeitando o mês:
+  // - semana base Sáb–Sex
+  // - se o sábado cair no mês anterior, chave = 1º dia do mês atual
+  function getSemanaKeyMesContext(date, ano, mesNum){
+    const firstDay=new Date(ano, mesNum-1, 1);
+    firstDay.setHours(0,0,0,0);
+    const weekStart=getWeekStartSaturday(date);
+    let keyDate = weekStart < firstDay ? firstDay : weekStart;
+    keyDate = new Date(keyDate.getTime());
+    keyDate.setHours(0,0,0,0);
+    return keyDate.toISOString().slice(0,10);
   }
 
   async function carregarMetasVendedor(vendedor,ano,mesKey,semanaKey){
@@ -908,7 +921,6 @@
     };
   }
 
-  // Tabs
   const tabVendas=document.getElementById("tabVendas");
   const tabMetas=document.getElementById("tabMetas");
   const tabApresentacao=document.getElementById("tabApresentacao");
@@ -931,7 +943,7 @@
   tabMetas.addEventListener("click",()=>ativarTab("metas"));
   tabApresentacao.addEventListener("click",()=>ativarTab("apresentacao"));
 
-  // VENDAS
+  // -------- VENDAS --------
   const inputArquivo=document.getElementById("inputArquivo");
   const selectMesVendas=document.getElementById("selectMesVendas");
   const inputAnoVendas=document.getElementById("inputAnoVendas");
@@ -1150,12 +1162,12 @@
   btnFecharOverlay.addEventListener("click",()=>overlayVendedor.style.display="none");
   overlayVendedor.addEventListener("click",e=>{if(e.target===overlayVendedor)overlayVendedor.style.display="none";});
 
-  // METAS
+  // -------- METAS --------
   const btnAlexandre=document.getElementById("btnAlexandre");
   const btnJumahil=document.getElementById("btnJumahil");
   const inputAnoMetas=document.getElementById("inputAnoMetas");
   const selectMesMetas=document.getElementById("selectMesMetas");
-  const inputSabadoMetas=document.getElementById("inputSabadoMetas");
+  const inputSabadoMetas=document.getElementById("inputSabadoMetas"); // qualquer dia da semana
   const btnRecarregarMetas=document.getElementById("btnRecarregarMetas");
   const tbodyMetas=document.getElementById("tbodyMetas");
   let responsavelAtualMetas="ALEXANDRE";
@@ -1165,19 +1177,20 @@
     inputAnoMetas.value=hoje.getFullYear();
     const mes=String(hoje.getMonth()+1).padStart(2,"0");
     selectMesMetas.value=mes;
-    const day=hoje.getDay();
-    const diff=(6-day+7)%7;
-    const sab=new Date(hoje);
-    sab.setDate(hoje.getDate()+diff);
-    inputSabadoMetas.value=sab.toISOString().slice(0,10);
+    inputSabadoMetas.value=hoje.toISOString().slice(0,10);
   }
 
   async function recarregarTabelaMetas(){
     const ano=parseInt(inputAnoMetas.value,10)||new Date().getFullYear();
     const mes=selectMesMetas.value||"01";
+    const mesNum=parseInt(mes,10);
     const mesKey=`${ano}-${mes}`;
-    const sab=inputSabadoMetas.value;
-    const semanaKey=sab||`${ano}-${mes}-01`;
+
+    let semanaKey=`${ano}-${mes}-01`;
+    if(inputSabadoMetas.value){
+      const dMeta=new Date(inputSabadoMetas.value);
+      semanaKey=getSemanaKeyMesContext(dMeta, ano, mesNum);
+    }
 
     const vendedores=getListaVendedores(responsavelAtualMetas);
     tbodyMetas.innerHTML="";
@@ -1291,7 +1304,7 @@
   });
   btnRecarregarMetas.addEventListener("click",recarregarTabelaMetas);
 
-  // APRESENTAÇÃO (NÚMEROS)
+  // -------- APRESENTAÇÃO --------
   const btnApRespAlex=document.getElementById("btnApRespAlex");
   const btnApRespJum=document.getElementById("btnApRespJum");
   const selectApVendedor=document.getElementById("selectApVendedor");
@@ -1327,6 +1340,7 @@
     const vendedor=selectApVendedor.value;
     const ano=parseInt(inputApAno.value,10)||new Date().getFullYear();
     const mes=selectApMes.value||"01";
+    const mesNum=parseInt(mes,10);
     const mesKey=`${ano}-${mes}`;
 
     if(!vendedor){
@@ -1358,12 +1372,13 @@
         vendasAno+=r.valor;
         if(r.mesKey===mesKey){
           vendasMes+=r.valor;
-          const weekStart=getWeekStartSaturday(r.data);
-          const semanaKey=weekStart.toISOString().slice(0,10);
+
+          const semanaKey=getSemanaKeyMesContext(r.data, ano, mesNum);
           if(!semanasMap[semanaKey]){
-            const end=new Date(weekStart);
+            const base=new Date(semanaKey);
+            const end=new Date(base);
             end.setDate(end.getDate()+6);
-            semanasMap[semanaKey]={total:0,start:weekStart,end};
+            semanasMap[semanaKey]={total:0,start:base,end};
           }
           semanasMap[semanaKey].total+=r.valor;
         }
