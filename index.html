@@ -2,12 +2,12 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Painel de Vendas por Vendedor</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <title>Painel Comercial – Vendas e Metas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- SheetJS para ler Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -16,16 +16,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
       color: #0f172a;
     }
     .container {
       width: 100%;
-      max-width: 1100px;
-      background: rgba(255, 255, 255, 0.97);
+      max-width: 1250px;
+      background: #f8fafc;
       border-radius: 18px;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
-      padding: 24px 26px 28px 26px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
+      padding: 20px 22px 24px 22px;
       position: relative;
       overflow: hidden;
     }
@@ -33,22 +33,17 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 55%),
-                  radial-gradient(circle at bottom left, rgba(34, 197, 94, 0.13), transparent 55%);
+      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.13), transparent 55%),
+                  radial-gradient(circle at bottom left, rgba(34, 197, 94, 0.16), transparent 55%);
       pointer-events: none;
       z-index: -1;
     }
     header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: flex-start;
       gap: 16px;
-      margin-bottom: 18px;
-    }
-    .title-area {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      margin-bottom: 14px;
     }
     h1 {
       margin: 0;
@@ -63,16 +58,18 @@
       height: 26px;
       border-radius: 999px;
       background: linear-gradient(135deg, #0ea5e9, #22c55e);
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
       color: white;
       box-shadow: 0 6px 16px rgba(34, 197, 94, 0.45);
+      font-size: 16px;
     }
     .subtitle {
       font-size: 13px;
       color: #64748b;
+      margin-top: 4px;
+      line-height: 1.3;
     }
     .badge {
       padding: 4px 10px;
@@ -94,172 +91,121 @@
       box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
     }
 
-    .upload-area {
-      margin-top: 12px;
-      margin-bottom: 16px;
-      padding: 14px;
-      border-radius: 14px;
-      border: 1px dashed #cbd5f5;
-      background: #f8fafc;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px 14px;
-      justify-content: space-between;
+    .tabs {
+      display: inline-flex;
+      background: #e2e8f0;
+      border-radius: 999px;
+      padding: 3px;
+      gap: 4px;
+      margin-bottom: 10px;
     }
-    .upload-info {
-      font-size: 13px;
-      color: #475569;
-    }
-    .upload-info strong {
-      color: #0f172a;
-    }
-    .file-input-wrapper {
-      position: relative;
-      overflow: hidden;
-      display: inline-block;
-    }
-    .file-input-wrapper input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
+    .tab-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 14px;
+      font-size: 12px;
       cursor: pointer;
+      background: transparent;
+      color: #475569;
+      font-weight: 500;
+      transition: all 0.12s ease;
     }
+    .tab-btn.active {
+      background: white;
+      color: #0f172a;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    }
+
+    .section {
+      margin-top: 6px;
+    }
+    .section.hidden { display: none; }
 
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       border-radius: 999px;
-      padding: 8px 14px;
+      padding: 6px 12px;
       border: none;
-      background: linear-gradient(135deg, #0ea5e9, #22c55e);
+      background: #0f172a;
       color: white;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 8px 16px rgba(14, 165, 233, 0.45);
-      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+      box-shadow: 0 5px 12px rgba(15, 23, 42, 0.35);
       white-space: nowrap;
-    }
-    .btn.secondary {
-      background: #0f172a;
-      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.4);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
     }
     .btn.small {
-      padding: 6px 10px;
+      padding: 4px 9px;
       font-size: 11px;
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
     }
-    .btn.tertiary {
-      background: #e2e8f0;
+    .btn.outline {
+      background: transparent;
       color: #0f172a;
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
-    }
-    .btn-toggle-active {
-      background: linear-gradient(135deg, #0ea5e9, #22c55e);
-      color: white;
-      box-shadow: 0 8px 16px rgba(34, 197, 94, 0.45);
-    }
-    .btn span.icon {
-      font-size: 15px;
+      border: 1px solid #cbd5f5;
+      box-shadow: none;
     }
     .btn:active {
       transform: translateY(1px);
-      box-shadow: 0 6px 14px rgba(14, 165, 233, 0.4);
-      filter: brightness(0.98);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
+      filter: brightness(0.97);
     }
 
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
+    .top-controls {
+      background: #e2e8f0;
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 10px;
     }
-    .summary-card {
-      background: white;
-      border-radius: 12px;
-      padding: 10px 12px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+    .label {
+      font-size: 13px;
+      color: #475569;
+      font-weight: 500;
+    }
+    .filters {
       display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .summary-label {
-      font-size: 11px;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .summary-value {
-      font-size: 18px;
-      font-weight: 700;
-      color: #0f172a;
-    }
-    .summary-chip {
-      font-size: 11px;
-      color: #16a34a;
-    }
-
-    .actions-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 8px;
-      font-size: 11px;
-      color: #64748b;
-      align-items: center;
       flex-wrap: wrap;
+      gap: 8px 10px;
+      align-items: center;
+    }
+    .filters-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #475569;
+    }
+    .filters-group input,
+    .filters-group select {
+      padding: 4px 7px;
+      border-radius: 999px;
+      border: 1px solid #cbd5f5;
+      font-size: 12px;
+      background: white;
+      outline: none;
     }
     .hint {
       font-size: 11px;
       color: #94a3b8;
+      margin-bottom: 8px;
     }
-
-    .weekly-panel {
-      margin-top: 10px;
-      margin-bottom: 10px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: #f1f5f9;
-      border: 1px dashed #cbd5f5;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 14px;
+    .pill {
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-    }
-    .weekly-left {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
-    }
-    .weekly-right {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
-    }
-    .weekly-label {
-      font-size: 12px;
-      color: #475569;
-      font-weight: 500;
-    }
-    .weekly-select {
-      padding: 5px 8px;
+      gap: 4px;
+      padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid #cbd5f5;
-      font-size: 12px;
-      background: #ffffff;
-      outline: none;
-    }
-    .weekly-summary-text {
       font-size: 11px;
-      color: #64748b;
-      margin-top: 2px;
+      background: #e0f2fe;
+      color: #0369a1;
     }
 
     .table-wrapper {
@@ -268,7 +214,7 @@
       border: 1px solid #e2e8f0;
       overflow: hidden;
       background: white;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
     }
     table {
       width: 100%;
@@ -280,44 +226,17 @@
       color: #e5e7eb;
     }
     th, td {
-      padding: 8px 10px;
+      padding: 7px 9px;
       text-align: left;
     }
     th {
       font-weight: 600;
       border-bottom: 1px solid #1e293b;
-      cursor: default;
-      user-select: none;
     }
-    th.sortable {
-      cursor: pointer;
-    }
-    th.sortable:hover {
-      background: #111827;
-    }
-    th .sort-indicator {
-      font-size: 10px;
-      opacity: 0.7;
-      margin-left: 4px;
-    }
-    tbody tr:nth-child(even) {
-      background: #f8fafc;
-    }
-    tbody tr:hover {
-      background: #e0f2fe;
-    }
-    .td-vendedor {
-      font-weight: 600;
-      color: #0f172a;
-    }
-    .td-total {
-      font-feature-settings: "tnum" 1, "lnum" 1;
-      text-align: right;
-    }
-    .td-resp {
-      text-align: center;
-      font-size: 12px;
-    }
+    tbody tr:nth-child(even) { background: #f8fafc; }
+    tbody tr:hover { background: #e0f2fe; }
+
+    .td-vendedor { font-weight: 600; color: #0f172a; }
     .tag-alexandre {
       display: inline-block;
       padding: 2px 10px;
@@ -340,12 +259,75 @@
       letter-spacing: 0.03em;
       text-transform: uppercase;
     }
-    .empty-state {
-      padding: 16px;
-      text-align: center;
-      font-size: 13px;
+    .input-money {
+      width: 100%;
+      max-width: 120px;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 8px;
+      border: 1px solid #cbd5f5;
+      text-align: right;
+    }
+    .input-money:focus {
+      outline: none;
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 1px #0ea5e9;
+    }
+    .status-cell {
+      font-size: 11px;
       color: #64748b;
     }
+    .status-ok {
+      color: #16a34a;
+      font-weight: 500;
+    }
+    .status-warning {
+      color: #f97316;
+      font-weight: 500;
+    }
+
+    .badges-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      color: #475569;
+    }
+
+    .summary-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+      margin-bottom: 10px;
+    }
+    .card {
+      flex: 1;
+      min-width: 180px;
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.5);
+    }
+    .card-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+    .card-value {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .card-detail {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
     .footer-note {
       margin-top: 10px;
       font-size: 11px;
@@ -356,402 +338,334 @@
       flex-wrap: wrap;
     }
 
-    #semVendasWrapper {
-      margin-top: 16px;
-      display: none;
-    }
-    #semVendasWrapper h3 {
-      font-size: 15px;
-      margin: 0 0 6px 0;
-      color: #0f172a;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    #semVendasWrapper h3 span {
-      font-size: 18px;
-    }
-    .subtitle-small {
-      font-size: 11px;
-      color: #64748b;
-      margin-bottom: 8px;
-    }
-    .section-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-    .row-clickable {
-      cursor: pointer;
-    }
-    .row-clickable.selected {
-      outline: 2px solid #22c55e;
-      background: #ecfdf5 !important;
-    }
-
-    /* MODAIS (POPUPS) */
-    .modal-overlay {
+    /* Popup de detalhes de vendas por vendedor */
+    .overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.55);
+      background: rgba(15, 23, 42, 0.45);
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 16px;
       z-index: 50;
     }
-    .modal-card {
+    .overlay-content {
       width: 100%;
-      max-width: 850px;
-      background: #ffffff;
+      max-width: 750px;
+      max-height: 90vh;
+      background: #f8fafc;
       border-radius: 18px;
-      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.4);
-      padding: 16px 18px 18px 18px;
-      max-height: 80vh;
-      overflow: auto;
-      position: relative;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.75);
+      padding: 14px 16px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
-    .modal-close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
+    .overlay-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .overlay-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #020617;
+    }
+    .overlay-sub {
+      font-size: 11px;
+      color: #64748b;
+    }
+    .overlay-close {
+      border: none;
+      background: transparent;
+      font-size: 18px;
+      cursor: pointer;
+      color: #64748b;
+    }
+    .overlay-body {
+      overflow-y: auto;
+      padding-top: 4px;
+    }
+    .chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 11px;
+      margin-bottom: 6px;
+      align-items: center;
+    }
+    .chip {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #475569;
+    }
+    .chip-strong {
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    .weeks-list {
+      margin-top: 6px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      overflow: hidden;
+    }
+    .weeks-header {
+      padding: 6px 8px;
+      background: #0f172a;
+      color: #e5e7eb;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .week-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 8px;
+      font-size: 12px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .week-row:nth-child(even) {
+      background: #f8fafc;
     }
 
-    @media (max-width: 920px) {
-      .container {
-        padding: 18px 16px 22px 16px;
-      }
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .summary-grid {
-        grid-template-columns: 1fr;
-      }
-      th, td {
-        padding: 7px 8px;
-      }
-      .actions-row {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .weekly-panel {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+    @media (max-width: 900px) {
+      .container { padding: 16px 14px 18px 14px; }
+      header { flex-direction: column; align-items: flex-start; }
+      .top-controls { flex-direction: column; align-items: flex-start; }
+      th, td { padding: 6px 7px; }
+      .input-money { max-width: 100px; }
+      .overlay-content { max-width: 95%; }
     }
   </style>
 </head>
 <body>
-
 <div class="container">
   <header>
-    <div class="title-area">
-      <h1><span class="icon">₿</span> Painel de Vendas por Vendedor</h1>
+    <div>
+      <h1><span class="icon">📊</span> Painel Comercial – Vendas & Metas</h1>
       <div class="subtitle">
-        Importe sua planilha e veja o total vendido por cada vendedor<br>
-        <small>
-          Soma da coluna <strong>J</strong> por vendedor da <strong>I</strong>,<br>
-          apenas se:
-          <strong>R</strong> começar com "venda" e
-          <strong>B</strong> for Pendente / Aprovado / Atendido / Em Alteração / Validado. <br>
-          Datas em <strong>D</strong> usadas para semanas (sábado a sexta) e meses.
-        </small>
+        Importação de vendas por planilha + controle de metas anual, mensal e semanal por representante.<br>
+        Responsáveis: <strong>Alexandre</strong> e <strong>Jumahil</strong>.
       </div>
     </div>
     <div class="badge">
       <span class="badge-dot"></span>
-      J = valor · I = vendedor · R "venda..." · B status válido · D data
+      Firestore: <strong>metasVendedor</strong>
     </div>
   </header>
 
-  <div class="upload-area">
-    <div class="upload-info">
-      <div><strong>1)</strong> Clique no botão ao lado e selecione sua planilha (.xls ou .xlsx).</div>
-      <div><strong>2)</strong> Entram no cálculo só as linhas com R iniciando em <strong>"venda"</strong>, status B permitido e data em D.</div>
-    </div>
-    <div class="file-input-wrapper">
-      <button class="btn">
-        <span class="icon">📎</span>
-        Importar planilha
-      </button>
-      <input type="file" id="inputExcel" accept=".xlsx, .xls">
-    </div>
+  <div class="tabs">
+    <button class="tab-btn active" id="tabVendas">Vendas</button>
+    <button class="tab-btn" id="tabMetas">Metas Representantes</button>
   </div>
 
-  <div class="summary-grid">
-    <div class="summary-card">
-      <div class="summary-label">Total geral vendido</div>
-      <div id="totalGeral" class="summary-value">R$ 0,00</div>
-      <div class="summary-chip" id="totalRegistros">0 linhas válidas</div>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">Quantidade de vendedores</div>
-      <div id="qtdVendedores" class="summary-value">0</div>
-      <div class="summary-chip">Com pelo menos 1 venda válida</div>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">Maior vendedor</div>
-      <div id="topVendedor" class="summary-value">–</div>
-      <div class="summary-chip" id="topVendedorValor">R$ 0,00</div>
-    </div>
-  </div>
-
-  <div class="actions-row">
-    <span class="hint">
-      Clique em <strong>Responsável</strong> para ordenar por supervisor (ALEXANDRE / JUMAHIL).<br>
-      Clique em um <strong>vendedor</strong> na tabela para abrir o dashboard em popup.
-    </span>
-    <button class="btn secondary" id="btnSemVendas">
-      <span class="icon">🔍</span>
-      Ver vendedores ALEXANDRE/JUMAHIL sem vendas
-    </button>
-  </div>
-
-  <!-- PAINEL SEMANAL POR RESPONSÁVEL -->
-  <div class="weekly-panel">
-    <div class="weekly-left">
-      <span class="weekly-label">Apresentação semanal do responsável:</span>
-      <button class="btn small tertiary" id="btnRespAlex">Sou ALEXANDRE</button>
-      <button class="btn small tertiary" id="btnRespJum">Sou JUMAHIL</button>
-    </div>
-    <div class="weekly-right">
-      <label for="selectSemanaResp" class="weekly-label">Semana (sáb–sex):</label>
-      <select id="selectSemanaResp" class="weekly-select">
-        <option value="">Selecione um responsável primeiro</option>
-      </select>
-      <button class="btn small" id="btnVerSemanaResp">
-        <span class="icon">📅</span>
-        Ver resumo da semana selecionada
-      </button>
-      <div class="weekly-summary-text" id="resumoSemanaResp">
-        Nenhum responsável selecionado.
+  <!-- =========================
+       SEÇÃO VENDAS
+       ========================= -->
+  <section id="secVendas" class="section">
+    <div class="top-controls">
+      <div>
+        <div class="label" style="margin-bottom:4px;">Importar planilha de vendas</div>
+        <input type="file" id="inputArquivo" accept=".xlsx,.xls" />
       </div>
-    </div>
-  </div>
-
-  <!-- MODAL POPUP VENDEDOR -->
-  <div id="detalhesOverlay" class="modal-overlay">
-    <div id="detalhesVendedorWrapper" class="modal-card">
-      <div class="modal-close">
-        <button class="btn small secondary" id="btnFecharDetalhes">
-          X Fechar
-        </button>
-      </div>
-
-      <div class="section-header-row" style="margin-bottom: 8px; padding-right: 80px;">
-        <h3 style="margin-top: 0;">
-          <span>📊</span>
-          Detalhes do vendedor:
-          <span id="detVendedorNome">–</span>
-        </h3>
-      </div>
-
-      <div class="subtitle-small" id="detVendedorRespLinha">
-        Selecione um vendedor na tabela para ver o dashboard semanal e mensal.
-      </div>
-
-      <div class="summary-grid" style="margin-top:8px;">
-        <div class="summary-card">
-          <div class="summary-label">Total vendido (vendedor)</div>
-          <div id="detTotalVendedor" class="summary-value">R$ 0,00</div>
-          <div class="summary-chip" id="detResumoInfo">–</div>
+      <div class="filters">
+        <div class="filters-group">
+          <span>Filtrar por mês:</span>
+          <select id="selectMesVendas">
+            <option value="">Todos</option>
+            <option value="01">Jan</option>
+            <option value="02">Fev</option>
+            <option value="03">Mar</option>
+            <option value="04">Abr</option>
+            <option value="05">Mai</option>
+            <option value="06">Jun</option>
+            <option value="07">Jul</option>
+            <option value="08">Ago</option>
+            <option value="09">Set</option>
+            <option value="10">Out</option>
+            <option value="11">Nov</option>
+            <option value="12">Dez</option>
+          </select>
         </div>
-        <div class="summary-card">
-          <div class="summary-label">Meses com venda</div>
-          <div id="detMesesCount" class="summary-value">0</div>
-          <div class="summary-chip">Competências com valor &gt; 0</div>
+        <div class="filters-group">
+          <span>Ano:</span>
+          <input type="number" id="inputAnoVendas" min="2020" max="2100" style="width:80px;">
         </div>
-        <div class="summary-card">
-          <div class="summary-label">Semanas com venda</div>
-          <div id="detSemanasCount" class="summary-value">0</div>
-          <div class="summary-chip">Períodos sáb–sex com venda</div>
-        </div>
-      </div>
-
-      <div style="margin-top:10px;" class="subtitle-small">
-        <strong>Resumo mensal</strong> – baseado na data da coluna D (competência MM/AAAA).
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Mês</th>
-              <th style="text-align:right;">Total vendido</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyDetMes">
-            <tr><td colspan="2" class="empty-state">Nenhuma venda com data válida para este vendedor.</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div style="margin-top:10px;" class="subtitle-small">
-        <strong>Resumo semanal</strong> – semanas de <strong>sábado a sexta</strong>.
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Período (sáb–sex)</th>
-              <th style="text-align:right;">Total vendido</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyDetSemana">
-            <tr><td colspan="2" class="empty-state">Nenhuma venda com data válida para este vendedor.</td></tr>
-          </tbody>
-        </table>
+        <button class="btn small" id="btnAplicarFiltro">Aplicar filtro</button>
       </div>
     </div>
-  </div>
 
-  <!-- MODAL POPUP SEMANAL POR RESPONSÁVEL -->
-  <div id="semanaOverlay" class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-close">
-        <button class="btn small secondary" id="btnFecharSemana">
-          X Fechar
-        </button>
+    <div class="badges-row">
+      <span class="pill">Status válidos: Pendente, Aprovado, Atendido, Em Alteração, Validado</span>
+      <span class="pill">Coluna R deve começar com “venda” (ignora maiúsc/minúsc)</span>
+      <span class="pill">Colunas esperadas: B=Status · D=Data · I=Vendedor · J=Valor · R=Descrição</span>
+    </div>
+
+    <div class="summary-cards">
+      <div class="card">
+        <div class="card-title">Total geral filtrado</div>
+        <div class="card-value" id="cardTotalGeral">R$ 0,00</div>
+        <div class="card-detail">Somente linhas válidas com “venda...” na coluna R.</div>
       </div>
-
-      <div class="section-header-row" style="margin-bottom: 8px; padding-right: 80px;">
-        <h3 style="margin-top: 0;">
-          <span>📈</span>
-          Resumo semanal – Responsável:
-          <span id="semanaRespNome">–</span>
-        </h3>
+      <div class="card">
+        <div class="card-title">Qtde de representantes com venda</div>
+        <div class="card-value" id="cardQtdVendedores">0</div>
+        <div class="card-detail">Com pelo menos uma venda no filtro atual.</div>
       </div>
-
-      <div class="subtitle-small">
-        Semana selecionada:
-        <span id="semanaPeriodoTexto">–</span>
-      </div>
-
-      <div class="summary-grid" style="margin-top:8px;">
-        <div class="summary-card">
-          <div class="summary-label">Total da semana</div>
-          <div id="semanaTotalSemana" class="summary-value">R$ 0,00</div>
-          <div class="summary-chip">Soma de todos os vendedores do responsável</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-label">Total do mês</div>
-          <div id="semanaTotalMes" class="summary-value">R$ 0,00</div>
-          <div class="summary-chip" id="semanaMesRef">Mês de referência: –</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-label">% da semana no mês</div>
-          <div id="semanaPercentual" class="summary-value">0%</div>
-          <div class="summary-chip">Participação da semana no total do mês</div>
-        </div>
-      </div>
-
-      <div style="margin-top:10px;" class="subtitle-small">
-        Dica: use esse painel para a reunião semanal – já mostra quanto você tem na semana e como está o acumulado do mês para o responsável escolhido.
+      <div class="card">
+        <div class="card-title">Mês / Ano em uso</div>
+        <div class="card-value" id="cardMesAno">Todos</div>
+        <div class="card-detail">Definido no filtro acima.</div>
       </div>
     </div>
-  </div>
 
-  <div class="table-wrapper" id="tabelaContainer">
-    <table>
-      <thead>
-        <tr>
-          <th id="thVendedor" class="sortable">Vendedor (I) <span class="sort-indicator" id="sortIndicadorV">▼</span></th>
-          <th style="text-align:right;">Total vendido (soma de J)</th>
-          <th id="thResponsavel" class="sortable" style="text-align:center;">
-            Responsável
-            <span class="sort-indicator" id="sortIndicadorR">-</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody id="tbodyVendedores">
-        <tr><td colspan="3" class="empty-state">Nenhuma planilha importada ainda.</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div id="semVendasWrapper">
-    <h3><span>📋</span> Vendedores ALEXANDRE / JUMAHIL sem nenhuma venda</h3>
-    <div class="subtitle-small">Considerando apenas a regra atual de filtro (R "venda...", status B permitido).</div>
     <div class="table-wrapper">
       <table>
         <thead>
-          <tr>
-            <th>Vendedor</th>
-            <th style="text-align:center;">Responsável</th>
-            <th>Situação</th>
-          </tr>
+        <tr>
+          <th>Vendedor</th>
+          <th>Responsável</th>
+          <th style="width:160px; text-align:right;">Total de Vendas (R$)</th>
+          <th style="width:120px; text-align:center;">Ações</th>
+        </tr>
         </thead>
-        <tbody id="tbodySemVendas">
-          <tr><td colspan="3" class="empty-state">Importe uma planilha para ver os resultados.</td></tr>
+        <tbody id="tbodyVendas">
+        <tr><td colspan="4" style="text-align:center; padding:10px; font-size:13px; color:#64748b;">Importe uma planilha para ver os resultados.</td></tr>
         </tbody>
       </table>
     </div>
-  </div>
 
-  <div class="footer-note">
-    <span>Lendo colunas <strong>I</strong> (vendedor), <strong>J</strong> (valor), <strong>R</strong> (descrição), <strong>B</strong> (status) e <strong>D</strong> (data).</span>
-    <span>Semanas de sábado a sexta. Vendedores podem ser ALEXANDRE ou JUMAHIL.</span>
+    <div class="footer-note">
+      <span>Semana considerada de <strong>Sábado a Sexta</strong> para os detalhes por representante.</span>
+      <span>Baseado nos dados da coluna D (data) da planilha.</span>
+    </div>
+  </section>
+
+  <!-- =========================
+       SEÇÃO METAS
+       ========================= -->
+  <section id="secMetas" class="section hidden">
+    <div class="top-controls">
+      <div class="responsavel-toggle">
+        <span class="label">Responsável:</span>
+        <button class="btn outline active" id="btnAlexandre">ALEXANDRE</button>
+        <button class="btn outline" id="btnJumahil">JUMAHIL</button>
+      </div>
+
+      <div class="filters">
+        <div class="filters-group">
+          <span>Ano:</span>
+          <input type="number" id="inputAnoMetas" min="2020" max="2100">
+        </div>
+        <div class="filters-group">
+          <span>Mês:</span>
+          <select id="selectMesMetas">
+            <option value="01">Jan</option>
+            <option value="02">Fev</option>
+            <option value="03">Mar</option>
+            <option value="04">Abr</option>
+            <option value="05">Mai</option>
+            <option value="06">Jun</option>
+            <option value="07">Jul</option>
+            <option value="08">Ago</option>
+            <option value="09">Set</option>
+            <option value="10">Out</option>
+            <option value="11">Nov</option>
+            <option value="12">Dez</option>
+          </select>
+        </div>
+        <div class="filters-group">
+          <span>Sábado da semana:</span>
+          <input type="date" id="inputSabadoMetas">
+        </div>
+        <button class="btn small" id="btnRecarregarMetas">Recarregar metas</button>
+      </div>
+    </div>
+
+    <div class="hint">
+      Escolha o <strong>responsável</strong>, o <strong>ano</strong>, o <strong>mês</strong> e o <strong>sábado</strong> da semana de referência.<br>
+      Ajuste as metas dos representantes e clique em <strong>Salvar</strong> na linha para gravar no Firestore.
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr>
+          <th>Vendedor</th>
+          <th>Responsável</th>
+          <th style="width: 140px; text-align: right;">Meta Anual (R$)</th>
+          <th style="width: 140px; text-align: right;">Meta Mensal (R$)</th>
+          <th style="width: 140px; text-align: right;">Meta Semanal (R$)</th>
+          <th style="width: 110px; text-align: center;">Ações</th>
+          <th style="width: 160px;">Status</th>
+        </tr>
+        </thead>
+        <tbody id="tbodyMetas">
+        <tr><td colspan="7" style="text-align:center; padding:10px; font-size:13px; color:#64748b;">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer-note">
+      <span>Estrutura Firestore: <strong>metasVendedor / SLUG_VENDEDOR_ANO</strong>.</span>
+      <span>Campos: metaAnual · metasMensais[YYYY-MM] · metasSemanais[YYYY-MM-DD].</span>
+    </div>
+  </section>
+</div>
+
+<!-- POPUP DETALHES VENDEDOR (VENDAS) -->
+<div class="overlay" id="overlayVendedor">
+  <div class="overlay-content">
+    <div class="overlay-header">
+      <div>
+        <div class="overlay-title" id="ovTituloVendedor"></div>
+        <div class="overlay-sub" id="ovSubVendedor"></div>
+      </div>
+      <button class="overlay-close" id="btnFecharOverlay">&times;</button>
+    </div>
+    <div class="overlay-body">
+      <div class="chips-row">
+        <span class="chip">Semana: Sáb–Sex (base na coluna D)</span>
+        <span class="chip" id="ovChipMesAno"></span>
+        <span class="chip chip-strong" id="ovChipTotalVendedor"></span>
+      </div>
+      <div class="weeks-list" id="ovWeeksList">
+        <div class="weeks-header">Semanas com venda (Sábado – Sexta)</div>
+        <!-- linhas criadas via JS -->
+      </div>
+    </div>
   </div>
 </div>
 
-<script>
-  const inputExcel = document.getElementById('inputExcel');
-  const tbodyVendedores = document.getElementById('tbodyVendedores');
-  const tbodySemVendas = document.getElementById('tbodySemVendas');
+<script type="module">
+  // Firebase SDK v12
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-  const totalGeralEl = document.getElementById('totalGeral');
-  const totalRegistrosEl = document.getElementById('totalRegistros');
-  const qtdVendedoresEl = document.getElementById('qtdVendedores');
-  const topVendedorEl = document.getElementById('topVendedor');
-  const topVendedorValorEl = document.getElementById('topVendedorValor');
-  const btnSemVendas = document.getElementById('btnSemVendas');
-  const semVendasWrapper = document.getElementById('semVendasWrapper');
+  // Config que você mandou
+  const firebaseConfig = {
+    apiKey: "AIzaSyDWfny0Cx9fhSqPpGZweCGJwu2gO3083h0",
+    authDomain: "comercial-1e58d.firebaseapp.com",
+    projectId: "comercial-1e58d",
+    storageBucket: "comercial-1e58d.firebasestorage.app",
+    messagingSenderId: "506382966080",
+    appId: "1:506382966080:web:ecec9bc90a5b73ed716ea5"
+  };
 
-  const thResponsavel = document.getElementById('thResponsavel');
-  const thVendedor = document.getElementById('thVendedor');
-  const sortIndicadorV = document.getElementById('sortIndicadorV');
-  const sortIndicadorR = document.getElementById('sortIndicadorR');
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-  // Modal vendedor
-  const detalhesOverlay = document.getElementById('detalhesOverlay');
-  const btnFecharDetalhes = document.getElementById('btnFecharDetalhes');
-  const detVendedorNomeEl = document.getElementById('detVendedorNome');
-  const detVendedorRespLinhaEl = document.getElementById('detVendedorRespLinha');
-  const detTotalVendedorEl = document.getElementById('detTotalVendedor');
-  const detResumoInfoEl = document.getElementById('detResumoInfo');
-  const detMesesCountEl = document.getElementById('detMesesCount');
-  const detSemanasCountEl = document.getElementById('detSemanasCount');
-  const tbodyDetMes = document.getElementById('tbodyDetMes');
-  const tbodyDetSemana = document.getElementById('tbodyDetSemana');
-
-  // Painel semanal por responsável
-  const btnRespAlex = document.getElementById('btnRespAlex');
-  const btnRespJum = document.getElementById('btnRespJum');
-  const selectSemanaResp = document.getElementById('selectSemanaResp');
-  const btnVerSemanaResp = document.getElementById('btnVerSemanaResp');
-  const resumoSemanaRespEl = document.getElementById('resumoSemanaResp');
-
-  // Modal semanal por responsável
-  const semanaOverlay = document.getElementById('semanaOverlay');
-  const btnFecharSemana = document.getElementById('btnFecharSemana');
-  const semanaRespNomeEl = document.getElementById('semanaRespNome');
-  const semanaPeriodoTextoEl = document.getElementById('semanaPeriodoTexto');
-  const semanaTotalSemanaEl = document.getElementById('semanaTotalSemana');
-  const semanaTotalMesEl = document.getElementById('semanaTotalMes');
-  const semanaMesRefEl = document.getElementById('semanaMesRef');
-  const semanaPercentualEl = document.getElementById('semanaPercentual');
-
-  const STATUS_VALIDOS = [
-    'pendente',
-    'aprovado',
-    'atendido',
-    'em alteração',
-    'em alteracao',
-    'validado'
-  ];
-
+  // -------------------------
+  // LISTAS DE VENDEDORES (RESPONSÁVEL)
+  // -------------------------
   const VENDEDORES_ALEXANDRE = [
     "ANDERSON MAICO FREDERICO REPRESENTACOES COMER",
     "J. G. VARGAS REPRESENTACOES COMERCIAIS MARING",
@@ -829,666 +743,589 @@
     "VIALE BR EMPREENDIMENTOS LTDA"
   ];
 
-  function formatCurrency(valor) {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
-
-  function formatDateBR(date) {
-    const d = String(date.getDate()).padStart(2, '0');
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const y = date.getFullYear();
-    return `${d}/${m}/${y}`;
-  }
-
-  function parseExcelDate(cell) {
-    if (!cell || cell.v == null) return null;
-    const v = cell.v;
-
-    if (v instanceof Date) return v;
-
-    if (typeof v === 'string') {
-      const s = v.trim();
-      const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-      if (m) {
-        const dia = parseInt(m[1], 10);
-        const mes = parseInt(m[2], 10) - 1;
-        const ano = parseInt(m[3], 10);
-        return new Date(ano, mes, dia);
-      }
-    }
-
-    if (typeof v === 'number' && XLSX.SSF && XLSX.SSF.parse_date_code) {
-      const o = XLSX.SSF.parse_date_code(v);
-      if (o) {
-        return new Date(o.y, o.m - 1, o.d);
-      }
-    }
-
-    return null;
-  }
-
   function getResponsavel(vendedor) {
     if (VENDEDORES_ALEXANDRE.includes(vendedor)) return 'ALEXANDRE';
     if (VENDEDORES_JUMAHIL.includes(vendedor)) return 'JUMAHIL';
-    return null;
+    return '';
+  }
+  function getListaVendedores(resp) {
+    return resp === 'ALEXANDRE' ? VENDEDORES_ALEXANDRE : VENDEDORES_JUMAHIL;
   }
 
-  let ultimaListaVendedores = [];      
-  let listaSemVendas = [];             
-  let resumoMesVendedor = [];          
-  let resumoSemanaVendedor = [];       
-  let totalGeralGlobal = 0;
-  let sortMode = 'valor';              
-  let vendedorSelecionado = null;
-
-  // Estruturas para o painel semanal por responsável
-  let semanasPorResp = { 'ALEXANDRE': [], 'JUMAHIL': [] }; // [{key, start, end, total}]
-  let mesesPorResp = { 'ALEXANDRE': {}, 'JUMAHIL': {} };   // resp -> {mesKey: total}
-  let responsavelSelecionado = null;
-
-  function atualizarIndicadoresOrdenacao() {
-    if (sortMode === 'valor') {
-      sortIndicadorV.textContent = '▼';
-      sortIndicadorR.textContent = '-';
-    } else {
-      sortIndicadorV.textContent = '-';
-      sortIndicadorR.textContent = '▼';
-    }
+  // -------------------------
+  // HELPERS GERAIS
+  // -------------------------
+  function slugifyVendedor(nome) {
+    return String(nome)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .toUpperCase();
+  }
+  function getMetaVendedorDocId(vendedor, ano) {
+    const slug = slugifyVendedor(vendedor);
+    return `${slug}_${ano}`;
+  }
+  function parseValorBR(str) {
+    if (!str) return null;
+    let s = String(str).trim();
+    if (!s) return null;
+    s = s.replace(/\./g, '');
+    s = s.replace(',', '.');
+    const v = parseFloat(s);
+    if (isNaN(v)) return null;
+    return v;
+  }
+  function formatInputFromNumber(n) {
+    if (!n || isNaN(n)) return "";
+    return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function formatCurrency(valor) {
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+  function parseDataDDMMYYYY(str) {
+    if (!str) return null;
+    const parts = str.split('/');
+    if (parts.length !== 3) return null;
+    const d = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10) - 1;
+    const y = parseInt(parts[2], 10);
+    if (isNaN(d) || isNaN(m) || isNaN(y)) return null;
+    return new Date(y, m, d);
+  }
+  // Semana sábado–sexta: obtém o sábado de início
+  function getWeekStartSaturday(date) {
+    const day = date.getDay(); // 0=Dom,...6=Sab
+    const offset = (day + 1) % 7; // Sab(6)->0, Dom(0)->1, Sex(5)->6
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() - offset);
+    return start;
+  }
+  function formatDateBR(d) {
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
   }
 
-  function limparSelecaoLinhas() {
-    const linhas = tbodyVendedores.querySelectorAll('tr.row-clickable');
-    linhas.forEach(l => l.classList.remove('selected'));
-  }
+  // -------------------------
+  // METAS – Firestore
+  // -------------------------
+  async function carregarMetasVendedor(vendedor, ano, mesKey, semanaKey) {
+    const docId = getMetaVendedorDocId(vendedor, ano);
+    const ref = doc(db, 'metasVendedor', docId);
+    const snap = await getDoc(ref);
 
-  function renderTabelaPrincipal() {
-    tbodyVendedores.innerHTML = '';
-
-    if (ultimaListaVendedores.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 3;
-      td.className = 'empty-state';
-      td.textContent = 'Nenhuma linha válida encontrada. Confira R "venda...", I vendedor, J valor, B status e D data.';
-      tr.appendChild(td);
-      tbodyVendedores.appendChild(tr);
-      return;
+    if (!snap.exists()) {
+      return {
+        metaAnual: 0,
+        metaMensal: 0,
+        metaSemanal: 0
+      };
     }
 
-    const dadosOrdenados = [...ultimaListaVendedores];
-
-    if (sortMode === 'valor') {
-      dadosOrdenados.sort((a, b) => b.total - a.total);
-    } else {
-      const rankResp = { 'ALEXANDRE': 1, 'JUMAHIL': 2, '': 3 };
-      dadosOrdenados.sort((a, b) => {
-        const ra = rankResp[a.resp || ''] || 99;
-        const rb = rankResp[b.resp || ''] || 99;
-        if (ra !== rb) return ra - rb;
-        return b.total - a.total;
-      });
-    }
-
-    dadosOrdenados.forEach(item => {
-      const tr = document.createElement('tr');
-      tr.classList.add('row-clickable');
-
-      const tdVendedor = document.createElement('td');
-      tdVendedor.textContent = item.vendedor;
-      tdVendedor.className = 'td-vendedor';
-
-      const tdTotal = document.createElement('td');
-      tdTotal.textContent = formatCurrency(item.total);
-      tdTotal.className = 'td-total';
-
-      const tdResp = document.createElement('td');
-      tdResp.className = 'td-resp';
-
-      if (item.resp === 'ALEXANDRE') {
-        tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
-      } else if (item.resp === 'JUMAHIL') {
-        tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
-      } else {
-        tdResp.textContent = '';
-      }
-
-      if (item.vendedor === vendedorSelecionado) {
-        tr.classList.add('selected');
-      }
-
-      tr.appendChild(tdVendedor);
-      tr.appendChild(tdTotal);
-      tr.appendChild(tdResp);
-
-      tr.addEventListener('click', () => {
-        limparSelecaoLinhas();
-        tr.classList.add('selected');
-        selecionarVendedor(item.vendedor);
-      });
-
-      tbodyVendedores.appendChild(tr);
-    });
-  }
-
-  function renderTabelaSemVendas() {
-    tbodySemVendas.innerHTML = '';
-
-    if (listaSemVendas.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 3;
-      td.className = 'empty-state';
-      td.textContent = 'Nenhum vendedor ALEXANDRE/JUMAHIL zerado dentro da regra atual.';
-      tr.appendChild(td);
-      tbodySemVendas.appendChild(tr);
-      return;
-    }
-
-    const dados = [...listaSemVendas];
-    const rankResp = { 'ALEXANDRE': 1, 'JUMAHIL': 2 };
-    dados.sort((a, b) => {
-      const ra = rankResp[a.resp] || 99;
-      const rb = rankResp[b.resp] || 99;
-      if (ra !== rb) return ra - rb;
-      return a.vendedor.localeCompare(b.vendedor);
-    });
-
-    dados.forEach(item => {
-      const tr = document.createElement('tr');
-
-      const tdV = document.createElement('td');
-      tdV.textContent = item.vendedor;
-
-      const tdR = document.createElement('td');
-      tdR.style.textAlign = 'center';
-      if (item.resp === 'ALEXANDRE') {
-        tdR.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
-      } else if (item.resp === 'JUMAHIL') {
-        tdR.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
-      } else {
-        tdR.textContent = item.resp || '';
-      }
-
-      const tdS = document.createElement('td');
-      tdS.textContent = 'Sem vendas na regra atual';
-
-      tr.appendChild(tdV);
-      tr.appendChild(tdR);
-      tr.appendChild(tdS);
-      tbodySemVendas.appendChild(tr);
-    });
-  }
-
-  function renderDetalhesVendedor(nome) {
-    vendedorSelecionado = nome;
-
-    const infoVendedor = ultimaListaVendedores.find(v => v.vendedor === nome);
-    if (!infoVendedor) {
-      detalhesOverlay.style.display = 'none';
-      return;
-    }
-
-    const resp = infoVendedor.resp;
-    detVendedorNomeEl.textContent = nome;
-    detTotalVendedorEl.textContent = formatCurrency(infoVendedor.total);
-
-    if (resp === 'ALEXANDRE') {
-      detVendedorRespLinhaEl.innerHTML =
-        'Responsável: <span class="tag-alexandre">ALEXANDRE</span> • Clique em outro vendedor para trocar o dashboard.';
-    } else if (resp === 'JUMAHIL') {
-      detVendedorRespLinhaEl.innerHTML =
-        'Responsável: <span class="tag-jumahil">JUMAHIL</span> • Clique em outro vendedor para trocar o dashboard.';
-    } else {
-      detVendedorRespLinhaEl.textContent =
-        'Responsável: não definido • Clique em outro vendedor para trocar o dashboard.';
-    }
-
-    const dadosMes = resumoMesVendedor
-      .filter(d => d.vendedor === nome)
-      .sort((a, b) => a.mesKey.localeCompare(b.mesKey));
-
-    const dadosSemana = resumoSemanaVendedor
-      .filter(d => d.vendedor === nome)
-      .sort((a, b) => a.start - b.start);
-
-    detMesesCountEl.textContent = dadosMes.length;
-    detSemanasCountEl.textContent = dadosSemana.length;
-    detResumoInfoEl.textContent = `${dadosMes.length} meses com venda • ${dadosSemana.length} semanas com venda`;
-
-    tbodyDetMes.innerHTML = '';
-    if (dadosMes.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 2;
-      td.className = 'empty-state';
-      td.textContent = 'Nenhuma venda com data válida para este vendedor.';
-      tr.appendChild(td);
-      tbodyDetMes.appendChild(tr);
-    } else {
-      dadosMes.forEach(item => {
-        const tr = document.createElement('tr');
-        const [ano, mes] = item.mesKey.split('-');
-        const label = `${mes}/${ano}`;
-
-        const tdMes = document.createElement('td');
-        tdMes.textContent = label;
-
-        const tdTotal = document.createElement('td');
-        tdTotal.style.textAlign = 'right';
-        tdTotal.textContent = formatCurrency(item.total);
-
-        tr.appendChild(tdMes);
-        tr.appendChild(tdTotal);
-        tbodyDetMes.appendChild(tr);
-      });
-    }
-
-    tbodyDetSemana.innerHTML = '';
-    if (dadosSemana.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 2;
-      td.className = 'empty-state';
-      td.textContent = 'Nenhuma venda com data válida para este vendedor.';
-      tr.appendChild(td);
-      tbodyDetSemana.appendChild(tr);
-    } else {
-      dadosSemana.forEach(item => {
-        const tr = document.createElement('tr');
-
-        const tdPeriodo = document.createElement('td');
-        tdPeriodo.textContent = `${formatDateBR(item.start)} a ${formatDateBR(item.end)}`;
-
-        const tdTotal = document.createElement('td');
-        tdTotal.style.textAlign = 'right';
-        tdTotal.textContent = formatCurrency(item.total);
-
-        tr.appendChild(tdPeriodo);
-        tr.appendChild(tdTotal);
-        tbodyDetSemana.appendChild(tr);
-      });
-    }
-
-    detalhesOverlay.style.display = 'flex';
-  }
-
-  function selecionarVendedor(nome) {
-    renderDetalhesVendedor(nome);
-  }
-
-  // --- Painel semanal por responsável ---
-
-  function resetResponsavelUI() {
-    btnRespAlex.classList.remove('btn-toggle-active');
-    btnRespJum.classList.remove('btn-toggle-active');
-    selectSemanaResp.innerHTML = '<option value="">Selecione um responsável primeiro</option>';
-    resumoSemanaRespEl.textContent = 'Nenhum responsável selecionado.';
-  }
-
-  function atualizarSemanasRespUI() {
-    if (!responsavelSelecionado) {
-      resetResponsavelUI();
-      return;
-    }
-
-    const semanas = semanasPorResp[responsavelSelecionado] || [];
-    selectSemanaResp.innerHTML = '';
-
-    if (semanas.length === 0) {
-      const opt = document.createElement('option');
-      opt.value = '';
-      opt.textContent = 'Nenhuma semana com vendas para ' + responsavelSelecionado;
-      opt.disabled = true;
-      opt.selected = true;
-      selectSemanaResp.appendChild(opt);
-      resumoSemanaRespEl.textContent = 'Nenhuma semana válida para este responsável nas regras atuais.';
-      return;
-    }
-
-    // ordenar por data de início
-    semanas.sort((a, b) => a.start - b.start);
-
-    semanas.forEach((sem, idx) => {
-      const opt = document.createElement('option');
-      opt.value = sem.key;
-      opt.textContent = `${formatDateBR(sem.start)} a ${formatDateBR(sem.end)} – ${formatCurrency(sem.total)}`;
-      if (idx === semanas.length - 1) {
-        opt.selected = true; // última semana como padrão
-      }
-      selectSemanaResp.appendChild(opt);
-    });
-
-    const ultima = semanas[semanas.length - 1];
-    resumoSemanaRespEl.textContent =
-      `Última semana (${formatDateBR(ultima.start)} a ${formatDateBR(ultima.end)}): ${formatCurrency(ultima.total)} (${responsavelSelecionado})`;
-  }
-
-  function abrirResumoSemanalResponsavel() {
-    if (!responsavelSelecionado) {
-      alert('Selecione primeiro se você é ALEXANDRE ou JUMAHIL.');
-      return;
-    }
-    const semanas = semanasPorResp[responsavelSelecionado] || [];
-    if (semanas.length === 0) {
-      alert('Nenhuma semana com vendas para este responsável nas regras atuais.');
-      return;
-    }
-    const keySel = selectSemanaResp.value || (semanas[semanas.length - 1]?.key);
-    if (!keySel) {
-      alert('Nenhuma semana selecionada.');
-      return;
-    }
-
-    const semana = semanas.find(s => s.key === keySel) || semanas[semanas.length - 1];
-    if (!semana) {
-      alert('Semana não encontrada.');
-      return;
-    }
-
-    const d = semana.end;
-    const ano = d.getFullYear();
-    const mes = String(d.getMonth() + 1).padStart(2, '0');
-    const mesKey = `${ano}-${mes}`;
-    const totalMes = (mesesPorResp[responsavelSelecionado] && mesesPorResp[responsavelSelecionado][mesKey]) || 0;
-
-    semanaRespNomeEl.textContent = responsavelSelecionado;
-    semanaPeriodoTextoEl.textContent = `${formatDateBR(semana.start)} a ${formatDateBR(semana.end)}`;
-    semanaTotalSemanaEl.textContent = formatCurrency(semana.total);
-    semanaTotalMesEl.textContent = formatCurrency(totalMes);
-    semanaMesRefEl.textContent = `Mês de referência: ${mes}/${ano}`;
-
-    let perc = 0;
-    if (totalMes > 0) {
-      perc = (semana.total / totalMes) * 100;
-    }
-    semanaPercentualEl.textContent = `${perc.toFixed(1)}%`;
-
-    semanaOverlay.style.display = 'flex';
-  }
-
-  // --- Importação da planilha ---
-
-  inputExcel.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = function(event) {
-      const data = new Uint8Array(event.target.result);
-      const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      if (!sheet || !sheet['!ref']) {
-        alert('Não foi possível ler a planilha. Confira se há dados na aba 1.');
-        return;
-      }
-
-      const range = XLSX.utils.decode_range(sheet['!ref']);
-
-      const totais = {};
-      const totaisMesVend = {};        
-      const totaisSemanaVend = {};     
-
-      let totalGeral = 0;
-      let linhasValidas = 0;
-
-      for (let r = range.s.r + 1; r <= range.e.r; r++) {
-        const rowNumber = r + 1;
-
-        const cellVendedor = sheet['I' + rowNumber];
-        const cellValor   = sheet['J' + rowNumber];
-        const cellDesc    = sheet['R' + rowNumber];
-        const cellStatus  = sheet['B' + rowNumber];
-        const cellData    = sheet['D' + rowNumber];
-
-        if (!cellDesc || cellDesc.v == null) continue;
-        if (!cellVendedor || cellVendedor.v == null) continue;
-        if (!cellValor || cellValor.v == null) continue;
-        if (!cellStatus || cellStatus.v == null) continue;
-
-        const descricao = String(cellDesc.v).trim().toLowerCase();
-        const statusRaw = String(cellStatus.v).trim().toLowerCase();
-
-        if (!descricao.startsWith('venda')) continue;
-        if (!STATUS_VALIDOS.includes(statusRaw)) continue;
-
-        const vendedor = String(cellVendedor.v).trim();
-        let bruto = cellValor.v;
-
-        if (typeof bruto === 'string') {
-          let s = bruto.trim();
-          s = s.replace(/\./g, '');
-          s = s.replace(',', '.');
-          bruto = s;
-        }
-
-        const valor = parseFloat(bruto);
-        if (isNaN(valor)) continue;
-
-        const dataVenda = parseExcelDate(cellData);
-
-        if (!totais[vendedor]) totais[vendedor] = 0;
-        totais[vendedor] += valor;
-
-        totalGeral += valor;
-        linhasValidas++;
-
-        if (dataVenda) {
-          const ano = dataVenda.getFullYear();
-          const mes = String(dataVenda.getMonth() + 1).padStart(2, '0');
-          const mesKey = `${ano}-${mes}`;
-          const keyMV = `${vendedor}||${mesKey}`;
-          if (!totaisMesVend[keyMV]) totaisMesVend[keyMV] = 0;
-          totaisMesVend[keyMV] += valor;
-
-          const d = new Date(dataVenda.getTime());
-          d.setHours(0, 0, 0, 0);
-          const day = d.getDay();
-          const diff = (day - 6 + 7) % 7;
-          const start = new Date(d.getTime());
-          start.setDate(d.getDate() - diff);
-          const end = new Date(start.getTime());
-          end.setDate(start.getDate() + 6);
-          const startKey = start.toISOString().slice(0, 10);
-
-          const keySV = `${vendedor}||${startKey}`;
-          if (!totaisSemanaVend[keySV]) {
-            totaisSemanaVend[keySV] = { start, end, total: 0 };
-          }
-          totaisSemanaVend[keySV].total += valor;
-        }
-      }
-
-      totalGeralGlobal = totalGeral;
-      totalGeralEl.textContent = formatCurrency(totalGeral);
-      totalRegistrosEl.textContent = `${linhasValidas} linhas válidas (R "venda..." + status B permitido)`;
-      const vendedores = Object.keys(totais);
-      qtdVendedoresEl.textContent = vendedores.length;
-
-      if (vendedores.length > 0) {
-        let melhor = vendedores[0];
-        vendedores.forEach(v => {
-          if (totais[v] > totais[melhor]) melhor = v;
-        });
-        topVendedorEl.textContent = melhor;
-        topVendedorValorEl.textContent = formatCurrency(totais[melhor] || 0);
-      } else {
-        topVendedorEl.textContent = '–';
-        topVendedorValorEl.textContent = 'R$ 0,00';
-      }
-
-      ultimaListaVendedores = vendedores.map(v => ({
-        vendedor: v,
-        total: totais[v],
-        resp: getResponsavel(v) || ''
-      }));
-
-      listaSemVendas = [];
-      const setComVenda = new Set(vendedores);
-      VENDEDORES_ALEXANDRE.forEach(nome => {
-        if (!setComVenda.has(nome)) {
-          listaSemVendas.push({ vendedor: nome, resp: 'ALEXANDRE' });
-        }
-      });
-      VENDEDORES_JUMAHIL.forEach(nome => {
-        if (!setComVenda.has(nome)) {
-          listaSemVendas.push({ vendedor: nome, resp: 'JUMAHIL' });
-        }
-      });
-
-      resumoMesVendedor = Object.entries(totaisMesVend).map(([key, total]) => {
-        const [vendedor, mesKey] = key.split('||');
-        return { vendedor, mesKey, total, resp: getResponsavel(vendedor) || '' };
-      });
-
-      resumoSemanaVendedor = Object.entries(totaisSemanaVend).map(([key, obj]) => {
-        const [vendedor] = key.split('||');
-        return {
-          vendedor,
-          start: obj.start,
-          end: obj.end,
-          total: obj.total,
-          resp: getResponsavel(vendedor) || ''
-        };
-      });
-
-      // Montar semanasPorResp e mesesPorResp
-      semanasPorResp = { 'ALEXANDRE': [], 'JUMAHIL': [] };
-      mesesPorResp = { 'ALEXANDRE': {}, 'JUMAHIL': {} };
-
-      // Meses por responsável
-      resumoMesVendedor.forEach(item => {
-        const resp = item.resp;
-        if (resp === 'ALEXANDRE' || resp === 'JUMAHIL') {
-          if (!mesesPorResp[resp][item.mesKey]) mesesPorResp[resp][item.mesKey] = 0;
-          mesesPorResp[resp][item.mesKey] += item.total;
-        }
-      });
-
-      // Semanas por responsável
-      const aggSemanasResp = { 'ALEXANDRE': {}, 'JUMAHIL': {} };
-      resumoSemanaVendedor.forEach(item => {
-        const resp = item.resp;
-        if (resp === 'ALEXANDRE' || resp === 'JUMAHIL') {
-          const key = item.start.toISOString().slice(0, 10);
-          if (!aggSemanasResp[resp][key]) {
-            aggSemanasResp[resp][key] = {
-              key,
-              start: item.start,
-              end: item.end,
-              total: 0
-            };
-          }
-          aggSemanasResp[resp][key].total += item.total;
-        }
-      });
-
-      ['ALEXANDRE', 'JUMAHIL'].forEach(resp => {
-        semanasPorResp[resp] = Object.values(aggSemanasResp[resp]);
-      });
-
-      sortMode = 'valor';
-      atualizarIndicadoresOrdenacao();
-      vendedorSelecionado = null;
-      detalhesOverlay.style.display = 'none';
-      detVendedorNomeEl.textContent = '–';
-      detVendedorRespLinhaEl.textContent = 'Selecione um vendedor na tabela para ver o dashboard semanal e mensal.';
-      renderTabelaPrincipal();
-      renderTabelaSemVendas();
-
-      // Reset painel semanal
-      responsavelSelecionado = null;
-      resetResponsavelUI();
-      semanaOverlay.style.display = 'none';
+    const data = snap.data() || {};
+    const metasMensais = data.metasMensais || {};
+    const metasSemanais = data.metasSemanais || {};
+
+    return {
+      metaAnual: data.metaAnual || 0,
+      metaMensal: metasMensais[mesKey] || 0,
+      metaSemanal: metasSemanais[semanaKey] || 0
     };
+  }
 
+  async function salvarMetasVendedor({
+    vendedor,
+    ano,
+    metaAnual = null,
+    mesKey = null,
+    metaMensal = null,
+    semanaKey = null,
+    metaSemanal = null,
+    resp
+  }) {
+    const docId = getMetaVendedorDocId(vendedor, ano);
+    const ref = doc(db, 'metasVendedor', docId);
+    const snap = await getDoc(ref);
+    let dataAtual = {};
+
+    if (snap.exists()) {
+      dataAtual = snap.data() || {};
+    } else {
+      dataAtual = {
+        vendedor,
+        resp,
+        ano,
+        metaAnual: 0,
+        metasMensais: {},
+        metasSemanais: {}
+      };
+    }
+
+    const metasMensais = dataAtual.metasMensais || {};
+    const metasSemanais = dataAtual.metasSemanais || {};
+
+    if (metaAnual != null) dataAtual.metaAnual = metaAnual;
+    if (mesKey && metaMensal != null) metasMensais[mesKey] = metaMensal;
+    if (semanaKey && metaSemanal != null) metasSemanais[semanaKey] = metaSemanal;
+
+    dataAtual.metasMensais = metasMensais;
+    dataAtual.metasSemanais = metasSemanais;
+    dataAtual.vendedor = vendedor;
+    dataAtual.resp = resp;
+    dataAtual.ano = ano;
+    dataAtual.atualizadoEm = serverTimestamp();
+
+    await setDoc(ref, dataAtual, { merge: true });
+  }
+
+  // -------------------------
+  // UI – TABS
+  // -------------------------
+  const tabVendas = document.getElementById('tabVendas');
+  const tabMetas = document.getElementById('tabMetas');
+  const secVendas = document.getElementById('secVendas');
+  const secMetas = document.getElementById('secMetas');
+
+  tabVendas.addEventListener('click', () => {
+    tabVendas.classList.add('active');
+    tabMetas.classList.remove('active');
+    secVendas.classList.remove('hidden');
+    secMetas.classList.add('hidden');
+  });
+  tabMetas.addEventListener('click', () => {
+    tabMetas.classList.add('active');
+    tabVendas.classList.remove('active');
+    secMetas.classList.remove('hidden');
+    secVendas.classList.add('hidden');
+  });
+
+  // -------------------------
+  // SEÇÃO VENDAS – Import e resumo
+  // -------------------------
+  const inputArquivo = document.getElementById('inputArquivo');
+  const selectMesVendas = document.getElementById('selectMesVendas');
+  const inputAnoVendas = document.getElementById('inputAnoVendas');
+  const btnAplicarFiltro = document.getElementById('btnAplicarFiltro');
+  const tbodyVendas = document.getElementById('tbodyVendas');
+  const cardTotalGeral = document.getElementById('cardTotalGeral');
+  const cardQtdVendedores = document.getElementById('cardQtdVendedores');
+  const cardMesAno = document.getElementById('cardMesAno');
+
+  const overlayVendedor = document.getElementById('overlayVendedor');
+  const btnFecharOverlay = document.getElementById('btnFecharOverlay');
+  const ovTituloVendedor = document.getElementById('ovTituloVendedor');
+  const ovSubVendedor = document.getElementById('ovSubVendedor');
+  const ovChipMesAno = document.getElementById('ovChipMesAno');
+  const ovChipTotalVendedor = document.getElementById('ovChipTotalVendedor');
+  const ovWeeksList = document.getElementById('ovWeeksList');
+
+  let allRows = []; // {vendedor, resp, valor, data, mesKey, semanaKey}
+  let filtroMesAtual = '';
+  let filtroAnoAtual = null;
+
+  function initFiltrosVendas() {
+    const hoje = new Date();
+    inputAnoVendas.value = hoje.getFullYear();
+    filtroAnoAtual = hoje.getFullYear();
+    selectMesVendas.value = "";
+    cardMesAno.textContent = 'Todos';
+  }
+
+  inputArquivo.addEventListener('change', () => {
+    const file = inputArquivo.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      // json é array de linhas, cada row é array de células
+      // Primeira linha = cabeçalho
+      allRows = [];
+      const STATUS_VALIDOS = ["PENDENTE", "APROVADO", "ATENDIDO", "EM ALTERAÇÃO", "VALIDADO"];
+
+      for (let i = 1; i < json.length; i++) {
+        const row = json[i];
+        if (!row || row.length === 0) continue;
+
+        const status = (row[1] || "").toString().trim();        // Coluna B
+        const dataStr = (row[3] || "").toString().trim();       // Coluna D
+        const vendedor = (row[8] || "").toString().trim();      // Coluna I
+        const valorRaw = row[9];                                // Coluna J
+        const descricao = (row[17] || "").toString().trim();    // Coluna R
+
+        if (!STATUS_VALIDOS.includes(status.toUpperCase())) continue;
+        if (!descricao.toLowerCase().startsWith("venda")) continue;
+        if (!vendedor) continue;
+
+        const data = parseDataDDMMYYYY(dataStr);
+        if (!data) continue;
+
+        let valor = 0;
+        if (typeof valorRaw === 'number') {
+          valor = valorRaw;
+        } else if (typeof valorRaw === 'string') {
+          const parsed = parseValorBR(valorRaw);
+          if (parsed != null) valor = parsed;
+        }
+        if (!valor || isNaN(valor)) continue;
+
+        const ano = data.getFullYear();
+        const mes = String(data.getMonth() + 1).padStart(2, '0');
+        const mesKey = `${ano}-${mes}`;
+        const weekStart = getWeekStartSaturday(data);
+        const semanaKey = weekStart.toISOString().slice(0, 10);
+        const resp = getResponsavel(vendedor);
+
+        allRows.push({ vendedor, resp, valor, data, mesKey, semanaKey });
+      }
+      aplicarFiltroVendas();
+    };
     reader.readAsArrayBuffer(file);
   });
 
-  // Botão vendedores sem vendas
-  btnSemVendas.addEventListener('click', () => {
-    if (semVendasWrapper.style.display === 'none' || semVendasWrapper.style.display === '') {
-      semVendasWrapper.style.display = 'block';
-      btnSemVendas.innerHTML = '<span class="icon">⬆️</span> Ocultar vendedores sem vendas';
-      renderTabelaSemVendas();
+  function aplicarFiltroVendas() {
+    filtroMesAtual = selectMesVendas.value || '';
+    filtroAnoAtual = parseInt(inputAnoVendas.value, 10) || null;
+
+    let rowsFiltradas = allRows.slice();
+    if (filtroAnoAtual) {
+      rowsFiltradas = rowsFiltradas.filter(r => r.data.getFullYear() === filtroAnoAtual);
+    }
+    if (filtroMesAtual) {
+      rowsFiltradas = rowsFiltradas.filter(r => r.mesKey.endsWith(`-${filtroMesAtual}`));
+    }
+
+    const totaisPorVendedor = {};
+    let totalGeral = 0;
+
+    for (const r of rowsFiltradas) {
+      if (!totaisPorVendedor[r.vendedor]) {
+        totaisPorVendedor[r.vendedor] = 0;
+      }
+      totaisPorVendedor[r.vendedor] += r.valor;
+      totalGeral += r.valor;
+    }
+
+    cardTotalGeral.textContent = formatCurrency(totalGeral);
+    cardQtdVendedores.textContent = Object.keys(totaisPorVendedor).length.toString();
+    if (filtroMesAtual && filtroAnoAtual) {
+      cardMesAno.textContent = `${filtroMesAtual}/${filtroAnoAtual}`;
+    } else if (filtroAnoAtual) {
+      cardMesAno.textContent = `Ano ${filtroAnoAtual}`;
     } else {
-      semVendasWrapper.style.display = 'none';
-      btnSemVendas.innerHTML = '<span class="icon">🔍</span> Ver vendedores ALEXANDRE/JUMAHIL sem vendas';
+      cardMesAno.textContent = `Todos`;
+    }
+
+    tbodyVendas.innerHTML = '';
+    if (Object.keys(totaisPorVendedor).length === 0) {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 4;
+      td.style.textAlign = 'center';
+      td.style.padding = '10px';
+      td.style.fontSize = '13px';
+      td.style.color = '#64748b';
+      td.textContent = 'Nenhum resultado com os filtros atuais.';
+      tr.appendChild(td);
+      tbodyVendas.appendChild(tr);
+      return;
+    }
+
+    for (const vendedor of Object.keys(totaisPorVendedor).sort()) {
+      const totalVend = totaisPorVendedor[vendedor];
+      const resp = getResponsavel(vendedor);
+
+      const tr = document.createElement('tr');
+
+      const tdVend = document.createElement('td');
+      tdVend.className = 'td-vendedor';
+      tdVend.textContent = vendedor;
+
+      const tdResp = document.createElement('td');
+      if (resp === 'ALEXANDRE') {
+        tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
+      } else if (resp === 'JUMAHIL') {
+        tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
+      } else {
+        tdResp.textContent = '-';
+      }
+
+      const tdTotal = document.createElement('td');
+      tdTotal.style.textAlign = 'right';
+      tdTotal.textContent = formatCurrency(totalVend);
+
+      const tdAcao = document.createElement('td');
+      tdAcao.style.textAlign = 'center';
+      const btnDetalhes = document.createElement('button');
+      btnDetalhes.className = 'btn small';
+      btnDetalhes.textContent = 'Ver detalhes';
+      btnDetalhes.addEventListener('click', () => {
+        abrirDetalhesVendedor(vendedor, resp);
+      });
+      tdAcao.appendChild(btnDetalhes);
+
+      tr.appendChild(tdVend);
+      tr.appendChild(tdResp);
+      tr.appendChild(tdTotal);
+      tr.appendChild(tdAcao);
+
+      tbodyVendas.appendChild(tr);
+    }
+  }
+
+  btnAplicarFiltro.addEventListener('click', aplicarFiltroVendas);
+
+  function abrirDetalhesVendedor(vendedor, resp) {
+    let rows = allRows.filter(r => r.vendedor === vendedor);
+    if (filtroAnoAtual) {
+      rows = rows.filter(r => r.data.getFullYear() === filtroAnoAtual);
+    }
+    if (filtroMesAtual) {
+      rows = rows.filter(r => r.mesKey.endsWith(`-${filtroMesAtual}`));
+    }
+
+    if (rows.length === 0) {
+      alert('Nenhuma venda para este vendedor com os filtros atuais.');
+      return;
+    }
+
+    let totalVend = 0;
+    const semanas = {};
+    let minDate = rows[0].data;
+    let maxDate = rows[0].data;
+
+    for (const r of rows) {
+      totalVend += r.valor;
+      if (!semanas[r.semanaKey]) {
+        semanas[r.semanaKey] = { total: 0, start: null, end: null };
+      }
+      semanas[r.semanaKey].total += r.valor;
+
+      const weekStart = getWeekStartSaturday(r.data);
+      const end = new Date(weekStart);
+      end.setDate(end.getDate() + 6);
+      if (!semanas[r.semanaKey].start || weekStart < semanas[r.semanaKey].start) {
+        semanas[r.semanaKey].start = weekStart;
+      }
+      if (!semanas[r.semanaKey].end || end > semanas[r.semanaKey].end) {
+        semanas[r.semanaKey].end = end;
+      }
+
+      if (r.data < minDate) minDate = r.data;
+      if (r.data > maxDate) maxDate = r.data;
+    }
+
+    ovTituloVendedor.textContent = vendedor;
+    const respTxt = resp ? `Responsável: ${resp}` : 'Responsável não mapeado';
+    ovSubVendedor.textContent = `${respTxt} • Período: ${formatDateBR(minDate)} a ${formatDateBR(maxDate)}`;
+    const mesLabel = filtroMesAtual && filtroAnoAtual ? `${filtroMesAtual}/${filtroAnoAtual}` : 'Todos';
+    ovChipMesAno.textContent = `Filtro: ${mesLabel}`;
+    ovChipTotalVendedor.textContent = `Total no filtro: ${formatCurrency(totalVend)}`;
+
+    ovWeeksList.innerHTML = '<div class="weeks-header">Semanas com venda (Sábado – Sexta)</div>';
+    const keys = Object.keys(semanas).sort();
+    if (keys.length === 0) {
+      const div = document.createElement('div');
+      div.className = 'week-row';
+      div.textContent = 'Nenhuma semana encontrada.';
+      ovWeeksList.appendChild(div);
+    } else {
+      for (const k of keys) {
+        const w = semanas[k];
+        const row = document.createElement('div');
+        row.className = 'week-row';
+        const left = document.createElement('div');
+        left.textContent = `${formatDateBR(w.start)} a ${formatDateBR(w.end)}`;
+        const right = document.createElement('div');
+        right.style.fontWeight = '600';
+        right.textContent = formatCurrency(w.total);
+        row.appendChild(left);
+        row.appendChild(right);
+        ovWeeksList.appendChild(row);
+      }
+    }
+
+    overlayVendedor.style.display = 'flex';
+  }
+
+  btnFecharOverlay.addEventListener('click', () => {
+    overlayVendedor.style.display = 'none';
+  });
+  overlayVendedor.addEventListener('click', (e) => {
+    if (e.target === overlayVendedor) {
+      overlayVendedor.style.display = 'none';
     }
   });
 
-  // Fechar modal vendedor
-  btnFecharDetalhes.addEventListener('click', () => {
-    detalhesOverlay.style.display = 'none';
-    vendedorSelecionado = null;
-    limparSelecaoLinhas();
-  });
-  detalhesOverlay.addEventListener('click', (e) => {
-    if (e.target === detalhesOverlay) {
-      detalhesOverlay.style.display = 'none';
-      vendedorSelecionado = null;
-      limparSelecaoLinhas();
+  // -------------------------
+  // SEÇÃO METAS – UI
+  // -------------------------
+  const btnAlexandre = document.getElementById('btnAlexandre');
+  const btnJumahil = document.getElementById('btnJumahil');
+  const inputAnoMetas = document.getElementById('inputAnoMetas');
+  const selectMesMetas = document.getElementById('selectMesMetas');
+  const inputSabadoMetas = document.getElementById('inputSabadoMetas');
+  const btnRecarregarMetas = document.getElementById('btnRecarregarMetas');
+  const tbodyMetas = document.getElementById('tbodyMetas');
+
+  let responsavelAtualMetas = 'ALEXANDRE';
+
+  function initFiltrosMetas() {
+    const hoje = new Date();
+    inputAnoMetas.value = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    selectMesMetas.value = mes;
+
+    const day = hoje.getDay();
+    const diff = (6 - day + 7) % 7;
+    const sab = new Date(hoje);
+    sab.setDate(hoje.getDate() + diff);
+    inputSabadoMetas.value = sab.toISOString().slice(0, 10);
+  }
+
+  async function recarregarTabelaMetas() {
+    const ano = parseInt(inputAnoMetas.value, 10) || new Date().getFullYear();
+    const mes = selectMesMetas.value || "01";
+    const mesKey = `${ano}-${mes}`;
+    const sab = inputSabadoMetas.value;
+    const semanaKey = sab || `${ano}-${mes}-01`;
+
+    const vendedores = getListaVendedores(responsavelAtualMetas);
+
+    tbodyMetas.innerHTML = '';
+    if (vendedores.length === 0) {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 7;
+      td.style.textAlign = 'center';
+      td.style.padding = '10px';
+      td.style.fontSize = '13px';
+      td.style.color = '#64748b';
+      td.textContent = 'Nenhum vendedor cadastrado para este responsável.';
+      tr.appendChild(td);
+      tbodyMetas.appendChild(tr);
+      return;
     }
-  });
 
-  // Ordenação
-  thVendedor.addEventListener('click', () => {
-    if (ultimaListaVendedores.length === 0) return;
-    sortMode = 'valor';
-    atualizarIndicadoresOrdenacao();
-    renderTabelaPrincipal();
-    if (vendedorSelecionado) {
-      renderDetalhesVendedor(vendedorSelecionado);
+    for (const vendedor of vendedores) {
+      const metas = await carregarMetasVendedor(vendedor, ano, mesKey, semanaKey);
+
+      const tr = document.createElement('tr');
+
+      const tdVend = document.createElement('td');
+      tdVend.className = 'td-vendedor';
+      tdVend.textContent = vendedor;
+
+      const tdResp = document.createElement('td');
+      if (responsavelAtualMetas === 'ALEXANDRE') {
+        tdResp.innerHTML = '<span class="tag-alexandre">ALEXANDRE</span>';
+      } else {
+        tdResp.innerHTML = '<span class="tag-jumahil">JUMAHIL</span>';
+      }
+
+      const tdMetaAnual = document.createElement('td');
+      tdMetaAnual.style.textAlign = 'right';
+      const inpAnual = document.createElement('input');
+      inpAnual.type = 'text';
+      inpAnual.className = 'input-money';
+      inpAnual.value = formatInputFromNumber(metas.metaAnual);
+      tdMetaAnual.appendChild(inpAnual);
+
+      const tdMetaMensal = document.createElement('td');
+      tdMetaMensal.style.textAlign = 'right';
+      const inpMensal = document.createElement('input');
+      inpMensal.type = 'text';
+      inpMensal.className = 'input-money';
+      inpMensal.value = formatInputFromNumber(metas.metaMensal);
+      tdMetaMensal.appendChild(inpMensal);
+
+      const tdMetaSemanal = document.createElement('td');
+      tdMetaSemanal.style.textAlign = 'right';
+      const inpSemanal = document.createElement('input');
+      inpSemanal.type = 'text';
+      inpSemanal.className = 'input-money';
+      inpSemanal.value = formatInputFromNumber(metas.metaSemanal);
+      tdMetaSemanal.appendChild(inpSemanal);
+
+      const tdAcao = document.createElement('td');
+      tdAcao.style.textAlign = 'center';
+      const btnSalvar = document.createElement('button');
+      btnSalvar.className = 'btn small';
+      btnSalvar.textContent = 'Salvar';
+      tdAcao.appendChild(btnSalvar);
+
+      const tdStatus = document.createElement('td');
+      tdStatus.className = 'status-cell';
+      tdStatus.textContent = '—';
+
+      btnSalvar.addEventListener('click', async () => {
+        const vAnual = parseValorBR(inpAnual.value);
+        const vMensal = parseValorBR(inpMensal.value);
+        const vSemanal = parseValorBR(inpSemanal.value);
+
+        try {
+          await salvarMetasVendedor({
+            vendedor,
+            ano,
+            metaAnual: vAnual != null ? vAnual : 0,
+            mesKey,
+            metaMensal: vMensal != null ? vMensal : 0,
+            semanaKey,
+            metaSemanal: vSemanal != null ? vSemanal : 0,
+            resp: responsavelAtualMetas
+          });
+          tdStatus.textContent = `Salvo às ${new Date().toLocaleTimeString('pt-BR')}`;
+          tdStatus.classList.remove('status-warning');
+          tdStatus.classList.add('status-ok');
+        } catch (err) {
+          console.error('Erro ao salvar metas', err);
+          tdStatus.textContent = 'Erro ao salvar. Veja o console.';
+          tdStatus.classList.remove('status-ok');
+          tdStatus.classList.add('status-warning');
+        }
+      });
+
+      tr.appendChild(tdVend);
+      tr.appendChild(tdResp);
+      tr.appendChild(tdMetaAnual);
+      tr.appendChild(tdMetaMensal);
+      tr.appendChild(tdMetaSemanal);
+      tr.appendChild(tdAcao);
+      tr.appendChild(tdStatus);
+
+      tbodyMetas.appendChild(tr);
     }
-  });
+  }
 
-  thResponsavel.addEventListener('click', () => {
-    if (ultimaListaVendedores.length === 0) return;
-    sortMode = 'responsavel';
-    atualizarIndicadoresOrdenacao();
-    renderTabelaPrincipal();
-    if (vendedorSelecionado) {
-      renderDetalhesVendedor(vendedorSelecionado);
-    }
+  btnAlexandre.addEventListener('click', () => {
+    responsavelAtualMetas = 'ALEXANDRE';
+    btnAlexandre.classList.add('active');
+    btnJumahil.classList.remove('active');
+    recarregarTabelaMetas();
   });
+  btnJumahil.addEventListener('click', () => {
+    responsavelAtualMetas = 'JUMAHIL';
+    btnJumahil.classList.add('active');
+    btnAlexandre.classList.remove('active');
+    recarregarTabelaMetas();
+  });
+  btnRecarregarMetas.addEventListener('click', recarregarTabelaMetas);
 
-  // Seleção de responsável (ALEXANDRE / JUMAHIL)
-  btnRespAlex.addEventListener('click', () => {
-    responsavelSelecionado = 'ALEXANDRE';
-    btnRespAlex.classList.add('btn-toggle-active');
-    btnRespJum.classList.remove('btn-toggle-active');
-    atualizarSemanasRespUI();
-  });
-
-  btnRespJum.addEventListener('click', () => {
-    responsavelSelecionado = 'JUMAHIL';
-    btnRespJum.classList.add('btn-toggle-active');
-    btnRespAlex.classList.remove('btn-toggle-active');
-    atualizarSemanasRespUI();
-  });
-
-  btnVerSemanaResp.addEventListener('click', () => {
-    abrirResumoSemanalResponsavel();
-  });
-
-  // Fechar modal semanal responsável
-  btnFecharSemana.addEventListener('click', () => {
-    semanaOverlay.style.display = 'none';
-  });
-  semanaOverlay.addEventListener('click', (e) => {
-    if (e.target === semanaOverlay) {
-      semanaOverlay.style.display = 'none';
-    }
-  });
-
-  semVendasWrapper.style.display = 'none';
-  detalhesOverlay.style.display = 'none';
-  semanaOverlay.style.display = 'none';
-  atualizarIndicadoresOrdenacao();
-  resetResponsavelUI();
+  // -------------------------
+  // INICIALIZAÇÃO GERAL
+  // -------------------------
+  initFiltrosVendas();
+  initFiltrosMetas();
+  // Metas: já carrega tabela do Alexandre
+  recarregarTabelaMetas();
 </script>
-
 </body>
 </html>
-
