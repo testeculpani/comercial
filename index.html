@@ -7,7 +7,7 @@
 
   <!-- SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- Chart.js (não será usado mais, mas pode deixar; se quiser pode remover) -->
+  <!-- Chart.js (não usamos gráfico, pode deixar ou remover se quiser) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -578,7 +578,7 @@
     </div>
   </section>
 
-  <!-- APRESENTAÇÃO (SEM GRÁFICO, SÓ NÚMEROS) -->
+  <!-- APRESENTAÇÃO (RESUMO NUMÉRICO) -->
   <section id="secApresentacao" class="section hidden">
     <div class="top-controls">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -717,7 +717,6 @@
     "J. G. VARGAS REPRESENTACOES COMERCIAIS MARING",
     "60.132.034 MOHANDAS VINICIUS DA SILVA DELL IS",
     "HOPPE REPRESENTACOES LTDA",
-    "FURLANETTO E GONCALVES LTDA",
     "ROGERIO ANTONELLO DA ROSA",
     "TAVARES IMPORTAÇÃO E COMERCIO LTDA",
     "MICAEL MENEZES DE OLIVEIRA",
@@ -1309,14 +1308,6 @@
 
   let apRespAtual="ALEXANDRE";
 
-  function initFiltrosApresentacao(){
-    const hoje=new Date();
-    inputApAno.value=hoje.getFullYear();
-    const mes=String(hoje.getMonth()+1).padStart(2,"0");
-    selectApMes.value=mes;
-    atualizarOpcoesApresentacao();
-  }
-
   function atualizarOpcoesApresentacao(){
     const lista=getListaVendedores(apRespAtual);
     selectApVendedor.innerHTML="";
@@ -1331,24 +1322,6 @@
       selectApVendedor.appendChild(opt);
     }
   }
-
-  btnApRespAlex.addEventListener("click",()=>{
-    apRespAtual="ALEXANDRE";
-    btnApRespAlex.classList.add("active");
-    btnApRespJum.classList.remove("active");
-    atualizarOpcoesApresentacao();
-    atualizarApresentacao();
-  });
-  btnApRespJum.addEventListener("click",()=>{
-    apRespAtual="JUMAHIL";
-    btnApRespJum.classList.add("active");
-    btnApRespAlex.classList.remove("active");
-    atualizarOpcoesApresentacao();
-    atualizarApresentacao();
-  });
-
-  btnApAtualizar.addEventListener("click",atualizarApresentacao);
-  selectApVendedor.addEventListener("change",atualizarApresentacao);
 
   async function atualizarApresentacao(){
     const vendedor=selectApVendedor.value;
@@ -1424,13 +1397,17 @@
     for(const sk of semanaKeysOrdenadas){
       const info=semanasMap[sk];
       const vendasSemana=info.total;
-      const rawMeta=metasSemanais[sk] ?? 0;
+
       let metaSemana=0;
-      if(typeof rawMeta==="number") metaSemana=rawMeta;
-      else{
-        const p=parseValorBR(String(rawMeta));
-        metaSemana=p!=null?p:Number(rawMeta)||0;
+      if(metasSemanais[sk] !== undefined){
+        const rawMeta=metasSemanais[sk];
+        if(typeof rawMeta==="number") metaSemana=rawMeta;
+        else{
+          const p=parseValorBR(String(rawMeta));
+          metaSemana=p!=null?p:Number(rawMeta)||0;
+        }
       }
+
       const diff=vendasSemana-metaSemana;
       const perc=metaSemana>0?(vendasSemana/metaSemana)*100:0;
 
@@ -1464,15 +1441,39 @@
     }
   }
 
-  // init
-  function initFiltrosVendasMetasAp(){
+  btnApRespAlex.addEventListener("click",()=>{
+    apRespAtual="ALEXANDRE";
+    btnApRespAlex.classList.add("active");
+    btnApRespJum.classList.remove("active");
+    atualizarOpcoesApresentacao();
+    atualizarApresentacao();
+  });
+  btnApRespJum.addEventListener("click",()=>{
+    apRespAtual="JUMAHIL";
+    btnApRespJum.classList.add("active");
+    btnApRespAlex.classList.remove("active");
+    atualizarOpcoesApresentacao();
+    atualizarApresentacao();
+  });
+  btnApAtualizar.addEventListener("click",atualizarApresentacao);
+  selectApVendedor.addEventListener("change",atualizarApresentacao);
+
+  function initFiltrosApresentacao(){
+    const hoje=new Date();
+    inputApAno.value=hoje.getFullYear();
+    const mes=String(hoje.getMonth()+1).padStart(2,"0");
+    selectApMes.value=mes;
+    atualizarOpcoesApresentacao();
+  }
+
+  function initTudo(){
     initFiltrosVendas();
     initFiltrosMetas();
     initFiltrosApresentacao();
+    recarregarTabelaMetas();
   }
-  initFiltrosVendasMetasAp();
-  recarregarTabelaMetas();
+
+  initTudo();
 </script>
 </body>
 </html>
-
