@@ -151,6 +151,11 @@
       border:1px solid #cbd5f5;
       box-shadow:none;
     }
+    .btn.outline.active{
+      background:#fff;
+      box-shadow:0 6px 16px rgba(15,23,42,0.14);
+      border-color:#94a3b8;
+    }
     .btn:active {
       transform:translateY(1px);
       box-shadow:0 4px 10px rgba(15,23,42,0.25);
@@ -206,6 +211,56 @@
       color:#0369a1;
       margin-right:4px;
       margin-bottom:4px;
+    }
+
+    /* 🔵 Progress bar (importação) */
+    .progress-wrap{
+      width:100%;
+      max-width:420px;
+      background:#f8fafc;
+      border:1px solid #cbd5f5;
+      border-radius:14px;
+      padding:8px 10px;
+      display:none;
+      box-shadow:0 10px 24px rgba(15,23,42,0.12);
+    }
+    .progress-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:6px;
+    }
+    .progress-title{
+      font-size:12px;
+      font-weight:700;
+      color:#0f172a;
+    }
+    .progress-text{
+      font-size:11px;
+      color:#64748b;
+      font-weight:600;
+      white-space:nowrap;
+    }
+    .progress-rail{
+      width:100%;
+      height:10px;
+      background:#e2e8f0;
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid #cbd5f5;
+    }
+    .progress-bar{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,#0ea5e9,#22c55e);
+      border-radius:999px;
+      transition:width .12s ease;
+    }
+    .progress-sub{
+      margin-top:6px;
+      font-size:11px;
+      color:#64748b;
     }
 
     .summary-cards {
@@ -288,6 +343,17 @@
       border-radius:999px;
       background:#fee2e2;
       color:#dc2626;
+      font-weight:700;
+      font-size:11px;
+      letter-spacing:.03em;
+      text-transform:uppercase;
+    }
+    .tag-cristiano{
+      display:inline-block;
+      padding:2px 10px;
+      border-radius:999px;
+      background:#ede9fe;
+      color:#6d28d9;
       font-weight:700;
       font-size:11px;
       letter-spacing:.03em;
@@ -413,6 +479,7 @@
       th,td{padding:6px 7px;}
       .input-money{max-width:100px;}
       .overlay-content{max-width:95%;}
+      .progress-wrap{max-width:100%;}
     }
   </style>
 </head>
@@ -423,7 +490,7 @@
       <h1><span class="icon">📊</span> Painel Comercial – Vendas & Metas</h1>
       <div class="subtitle">
         Importação de vendas por planilha + controle de metas anual, mensal e semanal por representante.<br>
-        Responsáveis: <strong>Alexandre</strong> e <strong>Jumahil</strong>.
+        Responsáveis: <strong>Alexandre</strong>, <strong>Jumahil</strong> e <strong>Cristiano</strong>.
       </div>
     </div>
     <div class="badge">
@@ -445,6 +512,19 @@
         <div class="label" style="margin-bottom:4px;">Importar planilha de vendas</div>
         <input type="file" id="inputArquivo" accept=".xlsx,.xls">
       </div>
+
+      <!-- 🔵 Barra de carregamento -->
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-top">
+          <div class="progress-title">Importando planilha…</div>
+          <div class="progress-text" id="progressText">0%</div>
+        </div>
+        <div class="progress-rail">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-sub" id="progressSub">Lendo linhas e processando regras…</div>
+      </div>
+
       <div class="filters">
         <div class="filters-group">
           <span>Filtrar por mês:</span>
@@ -519,6 +599,7 @@
         <span class="label">Responsável:</span>
         <button class="btn outline active" id="btnAlexandre">ALEXANDRE</button>
         <button class="btn outline" id="btnJumahil">JUMAHIL</button>
+        <button class="btn outline" id="btnCristiano">CRISTIANO</button>
       </div>
 
       <div class="filters">
@@ -582,6 +663,7 @@
         <span class="label">Responsável:</span>
         <button class="btn outline active" id="btnApRespAlex">ALEXANDRE</button>
         <button class="btn outline" id="btnApRespJum">JUMAHIL</button>
+        <button class="btn outline" id="btnApRespCrist">CRISTIANO</button>
       </div>
 
       <div class="filters">
@@ -786,13 +868,30 @@
     "VIALE BR EMPREENDIMENTOS LTDA"
   ];
 
+  // ✅ NOVO RESPONSÁVEL
+  const VENDEDORES_CRISTIANO = [
+    "ITAGRO LTDA",
+    "DPS REPRESENTACOES LTDA",
+    "VALDIR DIAS DOS SANTOS"
+  ];
+
   function getResponsavel(v) {
     if (VENDEDORES_ALEXANDRE.includes(v)) return 'ALEXANDRE';
     if (VENDEDORES_JUMAHIL.includes(v)) return 'JUMAHIL';
+    if (VENDEDORES_CRISTIANO.includes(v)) return 'CRISTIANO';
     return '';
   }
   function getListaVendedores(resp) {
-    return resp === 'ALEXANDRE' ? VENDEDORES_ALEXANDRE : VENDEDORES_JUMAHIL;
+    if (resp === 'ALEXANDRE') return VENDEDORES_ALEXANDRE;
+    if (resp === 'JUMAHIL') return VENDEDORES_JUMAHIL;
+    if (resp === 'CRISTIANO') return VENDEDORES_CRISTIANO;
+    return [];
+  }
+  function renderTagResponsavel(resp){
+    if(resp==="ALEXANDRE") return '<span class="tag-alexandre">ALEXANDRE</span>';
+    if(resp==="JUMAHIL") return '<span class="tag-jumahil">JUMAHIL</span>';
+    if(resp==="CRISTIANO") return '<span class="tag-cristiano">CRISTIANO</span>';
+    return '-';
   }
 
   function slugifyVendedor(nome){
@@ -860,7 +959,7 @@
     return `${dd}/${mm}/${yyyy}`;
   }
 
-  // 🔵 chave de semana respeitando o mês:
+  // chave de semana respeitando o mês:
   // - semana base Sáb–Sex
   // - se o sábado cair no mês anterior, chave = 1º dia do mês atual
   function getSemanaKeyMesContext(date, ano, mesNum){
@@ -961,9 +1060,31 @@
   const ovChipTotalVendedor=document.getElementById("ovChipTotalVendedor");
   const ovWeeksList=document.getElementById("ovWeeksList");
 
+  // progress
+  const progressWrap=document.getElementById("progressWrap");
+  const progressBar=document.getElementById("progressBar");
+  const progressText=document.getElementById("progressText");
+  const progressSub=document.getElementById("progressSub");
+
   let allRows=[];
   let filtroMesAtual="";
   let filtroAnoAtual=null;
+
+  function setProgress(pct, subText=""){
+    const v=Math.max(0,Math.min(100,Math.round(pct)));
+    progressWrap.style.display="block";
+    progressBar.style.width = v + "%";
+    progressText.textContent = v + "%";
+    if(subText) progressSub.textContent = subText;
+  }
+  function hideProgressSoon(){
+    setTimeout(()=>{
+      progressWrap.style.display="none";
+      progressBar.style.width="0%";
+      progressText.textContent="0%";
+      progressSub.textContent="Lendo linhas e processando regras…";
+    }, 450);
+  }
 
   function initFiltrosVendas(){
     inputAnoVendas.value="";
@@ -975,53 +1096,89 @@
   inputArquivo.addEventListener("change",()=>{
     const file=inputArquivo.files[0];
     if(!file) return;
+
+    // reset tela
+    tbodyVendas.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:10px;font-size:13px;color:#64748b;">Importando…</td></tr>';
+    cardTotalGeral.textContent="R$ 0,00";
+    cardQtdVendedores.textContent="0";
+    setProgress(2, "Abrindo arquivo…");
+
     const reader=new FileReader();
     reader.onload=e=>{
-      const data=new Uint8Array(e.target.result);
-      const workbook=XLSX.read(data,{type:"array"});
-      const sheetName=workbook.SheetNames[0];
-      const sheet=workbook.Sheets[sheetName];
-      const json=XLSX.utils.sheet_to_json(sheet,{header:1});
+      try{
+        const data = new Uint8Array(e.target.result);
+        setProgress(6, "Lendo planilha…");
+        const workbook = XLSX.read(data,{type:"array"});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(sheet,{header:1});
 
-      allRows=[];
-      const STATUS_VALIDOS=["PENDENTE","APROVADO","ATENDIDO","EM ALTERAÇÃO","VALIDADO"];
+        allRows=[];
+        const STATUS_VALIDOS=["PENDENTE","APROVADO","ATENDIDO","EM ALTERAÇÃO","VALIDADO"];
 
-      for(let i=1;i<json.length;i++){
-        const row=json[i];
-        if(!row||row.length===0) continue;
+        const totalLinhas = Math.max(0, json.length - 1);
+        let i = 1;
+        const CHUNK = 650;
 
-        const status=(row[1]||"").toString().trim();    // B
-        const dataCell=row[3];                          // D
-        const vendedor=(row[8]||"").toString().trim();  // I
-        const valorRaw=row[9];                          // J
-        const descricao=(row[17]||"").toString().trim();// R
+        function processChunk(){
+          const end = Math.min(i + CHUNK, json.length);
 
-        if(!STATUS_VALIDOS.includes(status.toUpperCase())) continue;
-        if(!descricao.toLowerCase().startsWith("venda")) continue;
-        if(!vendedor) continue;
+          for(; i < end; i++){
+            const row = json[i];
+            if(!row || row.length===0) continue;
 
-        const data=parseDataExcel(dataCell);
-        if(!data) continue;
+            const status=(row[1]||"").toString().trim();     // B
+            const dataCell=row[3];                           // D
+            const vendedor=(row[8]||"").toString().trim();   // I
+            const valorRaw=row[9];                           // J
+            const descricao=(row[17]||"").toString().trim(); // R
 
-        let valor=0;
-        if(typeof valorRaw==="number") valor=valorRaw;
-        else if(typeof valorRaw==="string"){
-          const p=parseValorBR(valorRaw);
-          if(p!=null) valor=p;
+            if(!STATUS_VALIDOS.includes(status.toUpperCase())) continue;
+            if(!descricao.toLowerCase().startsWith("venda")) continue;
+            if(!vendedor) continue;
+
+            const data = parseDataExcel(dataCell);
+            if(!data) continue;
+
+            let valor=0;
+            if(typeof valorRaw==="number") valor=valorRaw;
+            else if(typeof valorRaw==="string"){
+              const p=parseValorBR(valorRaw);
+              if(p!=null) valor=p;
+            }
+            if(!valor || isNaN(valor)) continue;
+
+            const ano = data.getFullYear();
+            const mes = String(data.getMonth()+1).padStart(2,"0");
+            const mesKey = `${ano}-${mes}`;
+            const weekStart = getWeekStartSaturday(data);
+            const semanaKey = weekStart.toISOString().slice(0,10);
+            const resp = getResponsavel(vendedor);
+
+            allRows.push({vendedor,resp,valor,data,mesKey,semanaKey});
+          }
+
+          const done = Math.min(totalLinhas, Math.max(0, i-1));
+          const pct = totalLinhas ? (done/totalLinhas)*100 : 100;
+          setProgress(8 + pct*0.92, `Processando linhas… (${done}/${totalLinhas})`);
+
+          if(i < json.length){
+            requestAnimationFrame(processChunk);
+          }else{
+            setProgress(100, "Finalizando…");
+            aplicarFiltroVendas();
+            atualizarOpcoesApresentacao();
+            hideProgressSoon();
+          }
         }
-        if(!valor||isNaN(valor)) continue;
 
-        const ano=data.getFullYear();
-        const mes=String(data.getMonth()+1).padStart(2,"0");
-        const mesKey=`${ano}-${mes}`;
-        const weekStart=getWeekStartSaturday(data);
-        const semanaKey=weekStart.toISOString().slice(0,10);
-        const resp=getResponsavel(vendedor);
+        requestAnimationFrame(processChunk);
 
-        allRows.push({vendedor,resp,valor,data,mesKey,semanaKey});
+      }catch(err){
+        console.error("Erro ao importar", err);
+        progressWrap.style.display="none";
+        tbodyVendas.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:10px;font-size:13px;color:#ef4444;">Erro ao importar. Veja o console.</td></tr>';
       }
-      aplicarFiltroVendas();
-      atualizarOpcoesApresentacao();
     };
     reader.readAsArrayBuffer(file);
   });
@@ -1074,9 +1231,7 @@
       tdVend.textContent=vendedor;
 
       const tdResp=document.createElement("td");
-      if(resp==="ALEXANDRE") tdResp.innerHTML='<span class="tag-alexandre">ALEXANDRE</span>';
-      else if(resp==="JUMAHIL") tdResp.innerHTML='<span class="tag-jumahil">JUMAHIL</span>';
-      else tdResp.textContent="-";
+      tdResp.innerHTML=renderTagResponsavel(resp);
 
       const tdTotal=document.createElement("td");
       tdTotal.style.textAlign="right";
@@ -1165,12 +1320,21 @@
   // -------- METAS --------
   const btnAlexandre=document.getElementById("btnAlexandre");
   const btnJumahil=document.getElementById("btnJumahil");
+  const btnCristiano=document.getElementById("btnCristiano");
   const inputAnoMetas=document.getElementById("inputAnoMetas");
   const selectMesMetas=document.getElementById("selectMesMetas");
-  const inputSabadoMetas=document.getElementById("inputSabadoMetas"); // qualquer dia da semana
+  const inputSabadoMetas=document.getElementById("inputSabadoMetas");
   const btnRecarregarMetas=document.getElementById("btnRecarregarMetas");
   const tbodyMetas=document.getElementById("tbodyMetas");
   let responsavelAtualMetas="ALEXANDRE";
+
+  function setActiveMetas(resp){
+    responsavelAtualMetas=resp;
+    btnAlexandre.classList.toggle("active", resp==="ALEXANDRE");
+    btnJumahil.classList.toggle("active", resp==="JUMAHIL");
+    btnCristiano.classList.toggle("active", resp==="CRISTIANO");
+    recarregarTabelaMetas();
+  }
 
   function initFiltrosMetas(){
     const hoje=new Date();
@@ -1217,9 +1381,7 @@
       tdVend.textContent=vendedor;
 
       const tdResp=document.createElement("td");
-      tdResp.innerHTML=responsavelAtualMetas==="ALEXANDRE"
-        ?'<span class="tag-alexandre">ALEXANDRE</span>'
-        :'<span class="tag-jumahil">JUMAHIL</span>';
+      tdResp.innerHTML=renderTagResponsavel(responsavelAtualMetas);
 
       const tdMetaAnual=document.createElement("td");
       tdMetaAnual.style.textAlign="right";
@@ -1290,23 +1452,15 @@
     }
   }
 
-  btnAlexandre.addEventListener("click",()=>{
-    responsavelAtualMetas="ALEXANDRE";
-    btnAlexandre.classList.add("active");
-    btnJumahil.classList.remove("active");
-    recarregarTabelaMetas();
-  });
-  btnJumahil.addEventListener("click",()=>{
-    responsavelAtualMetas="JUMAHIL";
-    btnJumahil.classList.add("active");
-    btnAlexandre.classList.remove("active");
-    recarregarTabelaMetas();
-  });
+  btnAlexandre.addEventListener("click",()=>setActiveMetas("ALEXANDRE"));
+  btnJumahil.addEventListener("click",()=>setActiveMetas("JUMAHIL"));
+  btnCristiano.addEventListener("click",()=>setActiveMetas("CRISTIANO"));
   btnRecarregarMetas.addEventListener("click",recarregarTabelaMetas);
 
   // -------- APRESENTAÇÃO --------
   const btnApRespAlex=document.getElementById("btnApRespAlex");
   const btnApRespJum=document.getElementById("btnApRespJum");
+  const btnApRespCrist=document.getElementById("btnApRespCrist");
   const selectApVendedor=document.getElementById("selectApVendedor");
   const inputApAno=document.getElementById("inputApAno");
   const selectApMes=document.getElementById("selectApMes");
@@ -1320,6 +1474,15 @@
   const apWeeksBody=document.getElementById("apWeeksBody");
 
   let apRespAtual="ALEXANDRE";
+
+  function setActiveAp(resp){
+    apRespAtual=resp;
+    btnApRespAlex.classList.toggle("active", resp==="ALEXANDRE");
+    btnApRespJum.classList.toggle("active", resp==="JUMAHIL");
+    btnApRespCrist.classList.toggle("active", resp==="CRISTIANO");
+    atualizarOpcoesApresentacao();
+    atualizarApresentacao();
+  }
 
   function atualizarOpcoesApresentacao(){
     const lista=getListaVendedores(apRespAtual);
@@ -1456,20 +1619,10 @@
     }
   }
 
-  btnApRespAlex.addEventListener("click",()=>{
-    apRespAtual="ALEXANDRE";
-    btnApRespAlex.classList.add("active");
-    btnApRespJum.classList.remove("active");
-    atualizarOpcoesApresentacao();
-    atualizarApresentacao();
-  });
-  btnApRespJum.addEventListener("click",()=>{
-    apRespAtual="JUMAHIL";
-    btnApRespJum.classList.add("active");
-    btnApRespAlex.classList.remove("active");
-    atualizarOpcoesApresentacao();
-    atualizarApresentacao();
-  });
+  btnApRespAlex.addEventListener("click",()=>setActiveAp("ALEXANDRE"));
+  btnApRespJum.addEventListener("click",()=>setActiveAp("JUMAHIL"));
+  btnApRespCrist.addEventListener("click",()=>setActiveAp("CRISTIANO"));
+
   btnApAtualizar.addEventListener("click",atualizarApresentacao);
   selectApVendedor.addEventListener("change",atualizarApresentacao);
 
